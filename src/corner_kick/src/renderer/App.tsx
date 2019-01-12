@@ -1,23 +1,39 @@
-/**
- * @fileoverview Defines the main page of the application
- */
-
 import * as React from 'react';
-import { Provider } from 'unstated';
+import { Provider } from 'react-redux';
+import { BrowserRouter as Router } from 'react-router-dom';
 
-import { PaneLayout } from './components/ui/PaneLayout';
-import { Logger } from './modules/Logger';
-import { Visualizer } from './modules/Visualizer';
+import { Console } from './components/portals/Console';
+import { Page } from './components/portals/Page';
+import { LoggerConsole } from './containers/consoles/logger';
+import { Global } from './containers/mainUI/Global';
+import { SettingsPage } from './containers/pages/settings';
+import { VisualizerPage } from './containers/pages/visualizer';
+import { createStore } from './store';
 
-/**
- * @description The main page of our application.
- */
-export default class App extends React.Component {
-    public render() {
-        return (
-            <Provider>
-                <PaneLayout top={<Visualizer />} bottom={<Logger />} />
-            </Provider>
-        );
-    }
-}
+const store = createStore();
+
+export const App = () => (
+    <Provider store={store}>
+        <Global>
+            <Router>
+                <>
+                    <Page
+                        text="Visualizer"
+                        icon="widgets"
+                        path="/"
+                        component={VisualizerPage}
+                    />
+                    <Page
+                        text="Settings"
+                        icon="settings"
+                        path="/settings"
+                        component={SettingsPage}
+                    />
+                </>
+            </Router>
+            <Console>
+                <LoggerConsole />
+            </Console>
+        </Global>
+    </Provider>
+);
