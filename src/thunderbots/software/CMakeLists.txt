@@ -20,7 +20,7 @@ include(FindPkgConfig)
 ####################
 
 ### Set cmake standard to c++ 20 for c++ ###
-set(CMAKE_CXX_FLAGS -std=gnu++2a)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++2a")
 
 ### Set compiler flags for all code ###
 add_definitions(-Wno-deprecated) # Don't warn about including "old" headers
