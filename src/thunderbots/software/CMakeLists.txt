@@ -684,16 +684,35 @@ if (CATKIN_ENABLE_TESTING)
     catkin_add_gtest(action_test
             test/action/action.cpp
             ai/hl/stp/action/action.cpp
-#            ai/world/world.cpp
-#            ai/world/robot.cpp
-#            ai/world/ball.cpp
-#            ai/world/field.cpp
-#            ai/world/game_state.cpp
-#            ai/world/team.cpp
+            ai/primitive/move_primitive.cpp
+            test/test_util/test_util.cpp
+            util/ros_messages.cpp
+            ai/world/ball.cpp
+            test/test_util/test_util.cpp
+            grsim_communication/motion_controller/motion_controller.cpp
+            ai/primitive/catch_primitive.cpp
+            ai/primitive/chip_primitive.cpp
+            ai/primitive/direct_velocity_primitive.cpp
+            ai/primitive/kick_primitive.cpp
+            ai/primitive/pivot_primitive.cpp
+            ai/primitive/move_primitive.cpp
+            ai/primitive/movespin_primitive.cpp
+            ai/primitive/stop_primitive.cpp
+            ai/primitive/directwheels_primitive.cpp
+            ai/primitive/primitive.cpp
+            geom/point.h
+            ai/world/world.cpp
+            ai/world/field.cpp
+            ai/world/robot.cpp
+            ai/world/team.cpp
+            ai/world/game_state.cpp
+            geom/angle.h
+            util/logger/custom_g3log_sinks.h
+            util/logger/init.h
+            util/timestamp.cpp
             )
-
     target_link_libraries(action_test ${catkin_LIBRARIES}
-            ${Boost_LIBRARIES})
+            ${Boost_LIBRARIES} ${G3LOG})
 endif()
 
 ##### ROSTests / Integration Tests #####

@@ -5,7 +5,7 @@
 #include <boost/coroutine2/all.hpp>
 
 // TODO: put this somewhere sane
-typedef boost::coroutines2::coroutine< char > coro_t;
+typedef boost::coroutines2::coroutine<std::unique_ptr<Primitive>> primitive_coroutine;
 
 class Action {
 public:
@@ -14,14 +14,16 @@ public:
     Action();
 
     // TODO: javadoc comment
-    Primitive updateStateAndGetNewPrimitive(World world);
+    std::unique_ptr<Primitive> updateStateAndGetNewPrimitive(World world);
 
     //// TODO: javadoc comment
     //Primitive getCurrentPrimitive();
 
 private:
     // TODO: javadoc comment
-    void runAction();
+    std::unique_ptr<Primitive> runAction(primitive_coroutine::push_type& yield);
+
+    static std::unique_ptr<Primitive> nullFunction(primitive_coroutine::push_type& yield);
 
     // TODO: javadoc comment
     std::optional<World> curr_world;
@@ -29,5 +31,5 @@ private:
     // TODO: javadoc comment
     std::unique_ptr<Primitive> curr_primitive;
 
-    coro_t::pull_type
+    primitive_coroutine::pull_type primitive_sequence;
 };
