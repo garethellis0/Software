@@ -24,7 +24,7 @@ set(CMAKE_CXX_STANDARD 17)
 add_definitions(-Wno-deprecated) # Don't warn about including "old" headers
 add_definitions(-fno-common) # Do not allow multiple definitions of the same global variable
 add_definitions(-Werror) # Treat warnings as errors, so they don't build up
-
+add_definitions(-DBOOST_LOG_DYN_LINK=1)
 ### Set compiler flags only for cpp code. These flags do not work for C files ###
 # Warn if parent classes do not define a virtual destructor
 # See https://www.quantstart.com/articles/C-Virtual-Destructors-How-to-Avoid-Memory-Leaks
@@ -54,6 +54,9 @@ if(NOT G3LOG OR NOT EXISTS "${G3LOG}")
     message(FATAL_ERROR "G3LOG library not found")
 endif()
 message("g3log path: ${G3LOG}")
+
+
+find_package(Boost COMPONENTS coroutine context REQUIRED)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
@@ -88,6 +91,8 @@ include_directories(SYSTEM
 include_directories(
         ${catkin_INCLUDE_DIRS}
         ${PROTOBUF_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIRS}
+        ${BOOST_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/..
         )
@@ -676,6 +681,19 @@ if (CATKIN_ENABLE_TESTING)
 
     target_link_libraries(evaluation_robot_orientation_within_angle_threshold_of_target_test ${catkin_LIBRARIES})
 
+    catkin_add_gtest(action_test
+            test/action/action.cpp
+            ai/hl/stp/action/action.cpp
+#            ai/world/world.cpp
+#            ai/world/robot.cpp
+#            ai/world/ball.cpp
+#            ai/world/field.cpp
+#            ai/world/game_state.cpp
+#            ai/world/team.cpp
+            )
+
+    target_link_libraries(action_test ${catkin_LIBRARIES}
+            ${Boost_LIBRARIES})
 endif()
 
 ##### ROSTests / Integration Tests #####
