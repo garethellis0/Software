@@ -35,13 +35,22 @@ namespace Util
             // Block until we get a connection
             acceptor.accept(socket);
 
+            // Move the connection to a websocket stream
+            websocket::stream<tcp::socket> websocket(std::move(socket));
+
+            // Accept the websocket handshake
+            websocket.accept();
+
+            // Set the websocket to talk in binary
+            websocket.binary(true);
+
             std::cout << "GOT A CONNECTION" << std::endl;
 
             // Lock the current list of sockets
             current_websocket_connections_mutex.lock();
 
             // Save this new websocket connection
-            current_websocket_connections.emplace_back(std::move(socket));
+            current_websocket_connections.emplace_back(std::move(websocket));
 
             // Unlock the current list of sockets
             current_websocket_connections_mutex.unlock();
@@ -101,7 +110,14 @@ namespace Util
                     message_contents.insert(message_contents.end(), shape.begin(), shape.end());
                 }
             }
-            websocket.write(boost::asio::buffer(message_contents));
+            try {
+
+                websocket.write(boost::asio::buffer(message_contents));
+            }
+            catch (std::exception const& e)
+            {
+                std::cerr << "Error: " << e.what() << std::endl;
+            }
         }
 
         // UnLock the list of current websockets
@@ -162,7 +178,7 @@ namespace Util
                                        double w, double h, DrawStyle draw_style,
                                        DrawTransform draw_transform)
     {
-        std::vector<int32_t> raw = {1, int(x*1000), int(y*1000), int(w*1000), int(h*1000), draw_transform.rotation, 0};
+        std::vector<int32_t> raw = {2, int(x), int(y), int(w), int(h), draw_transform.rotation, 0xFF, 0xFF, 0xFF};
         addShapeToLayer(layer,
                 raw
                 );

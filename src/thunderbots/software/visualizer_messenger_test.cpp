@@ -58,7 +58,9 @@ int main(){
 
         VisualizerMessenger::DrawTransform standard_trans = VisualizerMessenger::DrawTransform();
 
-        drawAllShapes(50, 50, standard_style, standard_trans);
+        for (int i = 0; i < 100000; i++){
+            drawAllShapes(50, 50, standard_style, standard_trans);
+        }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
