@@ -71,6 +71,14 @@ bool intersects(const Ray &first, const Segment &second);
 bool intersects(const Segment &first, const Ray &second);
 
 /*
+ * The family of `intersection` functions returns the
+ * intersection between object and another, if there
+ * is one, or std::nullopt if there is not
+ */
+
+std::optional<Point> intersection(const Ray& ray, const Segment& segment);
+
+/*
  * The family of `dist` functions calculates the unsigned distance
  * between one object and another.
  */
@@ -291,19 +299,14 @@ Point clipPoint(const Point &p, const Rectangle &r);
 bool uniqueLineIntersects(const Point &a, const Point &b, const Point &c, const Point &d);
 
 /**
- * Computes the intersection of two lines.
- *
- * @pre The lines must be non-parallel.
+ * Computes the intersection of two lines, if there is one
  *
  * @param a a point on the first line.
- *
  * @param b another point on the first line.
- *
  * @param c a point on the second line.
- *
  * @param d another point on the second line.
  *
- * @return the point of intersection.
+ * @return the point of intersection, or std::nullopt if the lines are parallel
  */
 std::optional<Point> lineIntersection(const Point &a, const Point &b, const Point &c,
                                       const Point &d);

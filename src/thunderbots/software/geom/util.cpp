@@ -261,6 +261,18 @@ bool intersects(const Segment &first, const Segment &second)
                0;
 }
 
+std::optional<Point> intersection(const Ray& ray, const Segment& segment){
+    auto isect = lineIntersection(ray.getRayStart(), ray.getDirection(),
+                                  segment.getSegStart(), segment.getEnd());
+
+    // Check that there was an intersection and it is within the ray and segment
+    if (isect.has_value() && contains(ray, isect.value()) && contains(segment, isect.value())) {
+        return isect;
+    }
+
+    return std::nullopt;
+}
+
 template <size_t N>
 Vector getVertex(const Poly<N> &poly, unsigned int i)
 {
