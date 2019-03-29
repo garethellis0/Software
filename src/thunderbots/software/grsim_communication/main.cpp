@@ -17,6 +17,9 @@
 #include "util/parameter/dynamic_parameters.h"
 #include "util/ros_messages.h"
 
+#include <iostream>
+#include <fstream>
+
 
 /**
  * A sigmoid function with a given offset from 0 and rate of change
@@ -150,7 +153,7 @@ public:
                     (previous_errors[0].second - previous_errors[1].second);
         }
 
-        std::cout << integral << std::endl;
+//        std::cout << integral << std::endl;
 
         return P*error_meters + I*integral + D*derivative;
     }
@@ -187,6 +190,8 @@ namespace
 
     // The last timestamp from a robot update that we care about
     Timestamp last_robot_update_time = Timestamp::fromSeconds(0);
+    std::ofstream outfile;
+    Timestamp starting_time;
 
 }  // namespace
 
@@ -207,12 +212,27 @@ void worldUpdateCallback(const thunderbots_msgs::World::ConstPtr& msg)
     thunderbots_msgs::World world_msg = *msg;
     world = Util::ROSMessages::createWorldFromROSMessage(world_msg);
 
+    if(Util::DynamicParameters::PID::logenable.value() && Util::DynamicParameters::PID::reset_robot.value()) {
+        if(outfile.is_open()){
+            outfile.close();
+            std::cout << "closing file" << std::endl;
+        }
+        outfile.open(Util::DynamicParameters::PID::logfile.value());
+        std::cout << "opening file" << std::endl;
+    }
+    if(!Util::DynamicParameters::PID::logenable.value()) {
+        if(outfile.is_open()){
+            outfile.close();
+            std::cout << "closing file" << std::endl;
+        }
+    }
 
     auto robot = world.friendlyTeam().getRobotById(0);
     if (robot && robot->lastUpdateTimestamp() > last_robot_update_time){
         if(Util::DynamicParameters::PID::reset_robot.value()) {
             grsim_backend.setRobot(0, true, Point(-5, 0), Angle::zero());
             starting_position = robot->position();
+            starting_time = robot->lastUpdateTimestamp();
         }
 
         last_robot_update_time = robot->lastUpdateTimestamp();
@@ -231,6 +251,12 @@ void worldUpdateCallback(const thunderbots_msgs::World::ConstPtr& msg)
         auto packet = grsim_backend.createGrSimPacketWithRobotVelocity(
                 0, TeamColour::YELLOW, robot_velocity, AngularVelocity::zero(), 0, false, false);
         grsim_backend.sendGrSimPacket(packet);
+
+        outfile << (robot->lastUpdateTimestamp() - starting_time).getSeconds() << ", "
+                << robot->position().x() << ", "
+                << robot->position().y() << ", "
+                << 0.0 << ", "
+                << error_meters << std::endl;
     }
 }
 
@@ -239,6 +265,8 @@ int main(int argc, char** argv)
     // Init ROS node
     ros::init(argc, argv, "grsim_communication");
     ros::NodeHandle node_handle;
+
+
 
     // Create subscribers to topics we care about
     //ros::Subscriber primitive_subscriber = node_handle.subscribe(

@@ -18,10 +18,14 @@ PID:
     type: "double"
     description: "D"
   reset_robot:
-    default: false
+    default: true
     type: "bool"
     description: "reset robot"
-  log:
+  logfile:
+    default: "temp.csv"
+    type: "string"
+    description: "log name"
+  logenable:
     default: false
     type: "bool"
     description: "log enable"
