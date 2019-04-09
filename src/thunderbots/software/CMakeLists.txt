@@ -609,6 +609,7 @@ if (CATKIN_ENABLE_TESTING)
             ai/hl/stp/tactic/cherry_pick_tactic.cpp
             ai/hl/stp/tactic/move_tactic.cpp
             ai/hl/stp/tactic/passer_tactic.cpp
+            ai/hl/stp/tactic/receiver_tactic.cpp
             ai/hl/stp/tactic/tactic.cpp
             ai/intent/intent.cpp
             ai/intent/kick_intent.cpp
@@ -632,6 +633,7 @@ if (CATKIN_ENABLE_TESTING)
             test/ai/hl/stp/tactic/main.cpp
             test/ai/hl/stp/tactic/move_tactic.cpp
             test/ai/hl/stp/tactic/passer_tactic.cpp
+            test/ai/hl/stp/tactic/receiver_tactic.cpp
             test/ai/hl/stp/tactic/tactic.cpp
             test/ai/hl/stp/test_tactics/move_test_tactic.cpp
             test/test_util/test_util.cpp

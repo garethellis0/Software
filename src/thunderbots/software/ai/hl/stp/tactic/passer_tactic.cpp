@@ -38,6 +38,7 @@ double PasserTactic::calculateRobotCost(const Robot& robot, const World& world)
 std::unique_ptr<Intent> PasserTactic::calculateNextIntent(
     intent_coroutine::push_type& yield)
 {
+    // TODO: We don't want to actually kick until the pass is supposed to start!!!
     KickAction kick_action = KickAction();
     do
     {
