@@ -305,7 +305,7 @@ Segment getSide(const LegacyPolygon<N> &poly, unsigned int i)
     return Segment(getVertex(poly, i), getVertex(poly, (i + 1) % N));
 }
 
-std::vector<std::pair<Vector, Angle>> angleSweepCirclesAll(
+std::vector<std::pair<Point, Angle>> angleSweepCirclesAll(
     const Vector &src, const Vector &p1, const Vector &p2,
     const std::vector<Point> &obstacles, const double &radius)
 {
@@ -382,73 +382,24 @@ std::vector<std::pair<Vector, Angle>> angleSweepCirclesAll(
     return ret;
 }
 
-std::pair<Vector, Angle> angleSweepCircles(const Vector &src, const Vector &p1,
+std::optional<std::pair<Point, Angle>> angleSweepCircles(const Vector &src, const Vector &p1,
                                            const Vector &p2,
                                            const std::vector<Vector> &obstacles,
                                            const double &radius)
 {
-    // default value to return if nothing is valid
-    Vector bestshot      = (p1 + p2) * 0.5;
-    const Angle offangle = (p1 - src).orientation();
-    if (collinear(src, p1, p2))
-    {
-        return std::make_pair(bestshot, Angle::zero());
-    }
-    std::vector<std::pair<Angle, int>> events;
-    events.reserve(2 * obstacles.size() + 2);
-    events.push_back(std::make_pair(Angle::zero(), 1));  // p1 becomes angle 0
-    events.push_back(
-        std::make_pair(((p2 - src).orientation() - offangle).angleMod(), -1));
-    for (Vector i : obstacles)
-    {
-        Vector diff = i - src;
-        if (diff.len() < radius)
-        {
-            return std::make_pair(bestshot, Angle::zero());
-        }
-        const Angle cent   = (diff.orientation() - offangle).angleMod();
-        const Angle span   = Angle::asin(radius / diff.len());
-        const Angle range1 = cent - span;
-        const Angle range2 = cent + span;
+    // Get all possible shots we could take
+    std::vector<std::pair<Point, Angle>> possible_shots = angleSweepCirclesAll(src, p1, p2, obstacles, radius);
 
-        if (range1 < -Angle::half() || range2 > Angle::half())
-        {
-            continue;
-        }
-        events.push_back(std::make_pair(range1, -1));
-        events.push_back(std::make_pair(range2, 1));
+    // Sort by the interval angle (ie. the open angle the shot is going through)
+    std::sort(possible_shots.begin(), possible_shots.end(), [](auto p1, auto p2){
+        return p1.second < p2.second;
+    });
+
+    // Return the shot through the largest open interval if there are any
+    if (possible_shots.empty()){
+        return std::nullopt;
     }
-    // do angle sweep for largest angle
-    std::sort(events.begin(), events.end());
-    Angle best  = Angle::zero();
-    Angle sum   = Angle::zero();
-    Angle start = events[0].first;
-    int cnt     = 0;
-    for (std::size_t i = 0; i + 1 < events.size(); ++i)
-    {
-        cnt += events[i].second;
-        assert(cnt <= 1);
-        if (cnt > 0)
-        {
-            sum += events[i + 1].first - events[i].first;
-            if (best < sum)
-            {
-                best = sum;
-                // shoot ray from point p
-                // intersect with line p1-p2
-                const Angle mid    = start + sum / 2 + offangle;
-                const Vector ray   = Vector::createFromAngle(mid) * 10.0;
-                const Vector inter = lineIntersection(src, src + ray, p1, p2).value();
-                bestshot           = inter;
-            }
-        }
-        else
-        {
-            sum   = Angle::zero();
-            start = events[i + 1].first;
-        }
-    }
-    return std::make_pair(bestshot, best);
+    return possible_shots[0];
 }
 
 std::vector<Vector> circleBoundaries(const Vector &centre, double radius, int num_points)

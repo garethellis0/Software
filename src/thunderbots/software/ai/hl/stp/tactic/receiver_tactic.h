@@ -5,6 +5,7 @@
 
 #include "ai/hl/stp/tactic/tactic.h"
 #include "ai/passing/pass.h"
+#include "geom/ray.h"
 
 /**
  * This tactic is for a robot receiving a pass. It should be used in conjunction with
@@ -49,8 +50,23 @@ class ReceiverTactic : public Tactic
     double calculateRobotCost(const Robot& robot, const World& world) override;
 
    private:
+    // The minimum open angle we must have for a shot before we will attempt it
+    static constexpr double MIN_SHOT_OPEN_ANGLE_DEGREES = 10;
+
     std::unique_ptr<Intent> calculateNextIntent(
         intent_coroutine::push_type& yield) override;
+
+    /**
+     * Calculate the angle the robot should be at in order to perform the given shot
+     *
+     * @param shot A Ray representing the shot we want to take
+     * @param ball The ball we want to shoot
+     *
+     * @return The angle to position the robot at so that it can redirect the ball to
+     *         the shot vector at the position where the shot vector and ball velocity
+     *         vectors intersect
+     */
+    static Angle getOneTimeShotDirection(const Ray& shot, const Ball& ball);
 
     // Tactic parameters
     // The pass this tactic is executing

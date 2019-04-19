@@ -10,13 +10,18 @@ MoveAction::MoveAction(double close_to_dest_threshold)
 std::unique_ptr<Intent> MoveAction::updateStateAndGetNextIntent(const Robot& robot,
                                                                 Point destination,
                                                                 Angle final_orientation,
-                                                                double final_speed)
+                                                                double final_speed,
+                                                                bool enable_dribbler,
+                                                                bool enable_autokick
+                                                                )
 {
     // Update the parameters stored by this Action
     this->robot             = robot;
     this->destination       = destination;
     this->final_orientation = final_orientation;
     this->final_speed       = final_speed;
+    this->enable_dribbler = enable_dribbler;
+    this->enable_autokick = enable_autokick;
 
     return getNextIntent();
 }
@@ -32,6 +37,6 @@ std::unique_ptr<Intent> MoveAction::calculateNextIntent(
     do
     {
         yield(std::make_unique<MoveIntent>(robot->id(), destination, final_orientation,
-                                           final_speed, 0));
+                                           final_speed, 0, enable_dribbler, enable_autokick));
     } while ((robot->position() - destination).len() > close_to_dest_threshold);
 }

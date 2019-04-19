@@ -9,82 +9,69 @@
 namespace Evaluation
 {
     /**
-     * Finds the length of the largest continuous interval (angle-wise) of the
-     * goal that can be seen from a point.
+     * Finds the best point in the enemy goal to shoot at
      *
-     * @param f-field is needed to calculate the location of the goalposts based on field
-     * length and goal width
+     * @param field The field on which the shot is taking place
+     * @param obstacles A list of all the obstacles which could impede the ball
+     * @param shot_start The point that the shot starts from
+     * @param radius The radius of all obstacles
      *
-     * @param obstacles-obstacles is a list of all the obstacles in the way between the
-     * point and the net
-     *
-     * @param p-the point that the shot is being calculated from
-     *
-     * @param radius-the radius of all obstacles
-     *
-     * @return the point and the score (angle),
-     * where the score will be 0 if the point is invalid.
+     * @return The point in the enemy goal to shoot at, and the size of the open angular
+     *         interval through which the shot will go. A larger open angle generally
+     *         indicates a safer shot. Returns std::nullopt if no shot found.
      */
-    std::pair<Point, Angle> calcBestShotOnEnemyGoal(const Field &f,
+    std::optional<std::pair<Point, Angle>> calcBestShotOnEnemyGoal(const Field &field,
                                                     const std::vector<Point> &obstacles,
-                                                    const Point &p, double radius);
+                                                    const Point &shot_start, double radius);
 
     /**
      * Finds the length of the all continuous interval (angle-wise) of the
      * goal that can be seen from a point.
      *
-     * @param f-field is needed to calculate the location of the goalposts based on field
-     * length and goal width
+     * @param field The field on which the shot is taking place
+     * @param obstacles A list of all the obstacles which could impede the ball
+     * @param shot_start The point that the shot starts from
+     * @param radius The radius of all obstacles
      *
-     * @param obstacles-obstacles is a list of all the obstacles in the way between the
-     * point and the net
-     *
-     * @param p-the point that the shot is being calculated from
-     *
-     * @param radius-the radius of all obstacles
-     *
-     * @return a set of points and the corresponding score (angle),
-     * where the score will be 0 if the point is invalid.
+     * @return A set of points in the enemy goal to shoot at, and the size of the open
+     *         angular interval for each shot. A larger open angle generally indicates a
+     *         safer shot.
      */
     std::vector<std::pair<Point, Angle>> calcBestShotOnEnemyGoalAll(
-        const Field &f, const std::vector<Point> &obstacles, const Point &p,
+        const Field &field, const std::vector<Point> &obstacles, const Point &shot_start,
         double radius);
 
     /**
      * Finds the length of the largest continuous interval (angle-wise) of the
      * goal that can be seen from a point.
-     * To add imaginary threats or obstacles, please use the above calc_best_shot.
      *
-     * @param world-world with field information
+     * @param field The field the shot is being performed on
+     * @param friendly_team The friendly robots
+     * @param enemy_team The enemy robots
+     * @param shooting_robot The robot performing the shot (this is assumed to be on the
+     *                       friendly team)
      *
-     * @param point-robot that the shot is being calculated from
-     *
-     * @param radius-the radius of all obstacles
-     *
-     * @return the point as and the score (angle),
-     * where the score will be 0 if the point is invalid.
+     * @return The point in the enemy goal to shoot at, and the size of the open angular
+     *         interval through which the shot will go. A larger open angle generally
+     *         indicates a safer shot. Returns std::nullopt if no shot found.
      */
-    std::pair<Point, Angle> calcBestShotOnEnemyGoal(const World &world,
-                                                    const Point &point, double radius);
+    std::optional<std::pair<Point, Angle>> calcBestShotOnEnemyGoal(const Field &field, const Team &friendly_team, const Team &enemy_team, const Robot &shooting_robot);
 
 
     /**
-     * Finds the list of length of the largest continuous interval (angle-wise) of the
-     * goal that can be seen from a point.
-     * To add imaginary threats or obstacles, please use the above calc_best_shot_all.
+     * Finds a list of points that we can shoot at in the enemy goal
      *
-     * @param world-world with field information
+     * @param field The field the shot is being performed on
+     * @param friendly_team The friendly robots
+     * @param enemy_team The enemy robots
+     * @param shooting_robot The robot performing the shot (this is assumed to be on the
+     *                       friendly team)
      *
-     * @param point-robot that the shot is being calculated from
-     *
-     * @@param radius-the radius of all obstacles
-     *
-     * @return the point as and the score (angle),
-     * where the score will be 0 if the point is invalid.
+     * @return A set of points in the enemy goal to shoot at, and the size of the open
+     *         angular interval for each shot. A larger open angle generally indicates a
+     *         safer shot.
      */
-    std::vector<std::pair<Point, Angle>> calcBestShotOnEnemyGoalAll(const World &world,
-                                                                    const Point &point,
-                                                                    double radius);
+    std::vector<std::pair<Point, Angle>> calcBestShotOnEnemyGoalAll(const Field &field, const Team &friendly_team, const Team &enemy_team, const Robot &shooting_robot);
 
 }  // namespace Evaluation
 #endif

@@ -79,7 +79,7 @@ TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_with_world_test)
                                Angle::atan(0.15 / 1.12))
                                   .tan()),
             (Angle::atan(0.5 / 1.2) - Angle::atan(0.15 / 1.12))),
-        Evaluation::calcBestShotOnEnemyGoal(w, p, radius));
+        Evaluation::calcBestShotOnEnemyGoal(<#initializer#>, <#initializer#>, <#initializer#>, p));
 }
 
 TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_with_world_no_available_shot_test)
@@ -99,7 +99,7 @@ TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_with_world_no_available_shot
     obstacles.insert(obstacles.end(), friendly.begin() + 1, friendly.end());
 
     EXPECT_EQ(std::make_pair(Point(4.5, 0), Angle::zero()),
-              Evaluation::calcBestShotOnEnemyGoal(w, p, radius));
+              Evaluation::calcBestShotOnEnemyGoal(<#initializer#>, <#initializer#>, <#initializer#>, p));
 }
 
 TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_all_with_world_test)
@@ -137,5 +137,5 @@ TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_all_with_world_test)
     result.emplace_back(std::make_pair(Point(4.5, 0.5), Angle::zero()));
 
 
-    EXPECT_EQ(result, Evaluation::calcBestShotOnEnemyGoalAll(w, p, radius));
+    EXPECT_EQ(result, Evaluation::calcBestShotOnEnemyGoalAll(<#initializer#>, <#initializer#>, <#initializer#>, <#initializer#>));
 }
