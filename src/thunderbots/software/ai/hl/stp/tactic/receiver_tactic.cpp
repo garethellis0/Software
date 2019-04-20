@@ -51,6 +51,7 @@ std::unique_ptr<Intent> ReceiverTactic::calculateNextIntent(
         // rotate to the correct orientation to face where the pass is coming from
         yield(move_action.updateStateAndGetNextIntent(
                 *robot, pass.receiverPoint(), pass.receiverOrientation(), 0));
+        std::cout << "MOVING TO POSITION OR WAITING - PASS NOT STARTED" << std::endl;
     }
 
     // Check if we can shoot on the enemy goal from the receiver position
@@ -64,7 +65,7 @@ std::unique_ptr<Intent> ReceiverTactic::calculateNextIntent(
     // angle that is reasonable, we should one-touch kick the ball towards the enemy net
     // TODO: This conditional is _horrendous_, clean it up
     if (best_shot_opt &&
-    best_shot_opt->second.toDegrees() > MIN_SHOT_OPEN_ANGLE_DEGREES &&
+    //best_shot_opt->second.toDegrees() > MIN_SHOT_OPEN_ANGLE_DEGREES &&
     (robot_to_ball.orientation() - (best_shot_opt->first - robot->position()).orientation()).angleMod().abs().toDegrees() < MAX_DEFLECTION_FOR_ONE_TOUCH_SHOT_DEGREES){
         auto [best_shot_target, _] = *best_shot_opt;
 
@@ -73,7 +74,9 @@ std::unique_ptr<Intent> ReceiverTactic::calculateNextIntent(
         robot_to_ball = robot->position() - ball.position();
         Angle ball_robot_angle = (ball_velocity.orientation() - robot_to_ball.orientation()).angleMod();
 
-        while(ball_robot_angle.toDegrees() < 90 || ball.velocity().len() < 0.5) {
+        // TODO: Fix termination condition here
+//        while(ball_robot_angle.toDegrees() < 90 || ball.velocity().len() < 0.5) {
+        while(true){
             // Figure out the closest point on the balls trajectory to the robot
             Point closest_ball_pos = closestPointOnLine(
                     robot->position(), ball.position(),
@@ -82,13 +85,15 @@ std::unique_ptr<Intent> ReceiverTactic::calculateNextIntent(
 
             // Determine the best position to be in
             Angle ideal_orientation = getOneTimeShotDirection(shot, ball);
-            Vector ideal_orientation_vec = Vector(ideal_orientation.cos(), ideal_orientation.sin());
+            Vector ideal_orientation_vec = Vector::createFromAngle(ideal_orientation);// Vector(ideal_orientation.cos(), ideal_orientation.sin());
 
             // The best position is determined such that the robot stays in the ideal
             // orientation, but moves forwards/backwards so that the ball hits the kicker,
             // rather then the center of the robot
             Point ideal_position = closest_ball_pos -
-                    ideal_orientation_vec.norm(DIST_TO_FRONT_OF_ROBOT_METERS);
+                    ideal_orientation_vec.norm(DIST_TO_FRONT_OF_ROBOT_METERS + BALL_MAX_RADIUS_METERS);
+
+            std::cout << "In ONe TOUCH" << std::endl;
 
             yield(move_action.updateStateAndGetNextIntent(
                     *robot, ideal_position, ideal_orientation, 0, false, true));
@@ -98,6 +103,7 @@ std::unique_ptr<Intent> ReceiverTactic::calculateNextIntent(
             robot_to_ball = ball.position() - robot->position() ;
             ball_robot_angle = (ball_velocity.orientation() - robot_to_ball.orientation()).angleMod();
         }
+        std::cout << "DONE" << std::endl;
     }
     // If we can't shoot on the enemy goal, just try to receive the pass as cleanly as
     // possible
@@ -108,9 +114,12 @@ std::unique_ptr<Intent> ReceiverTactic::calculateNextIntent(
                     ball.estimatePositionAtFutureTime(Duration::fromSeconds(0.1)));
             Angle ball_receive_orientation = (ball.position() - robot->position() ).orientation();
 
+            std::cout << "TRYING TO CATCH WITH DRIBBLE" << std::endl;
+
             yield(move_action.updateStateAndGetNextIntent(
                     *robot, ball_receive_pos, ball_receive_orientation, 0, true, false));
         }
+        std::cout << "DONE" << std::endl;
     }
 }
 

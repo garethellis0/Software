@@ -13,6 +13,9 @@
 
 using namespace AI::Passing;
 
+// TODO: Test for corner kick case (corner kick from +x,-y to a robot at +x, +y ready to cross)
+// TODO: Tons of tests for `getOneTimeShotDirection`, it has a bunch of issues...
+
 TEST(ReceiverTacticTest, robot_not_at_receive_position_pass_not_started){
     Robot receiver = Robot(13, Point(1, -3), Vector(), Angle::zero(), AngularVelocity::zero(),
                         Timestamp::fromSeconds(0));
