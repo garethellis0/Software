@@ -46,11 +46,7 @@ namespace Evaluation
     std::vector<std::pair<Point, Angle>> calcBestShotOnEnemyGoalAll(const Field &field, const Team &friendly_team, const Team &enemy_team, const Robot &shooting_robot)
     {
         std::vector<Point> obstacles;
-        for (const Robot &i : friendly_team.getAllRobots())
-        {
-            obstacles.push_back(i.position());
-        }
-        for (const Robot &fpl : enemy_team.getAllRobots())
+        for (const Robot &fpl : friendly_team.getAllRobots())
         {
             if (fpl.id() == shooting_robot.id())
             {
@@ -58,6 +54,10 @@ namespace Evaluation
                 continue;
             }
             obstacles.push_back(fpl.position());
+        }
+        for (const Robot &i : enemy_team.getAllRobots())
+        {
+            obstacles.push_back(i.position());
         }
         return calcBestShotOnEnemyGoalAll(field, obstacles, shooting_robot.position(), ROBOT_MAX_RADIUS_METERS);
     }

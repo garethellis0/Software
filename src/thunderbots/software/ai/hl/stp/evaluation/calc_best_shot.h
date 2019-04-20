@@ -41,6 +41,7 @@ namespace Evaluation
         const Field &field, const std::vector<Point> &obstacles, const Point &shot_start,
         double radius);
 
+    // TODO: This should take a radius again.........
     /**
      * Finds the length of the largest continuous interval (angle-wise) of the
      * goal that can be seen from a point.
@@ -58,6 +59,7 @@ namespace Evaluation
     std::optional<std::pair<Point, Angle>> calcBestShotOnEnemyGoal(const Field &field, const Team &friendly_team, const Team &enemy_team, const Robot &shooting_robot);
 
 
+    // TODO: This should take a radius again.........
     /**
      * Finds a list of points that we can shoot at in the enemy goal
      *

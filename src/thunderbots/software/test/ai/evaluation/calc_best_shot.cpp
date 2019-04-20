@@ -24,7 +24,7 @@ TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_with_vector_of_points_test)
                                Angle::atan(0.15 / 1.12))
                                   .tan()),
             (Angle::atan(0.5 / 1.2) - Angle::atan(0.15 / 1.12))),
-        Evaluation::calcBestShotOnEnemyGoal(f, obstacles, p, radius));
+        *Evaluation::calcBestShotOnEnemyGoal(f, obstacles, p, radius));
 }
 
 TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_all_with_vector_of_points_test)
@@ -52,7 +52,6 @@ TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_all_with_vector_of_points_te
     // removed after the bug is fixed
     result.emplace_back(std::make_pair(Point(4.5, 0.5), Angle::zero()));
 
-
     EXPECT_EQ(result, Evaluation::calcBestShotOnEnemyGoalAll(f, obstacles, p, radius));
 }
 
@@ -79,7 +78,7 @@ TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_with_world_test)
                                Angle::atan(0.15 / 1.12))
                                   .tan()),
             (Angle::atan(0.5 / 1.2) - Angle::atan(0.15 / 1.12))),
-        Evaluation::calcBestShotOnEnemyGoal(<#initializer#>, <#initializer#>, <#initializer#>, p));
+        *Evaluation::calcBestShotOnEnemyGoal(w.field(), w.friendlyTeam(), w.enemyTeam(), *w.friendlyTeam().getRobotById(0)));
 }
 
 TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_with_world_no_available_shot_test)
@@ -98,15 +97,14 @@ TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_with_world_no_available_shot
     obstacles.insert(obstacles.end(), enemy.begin(), enemy.end());
     obstacles.insert(obstacles.end(), friendly.begin() + 1, friendly.end());
 
-    EXPECT_EQ(std::make_pair(Point(4.5, 0), Angle::zero()),
-              Evaluation::calcBestShotOnEnemyGoal(<#initializer#>, <#initializer#>, <#initializer#>, p));
+    EXPECT_EQ(std::nullopt,
+              Evaluation::calcBestShotOnEnemyGoal(w.field(), w.friendlyTeam(), w.enemyTeam(), *w.friendlyTeam().getRobotById(0)));
 }
 
 TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_all_with_world_test)
 {
     World w       = ::Test::TestUtil::createBlankTestingWorld();
     Point p       = Point(3.3, 0);
-    double radius = 0.15;
 
     std::vector<Point> friendly = {p, Point(3.3 + 1.13, 0)};
     std::vector<Point> enemy    = {Point(3.3 + (1.13 / 1.3 * 1.2), (1.13 / 1.3) * 0.5)};
@@ -129,7 +127,8 @@ TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_all_with_world_test)
                   1.2 * ((Angle::atan(0.5 / 1.2) - 2 * Angle::atan(0.15 / 1.12)) / 2 +
                          Angle::atan(0.15 / 1.12))
                             .tan()),
-            (Angle::atan(0.5 / 1.2) - 2 * Angle::atan(0.15 / 1.12)))};
+            (Angle::atan(0.5 / 1.2) - 2 * Angle::atan(0.15 / 1.12)))
+    };
 
     // TODO: https://github.com/UBC-Thunderbots/Software/issues/516
     // This line is added to tweak the result vector to pass the test for now, should be
@@ -137,5 +136,5 @@ TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_all_with_world_test)
     result.emplace_back(std::make_pair(Point(4.5, 0.5), Angle::zero()));
 
 
-    EXPECT_EQ(result, Evaluation::calcBestShotOnEnemyGoalAll(<#initializer#>, <#initializer#>, <#initializer#>, <#initializer#>));
+    EXPECT_EQ(result, Evaluation::calcBestShotOnEnemyGoalAll(w.field(), w.friendlyTeam(), w.enemyTeam(), *w.friendlyTeam().getRobotById(0)));
 }
