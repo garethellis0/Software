@@ -50,6 +50,14 @@ double MovePrimitive::getFinalSpeed() const
     return final_speed;
 }
 
+bool MovePrimitive::getAutoKickEnabled() const {
+    return enable_autokick;
+}
+
+bool MovePrimitive::getDribblerEnabled() const {
+    return enable_dribbler;
+}
+
 std::vector<double> MovePrimitive::getParameters() const
 {
     std::vector<double> parameters = {dest.x(), dest.y(), final_angle.toRadians(),
@@ -79,3 +87,4 @@ bool MovePrimitive::operator!=(const MovePrimitive &other) const
 {
     return !((*this) == other);
 }
+
