@@ -2,8 +2,8 @@
 
 #include "ai/intent/move_intent.h"
 
-MoveAction::MoveAction(double close_to_dest_threshold)
-    : Action(), close_to_dest_threshold(close_to_dest_threshold)
+MoveAction::MoveAction(double close_to_dest_threshold, bool loop_forever)
+    : Action(), close_to_dest_threshold(close_to_dest_threshold), loop_forever(loop_forever)
 {
 }
 
@@ -38,5 +38,5 @@ std::unique_ptr<Intent> MoveAction::calculateNextIntent(
     {
         yield(std::make_unique<MoveIntent>(robot->id(), destination, final_orientation,
                                            final_speed, 0, enable_dribbler, enable_autokick));
-    } while ((robot->position() - destination).len() > close_to_dest_threshold);
+    } while (loop_forever || (robot->position() - destination).len() > close_to_dest_threshold);
 }

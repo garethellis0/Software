@@ -12,13 +12,16 @@ class MoveAction : public Action
     // camera and positioning noise
     static constexpr double ROBOT_CLOSE_TO_DEST_THRESHOLD = 0.02;
 
+    // TODO: Test new param here
     /**
      * Creates a new MoveAction
      *
      * @param close_to_dest_threshold How far from the destination the robot must be
      * before the action is considered done
+     * @param loop_forever Continue yielding new Move Intents, even after we have reached
+     *                     our goal
      */
-    explicit MoveAction(double close_to_dest_threshold = ROBOT_CLOSE_TO_DEST_THRESHOLD);
+    explicit MoveAction(double close_to_dest_threshold = ROBOT_CLOSE_TO_DEST_THRESHOLD, bool loop_forever=false);
 
     /**
      * Returns the next Intent this MoveAction wants to run, given the parameters.
@@ -52,7 +55,9 @@ class MoveAction : public Action
     Point destination;
     Angle final_orientation;
     double final_speed;
-    double close_to_dest_threshold;
     bool enable_dribbler;
     bool enable_autokick;
+
+    double close_to_dest_threshold;
+    bool loop_forever;
 };
