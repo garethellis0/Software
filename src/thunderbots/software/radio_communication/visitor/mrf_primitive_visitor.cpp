@@ -88,6 +88,7 @@ void MRFPrimitiveVisitor::visit(const KickPrimitive &kick_primitive)
     radio_prim->extra_bits = static_cast<uint8_t>(2 | 0);
 }
 
+// TODO: new extra bits here need to be tested!!
 void MRFPrimitiveVisitor::visit(const MovePrimitive &move_primitive)
 {
     radio_prim              = RadioPrimitive();
@@ -98,8 +99,8 @@ void MRFPrimitiveVisitor::visit(const MovePrimitive &move_primitive)
         move_primitive.getFinalAngle().toRadians() * CENTIRADIANS_PER_RADIAN,
         move_primitive.getFinalSpeed() * MILLIMETERS_PER_METER};
     radio_prim->extra_bits = 0;
-    // TODO: Need to set the bits on the primitive we're sending over to the robot here
-    // for dribbler speed and autokick
+    radio_prim->extra_bits += move_primitive.getAutoKickEnabled() * 0x01;
+    radio_prim->extra_bits += move_primitive.getDribblerEnabled() * 0x02;
 }
 
 void MRFPrimitiveVisitor::visit(const MoveSpinPrimitive &movespin_primitive)
