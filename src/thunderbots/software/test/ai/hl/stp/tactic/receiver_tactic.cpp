@@ -238,3 +238,33 @@ TEST(ReceiverTacticTest, robot_at_receive_position_pass_one_touch_kicked){
     EXPECT_EQ(std::unique_ptr<Intent>({}), tactic.getNextIntent());
 }
 
+class OneTimeShotDirectionTest : public ::testing::TestWithParam<std::tuple<Point, double, double>>{
+};
+TEST_P(OneTimeShotDirectionTest, test_shot_towards_enemy_net){
+    Point ball_location = std::get<0>(GetParam());
+    double min_angle_degrees = std::get<1>(GetParam());
+    double max_angle_degrees = std::get<2>(GetParam());
+
+    // Create a ball traveling from the specified position towards the origin
+    Ball ball(ball_location, -ball_location, Timestamp::fromSeconds(0));
+
+    // Create a shot towards the enemy net
+    Ray shot({0,0}, {1,0});
+
+    Angle robot_angle = ReceiverTactic::getOneTimeShotDirection(shot, ball);
+
+    EXPECT_GT(robot_angle.toDegrees(), min_angle_degrees);
+    EXPECT_LT(robot_angle.toDegrees(), max_angle_degrees);
+}
+// Since the exact direction for one time shots is highly variable and depends a lot on
+// physical tests, we check the exact angles, but we can at least test that they're in
+// the right range
+INSTANTIATE_TEST_CASE_P(All, OneTimeShotDirectionTest,
+ ::testing::Values(
+         std::make_tuple<Point, double, double>({1,1}, 1, 20),
+         std::make_tuple<Point, double, double>({3,1}, 1, 20),
+         std::make_tuple<Point, double, double>({3,-1}, -20, 1),
+         std::make_tuple<Point, double, double>({1,-1}, -20, 1),
+         std::make_tuple<Point, double, double>({0,1}, 1, 40),
+         std::make_tuple<Point, double, double>({0,-1}, -40, 1)
+        ));

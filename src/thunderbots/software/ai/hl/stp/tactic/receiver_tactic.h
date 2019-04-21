@@ -55,17 +55,6 @@ class ReceiverTactic : public Tactic
      */
     double calculateRobotCost(const Robot& robot, const World& world) override;
 
-   private:
-    // The minimum open angle we must have for a shot before we will attempt it
-    static constexpr double MIN_SHOT_OPEN_ANGLE_DEGREES = 10;
-
-    // The maximum deflection angle that we will attempt a one-touch kick towards the
-    // enemy goal with
-    static constexpr double MAX_DEFLECTION_FOR_ONE_TOUCH_SHOT_DEGREES = 90;
-
-    std::unique_ptr<Intent> calculateNextIntent(
-        intent_coroutine::push_type& yield) override;
-
     /**
      * Calculate the angle the robot should be at in order to perform the given shot
      *
@@ -77,6 +66,17 @@ class ReceiverTactic : public Tactic
      *         vectors intersect
      */
     static Angle getOneTimeShotDirection(const Ray& shot, const Ball& ball);
+
+   private:
+    // The minimum open angle we must have for a shot before we will attempt it
+    static constexpr double MIN_SHOT_OPEN_ANGLE_DEGREES = 10;
+
+    // The maximum deflection angle that we will attempt a one-touch kick towards the
+    // enemy goal with
+    static constexpr double MAX_DEFLECTION_FOR_ONE_TOUCH_SHOT_DEGREES = 90;
+
+    std::unique_ptr<Intent> calculateNextIntent(
+        intent_coroutine::push_type& yield) override;
 
     // The field the pass is occuring on
     Field field;
