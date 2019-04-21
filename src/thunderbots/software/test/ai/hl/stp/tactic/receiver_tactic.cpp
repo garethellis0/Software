@@ -238,18 +238,19 @@ TEST(ReceiverTacticTest, robot_at_receive_position_pass_one_touch_kicked){
     EXPECT_EQ(std::unique_ptr<Intent>({}), tactic.getNextIntent());
 }
 
-class OneTimeShotDirectionTest : public ::testing::TestWithParam<std::tuple<Point, double, double>>{
+class OneTimeShotDirectionTest : public ::testing::TestWithParam<std::tuple<Point, Point, double, double>>{
 };
 TEST_P(OneTimeShotDirectionTest, test_shot_towards_enemy_net){
-    Point ball_location = std::get<0>(GetParam());
-    double min_angle_degrees = std::get<1>(GetParam());
-    double max_angle_degrees = std::get<2>(GetParam());
+    Point robot_location = std::get<0>(GetParam());
+    Point ball_location = std::get<1>(GetParam());
+    double min_angle_degrees = std::get<2>(GetParam());
+    double max_angle_degrees = std::get<3>(GetParam());
 
-    // Create a ball traveling from the specified position towards the origin
-    Ball ball(ball_location, -ball_location, Timestamp::fromSeconds(0));
+    // Create a ball traveling from the specified position towards the robot
+    Ball ball(ball_location, robot_location-ball_location, Timestamp::fromSeconds(0));
 
     // Create a shot towards the enemy net
-    Ray shot({0,0}, {1,0});
+    Ray shot(robot_location, Vector(4.5, 0)-robot_location);
 
     Angle robot_angle = ReceiverTactic::getOneTimeShotDirection(shot, ball);
 
@@ -261,10 +262,21 @@ TEST_P(OneTimeShotDirectionTest, test_shot_towards_enemy_net){
 // the right range
 INSTANTIATE_TEST_CASE_P(All, OneTimeShotDirectionTest,
  ::testing::Values(
-         std::make_tuple<Point, double, double>({1,1}, 1, 20),
-         std::make_tuple<Point, double, double>({3,1}, 1, 20),
-         std::make_tuple<Point, double, double>({3,-1}, -20, 1),
-         std::make_tuple<Point, double, double>({1,-1}, -20, 1),
-         std::make_tuple<Point, double, double>({0,1}, 1, 40),
-         std::make_tuple<Point, double, double>({0,-1}, -40, 1)
+         // Robot at the origin, ball coming at it from different directions
+         std::make_tuple<Point, Point, double, double>({0, 0}, {1,1}, 1, 20),
+         std::make_tuple<Point, Point, double, double>({0, 0}, {3,1}, 1, 20),
+         std::make_tuple<Point, Point, double, double>({0, 0}, {3,-1}, -20, -1),
+         std::make_tuple<Point, Point, double, double>({0, 0}, {1,-1}, -20, -1),
+         std::make_tuple<Point, Point, double, double>({0, 0}, {0,1}, 1, 40),
+         std::make_tuple<Point, Point, double, double>({0, 0}, {0,-1}, -40, -1),
+         // Corner kicks, robot is roughly in the opposite corner of the goal crease to
+         // where the corner kick is coming from
+         std::make_tuple<Point, Point, double, double>({3, 1}, {4.5,-3}, -45, -5),
+         std::make_tuple<Point, Point, double, double>({3, -1}, {4.5,3}, 5, 45),
+         // Corner kicks, robot is roughly in the same corner of the goal crease to
+         // where the corner kick is coming from
+         std::make_tuple<Point, Point, double, double>({3, -1}, {4.5,-3}, 0, 45),
+         std::make_tuple<Point, Point, double, double>({3, 1}, {4.5,3}, -45, 0),
+         // Corner kick, robot is close to the goal and directly in front of it
+         std::make_tuple<Point, Point, double, double>({4, 0}, {4.5,-3}, -45, -1)
         ));

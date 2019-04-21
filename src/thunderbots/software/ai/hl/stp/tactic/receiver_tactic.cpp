@@ -125,7 +125,7 @@ std::unique_ptr<Intent> ReceiverTactic::calculateNextIntent(
 
 Angle ReceiverTactic::getOneTimeShotDirection(const Ray &shot, const Ball &ball) {
     Point shot_vector = shot.getDirection();
-    Angle shot_dir = shot.toVector().orientation();
+    Angle shot_dir = shot.getDirection().orientation();
     Point bot_vector = shot_vector.norm();
 
     // TODO: magic numbers here??
