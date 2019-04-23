@@ -29,7 +29,9 @@ class ReceiverTactic : public Tactic
      * @param loop_forever Whether or not this Tactic should never complete. If true, the
      * tactic will be restarted every time it completes
      */
-    explicit ReceiverTactic(const Field& field, const Team& friendly_team, const Team& enemy_team, const AI::Passing::Pass pass, const Ball& ball, bool loop_forever);
+    explicit ReceiverTactic(const Field& field, const Team& friendly_team,
+                            const Team& enemy_team, const AI::Passing::Pass pass,
+                            const Ball& ball, bool loop_forever);
 
     std::string getName() const override;
 
@@ -42,7 +44,7 @@ class ReceiverTactic : public Tactic
      * @param updated_ball The ball being passed
      */
     void updateParams(const Team& updated_friendly_team, const Team& updated_enemy_team,
-            const AI::Passing::Pass& updated_pass, const Ball& updated_ball);
+                      const AI::Passing::Pass& updated_pass, const Ball& updated_ball);
 
     /**
      * Calculates the cost of assigning the given robot to this Tactic. Prefers robots

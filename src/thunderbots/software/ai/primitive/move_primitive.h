@@ -30,7 +30,8 @@ class MovePrimitive : public Primitive
      *                        of it
      */
     explicit MovePrimitive(unsigned int robot_id, const Point &dest,
-                           const Angle &final_angle, double final_speed, bool enable_dribbler = false, bool enable_autokick = false);
+                           const Angle &final_angle, double final_speed,
+                           bool enable_dribbler = false, bool enable_autokick = false);
 
     /**
      * Creates a new Move Primitive from a Primitive message

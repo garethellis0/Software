@@ -105,7 +105,7 @@ namespace Util
          * @return The transformed world message
          */
         thunderbots_msgs::World transformWorldMessage(
-                const thunderbots_msgs::World& old_world_msg);
+            const thunderbots_msgs::World& old_world_msg);
 
         /**
          * Given a Ball message, it will transform the ball's orientation
@@ -115,7 +115,7 @@ namespace Util
          * @return The transformed ball message
          */
         thunderbots_msgs::Ball transformBallMessage(
-                const thunderbots_msgs::Ball& old_ball_msg);
+            const thunderbots_msgs::Ball& old_ball_msg);
 
         /**
          * Given a list of robots, it will transform each robot's orientation
@@ -125,7 +125,7 @@ namespace Util
          * @return A vector of transformed robot messages
          */
         std::vector<thunderbots_msgs::Robot> transformRobotMessages(
-                const std::vector<thunderbots_msgs::Robot>& old_robot_msgs);
+            const std::vector<thunderbots_msgs::Robot>& old_robot_msgs);
 
         /**
          * Given a Robot message, it will transform the robot's orientation
@@ -135,7 +135,7 @@ namespace Util
          * @return The transformed robot message
          */
         thunderbots_msgs::Robot transformRobotMessage(
-                const thunderbots_msgs::Robot& old_robot_msg);
+            const thunderbots_msgs::Robot& old_robot_msg);
 
     }  // namespace ROSMessages
 }  // namespace Util

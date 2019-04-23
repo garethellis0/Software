@@ -313,15 +313,16 @@ std::vector<std::pair<Point, Angle>> angleSweepCirclesAll(
     Angle p2_angle = (p2 - src).orientation();
 
     Angle start_angle = std::min(p1_angle, p2_angle);
-    Angle end_angle = std::max(p1_angle, p2_angle);
+    Angle end_angle   = std::max(p1_angle, p2_angle);
 
     // This handles the special case where the start and end angle straddle the
     // negative y axis, which causes some issues with angles "ticking over" from pi to
     // -pi and vice-versa
-    if (end_angle - start_angle > Angle::half()){
+    if (end_angle - start_angle > Angle::half())
+    {
         Angle start_angle_new = start_angle + (end_angle - start_angle).angleMod();
-        end_angle = start_angle;
-        start_angle = start_angle_new;
+        end_angle             = start_angle;
+        start_angle           = start_angle_new;
     }
 
     if (collinear(src, p1, p2))
@@ -346,7 +347,7 @@ std::vector<std::pair<Point, Angle>> angleSweepCirclesAll(
     // obstacle
     // The angle for each event is measured relative to the start angle
     std::vector<std::pair<Angle, int>> events;
-    for (const Vector& obstacle : obstacles)
+    for (const Vector &obstacle : obstacles)
     {
         Vector diff = obstacle - src;
         if (diff.len() < radius)
@@ -364,18 +365,21 @@ std::vector<std::pair<Point, Angle>> angleSweepCirclesAll(
         {
             continue;
         }
-        if (range1 > Angle::zero() && range1 < end_angle - start_angle){
+        if (range1 > Angle::zero() && range1 < end_angle - start_angle)
+        {
             events.push_back(std::make_pair(range1, -1));
         }
-        if (range2 > Angle::zero() && range2 < end_angle - start_angle){
+        if (range2 > Angle::zero() && range2 < end_angle - start_angle)
+        {
             events.push_back(std::make_pair(range2, 1));
         }
     }
 
-    if (events.empty()){
+    if (events.empty())
+    {
         // No obstacles in the way, so just return a range hitting the entire target
         // line segment
-        return {std::make_pair((p1 + p2)/2, end_angle - start_angle)};
+        return {std::make_pair((p1 + p2) / 2, end_angle - start_angle)};
     }
 
     // Sort the events by angle
@@ -385,26 +389,32 @@ std::vector<std::pair<Point, Angle>> angleSweepCirclesAll(
     // overlapping obstacles (from the perspective of the `src` point to the target line
     // segment)
     std::vector<std::pair<Angle, int>> events_collapsed;
-    for (auto& event: events){
-        if (events_collapsed.empty() || event.second != events_collapsed.back().second){
+    for (auto &event : events)
+    {
+        if (events_collapsed.empty() || event.second != events_collapsed.back().second)
+        {
             events_collapsed.emplace_back(event);
         }
     }
 
-    if (events_collapsed[0].second == -1){
-        events_collapsed.insert(events_collapsed.begin(), std::make_pair(Angle::zero(), 1));
+    if (events_collapsed[0].second == -1)
+    {
+        events_collapsed.insert(events_collapsed.begin(),
+                                std::make_pair(Angle::zero(), 1));
     }
-    if (events_collapsed.back().second == 1){
+    if (events_collapsed.back().second == 1)
+    {
         events_collapsed.emplace_back(std::make_pair(end_angle - start_angle, -1));
     }
     std::vector<std::pair<Point, Angle>> result;
-    for (int i = 0; i < events_collapsed.size()-1; i+=2){
+    for (int i = 0; i < events_collapsed.size() - 1; i += 2)
+    {
         // Calculate the center of this range on the target line segement
         Angle range_start = events_collapsed[i].first + start_angle;
-        Angle range_end = events_collapsed[i+1].first + start_angle;
-        Angle mid = (range_end - range_start)/2 + range_start;
-        Vector ray   = Vector::createFromAngle(mid) * 10.0;
-        Vector inter = lineIntersection(src, src + ray, p1, p2).value();
+        Angle range_end   = events_collapsed[i + 1].first + start_angle;
+        Angle mid         = (range_end - range_start) / 2 + range_start;
+        Vector ray        = Vector::createFromAngle(mid) * 10.0;
+        Vector inter      = lineIntersection(src, src + ray, p1, p2).value();
 
         // Offset the final values by the start angle
         result.emplace_back(std::make_pair(inter, range_end - range_start));
@@ -413,21 +423,21 @@ std::vector<std::pair<Point, Angle>> angleSweepCirclesAll(
     return result;
 }
 
-std::optional<std::pair<Point, Angle>> angleSweepCircles(const Vector &src, const Vector &p1,
-                                           const Vector &p2,
-                                           const std::vector<Vector> &obstacles,
-                                           const double &radius)
+std::optional<std::pair<Point, Angle>> angleSweepCircles(
+    const Vector &src, const Vector &p1, const Vector &p2,
+    const std::vector<Vector> &obstacles, const double &radius)
 {
     // Get all possible shots we could take
-    std::vector<std::pair<Point, Angle>> possible_shots = angleSweepCirclesAll(src, p1, p2, obstacles, radius);
+    std::vector<std::pair<Point, Angle>> possible_shots =
+        angleSweepCirclesAll(src, p1, p2, obstacles, radius);
 
     // Sort by the interval angle (ie. the open angle the shot is going through)
-    std::sort(possible_shots.begin(), possible_shots.end(), [](auto p1, auto p2){
-        return p1.second > p2.second;
-    });
+    std::sort(possible_shots.begin(), possible_shots.end(),
+              [](auto p1, auto p2) { return p1.second > p2.second; });
 
     // Return the shot through the largest open interval if there are any
-    if (possible_shots.empty()){
+    if (possible_shots.empty())
+    {
         return std::nullopt;
     }
     return possible_shots[0];

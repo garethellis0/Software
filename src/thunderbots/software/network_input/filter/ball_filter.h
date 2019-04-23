@@ -1,11 +1,11 @@
 #pragma once
 
+#include <boost/circular_buffer.hpp>
 #include <vector>
 
 #include "ai/world/ball.h"
 #include "geom/point.h"
 #include "util/time/timestamp.h"
-#include <boost/circular_buffer.hpp>
 
 /**
  * A lightweight datatype used to input new data into the filter.
@@ -44,6 +44,6 @@ class BallFilter
     Ball getFilteredData(const Ball& current_ball_state,
                          const std::vector<SSLBallDetection>& new_ball_detections);
 
-private:
+   private:
     boost::circular_buffer<Vector> buffer;
 };

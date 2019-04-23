@@ -24,7 +24,8 @@ class PasserTactic : public Tactic
      * @param loop_forever Whether or not this Tactic should never complete. If true, the
      * tactic will be restarted every time it completes
      */
-    explicit PasserTactic(AI::Passing::Pass pass, const Timestamp& time, bool loop_forever);
+    explicit PasserTactic(AI::Passing::Pass pass, const Timestamp& time,
+                          bool loop_forever);
 
     std::string getName() const override;
 
@@ -34,7 +35,8 @@ class PasserTactic : public Tactic
      * @param pass The pass to perform
      * @param updated_curr_time The current time
      */
-    void updateParams(const AI::Passing::Pass& updated_pass, const Timestamp& updated_curr_time);
+    void updateParams(const AI::Passing::Pass& updated_pass,
+                      const Timestamp& updated_curr_time);
 
     /**
      * Calculates the cost of assigning the given robot to this Tactic. Prefers robots

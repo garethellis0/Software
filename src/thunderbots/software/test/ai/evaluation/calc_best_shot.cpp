@@ -78,7 +78,8 @@ TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_with_world_test)
                                Angle::atan(0.15 / 1.12))
                                   .tan()),
             (Angle::atan(0.5 / 1.2) - Angle::atan(0.15 / 1.12))),
-        *Evaluation::calcBestShotOnEnemyGoal(w.field(), w.friendlyTeam(), w.enemyTeam(), *w.friendlyTeam().getRobotById(0)));
+        *Evaluation::calcBestShotOnEnemyGoal(w.field(), w.friendlyTeam(), w.enemyTeam(),
+                                             *w.friendlyTeam().getRobotById(0)));
 }
 
 TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_with_world_no_available_shot_test)
@@ -97,8 +98,9 @@ TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_with_world_no_available_shot
     obstacles.insert(obstacles.end(), enemy.begin(), enemy.end());
     obstacles.insert(obstacles.end(), friendly.begin() + 1, friendly.end());
 
-    EXPECT_EQ(std::nullopt,
-              Evaluation::calcBestShotOnEnemyGoal(w.field(), w.friendlyTeam(), w.enemyTeam(), *w.friendlyTeam().getRobotById(0)));
+    EXPECT_EQ(std::nullopt, Evaluation::calcBestShotOnEnemyGoal(
+                                w.field(), w.friendlyTeam(), w.enemyTeam(),
+                                *w.friendlyTeam().getRobotById(0)));
 }
 
 TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_all_with_world_test)
@@ -127,8 +129,7 @@ TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_all_with_world_test)
                   1.2 * ((Angle::atan(0.5 / 1.2) - 2 * Angle::atan(0.15 / 1.12)) / 2 +
                          Angle::atan(0.15 / 1.12))
                             .tan()),
-            (Angle::atan(0.5 / 1.2) - 2 * Angle::atan(0.15 / 1.12)))
-    };
+            (Angle::atan(0.5 / 1.2) - 2 * Angle::atan(0.15 / 1.12)))};
 
     // TODO: https://github.com/UBC-Thunderbots/Software/issues/516
     // This line is added to tweak the result vector to pass the test for now, should be
@@ -136,5 +137,7 @@ TEST(CalcBestShotTest, calc_best_shot_on_enemy_goal_all_with_world_test)
     result.emplace_back(std::make_pair(Point(4.5, 0.5), Angle::zero()));
 
 
-    EXPECT_EQ(result, Evaluation::calcBestShotOnEnemyGoalAll(w.field(), w.friendlyTeam(), w.enemyTeam(), *w.friendlyTeam().getRobotById(0)));
+    EXPECT_EQ(result, Evaluation::calcBestShotOnEnemyGoalAll(
+                          w.field(), w.friendlyTeam(), w.enemyTeam(),
+                          *w.friendlyTeam().getRobotById(0)));
 }

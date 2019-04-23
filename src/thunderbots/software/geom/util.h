@@ -162,10 +162,9 @@ bool collinear(const Point &a, const Point &b, const Point &c);
  *         through which a shot from the current point to the best point would go. If no
  *         shot could be found, returns std::nullopt
  */
-std::optional<std::pair<Vector, Angle>> angleSweepCircles(const Point &src, const Point &p1,
-                                          const Point &p2,
-                                          const std::vector<Point> &obstacles,
-                                          const double &radius);
+std::optional<std::pair<Vector, Angle>> angleSweepCircles(
+    const Point &src, const Point &p1, const Point &p2,
+    const std::vector<Point> &obstacles, const double &radius);
 
 /**
  * Performs an angle sweep.

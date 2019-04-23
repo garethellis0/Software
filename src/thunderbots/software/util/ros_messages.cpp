@@ -183,22 +183,22 @@ namespace Util
 
 
         thunderbots_msgs::World transformWorldMessage(
-                const thunderbots_msgs::World& old_world_msg)
+            const thunderbots_msgs::World& old_world_msg)
         {
             thunderbots_msgs::World new_world_msg = old_world_msg;
 
             new_world_msg.ball = transformBallMessage(old_world_msg.ball);
             new_world_msg.friendly_team.robots =
-                    transformRobotMessages(old_world_msg.friendly_team.robots);
+                transformRobotMessages(old_world_msg.friendly_team.robots);
             new_world_msg.enemy_team.robots =
-                    transformRobotMessages(old_world_msg.enemy_team.robots);
+                transformRobotMessages(old_world_msg.enemy_team.robots);
 
 
             return new_world_msg;
         }
 
         thunderbots_msgs::Ball transformBallMessage(
-                const thunderbots_msgs::Ball& old_ball_msg)
+            const thunderbots_msgs::Ball& old_ball_msg)
         {
             thunderbots_msgs::Ball new_ball = old_ball_msg;
 
@@ -212,7 +212,7 @@ namespace Util
         }
 
         std::vector<thunderbots_msgs::Robot> transformRobotMessages(
-                const std::vector<thunderbots_msgs::Robot>& old_robot_msgs)
+            const std::vector<thunderbots_msgs::Robot>& old_robot_msgs)
         {
             std::vector<thunderbots_msgs::Robot> new_robots;
 
@@ -225,7 +225,7 @@ namespace Util
         }
 
         thunderbots_msgs::Robot transformRobotMessage(
-                const thunderbots_msgs::Robot& old_robot_msg)
+            const thunderbots_msgs::Robot& old_robot_msg)
         {
             thunderbots_msgs::Robot new_robot = old_robot_msg;
 

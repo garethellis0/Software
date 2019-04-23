@@ -7,12 +7,13 @@
 
 #include "ai/intent/kick_intent.h"
 #include "ai/intent/move_intent.h"
-#include "test/test_util/test_util.h"
 #include "shared/constants.h"
+#include "test/test_util/test_util.h"
 
 using namespace AI::Passing;
 
-TEST(PasserTacticTest, passer_already_at_pass_start_position_but_oriented_incorrectly_pass_not_yet_started)
+TEST(PasserTacticTest,
+     passer_already_at_pass_start_position_but_oriented_incorrectly_pass_not_yet_started)
 {
     // Robot is sitting at origin facing towards enemy goal
     Robot robot = Robot(13, Point(0, 0), Vector(), Angle::zero(), AngularVelocity::zero(),
@@ -37,7 +38,8 @@ TEST(PasserTacticTest, passer_already_at_pass_start_position_but_oriented_incorr
     EXPECT_EQ(0, move_intent.getFinalSpeed());
 }
 
-TEST(PasserTacticTest, passer_oriented_correctly_but_not_at_pass_start_position_pass_not_yet_started)
+TEST(PasserTacticTest,
+     passer_oriented_correctly_but_not_at_pass_start_position_pass_not_yet_started)
 {
     // Robot is sitting at {1,2} facing towards -y
     Robot robot = Robot(13, Point(1, 2), Vector(), Angle::ofDegrees(-90),
@@ -62,8 +64,9 @@ TEST(PasserTacticTest, passer_oriented_correctly_but_not_at_pass_start_position_
     EXPECT_EQ(0, move_intent.getFinalSpeed());
 }
 
-TEST(PasserTacticTest,
-     passer_oriented_incorrectly_and_close_to_start_position_but_in_front_of_pass_pass_not_yet_started)
+TEST(
+    PasserTacticTest,
+    passer_oriented_incorrectly_and_close_to_start_position_but_in_front_of_pass_pass_not_yet_started)
 {
     // Robot is sitting at {-0.3,0.2} facing towards -y
     Robot robot = Robot(13, Point(-0.3, 0.2), Vector(), Angle::ofDegrees(-90),

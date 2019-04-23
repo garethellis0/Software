@@ -1,7 +1,6 @@
 #include "ball_filter.h"
 
-BallFilter::BallFilter() : buffer(5)
-{}
+BallFilter::BallFilter() : buffer(5) {}
 
 
 Ball BallFilter::getFilteredData(const Ball& current_ball_state,
@@ -24,10 +23,13 @@ Ball BallFilter::getFilteredData(const Ball& current_ball_state,
     buffer.push_back(ball_velocity);
 
     auto average_ball_velocity = Vector(0, 0);
-    for(auto v : buffer) {
+    for (auto v : buffer)
+    {
         average_ball_velocity = average_ball_velocity + v;
     }
-    average_ball_velocity = average_ball_velocity.norm(average_ball_velocity.len() / buffer.size());
+    average_ball_velocity =
+        average_ball_velocity.norm(average_ball_velocity.len() / buffer.size());
 
-    return Ball{filtered_detection.position, average_ball_velocity, filtered_detection.timestamp};
+    return Ball{filtered_detection.position, average_ball_velocity,
+                filtered_detection.timestamp};
 }

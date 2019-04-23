@@ -2,8 +2,8 @@
 
 #include "ai/hl/stp/play/play_factory.h"
 #include "ai/hl/stp/tactic/move_tactic.h"
-#include "ai/hl/stp/tactic/receiver_tactic.h"
 #include "ai/hl/stp/tactic/passer_tactic.h"
+#include "ai/hl/stp/tactic/receiver_tactic.h"
 #include "ai/passing/pass.h"
 #include "ai/passing/pass_generator.h"
 
@@ -35,67 +35,70 @@ std::vector<std::shared_ptr<Tactic>> ExamplePlay::getNextTactics(
     auto move_tactic_5 = std::make_shared<MoveTactic>(true);
     auto move_tactic_6 = std::make_shared<MoveTactic>(true);
 
-//    AI::Passing::Pass pass({-1,0}, {-0.5, 0}, 2, Timestamp::fromSeconds(2));
-    AI::Passing::Pass pass({1,0}, {0.5, 0}, 5.5, Timestamp::fromSeconds(0));
+    //    AI::Passing::Pass pass({-1,0}, {-0.5, 0}, 2, Timestamp::fromSeconds(2));
+    AI::Passing::Pass pass({1, 0}, {0.5, 0}, 5.5, Timestamp::fromSeconds(0));
     auto receiver_tactic = std::make_shared<ReceiverTactic>(
-            world.field(), world.friendlyTeam(),
-            world.enemyTeam(), pass, world.ball(), true
-            );
+        world.field(), world.friendlyTeam(), world.enemyTeam(), pass, world.ball(), true);
 
     auto passer_tactic = std::make_shared<PasserTactic>(pass, world.ball(), true);
 
     Timestamp pass_time = world.ball().lastUpdateTimestamp() + Duration::fromSeconds(5);
 
-//    AI::Passing::PassGenerator pass_generator(0.5);
+    //    AI::Passing::PassGenerator pass_generator(0.5);
 
     do
     {
-//        pass_generator.setWorld(world);
-//        pass_generator.setPasserPoint(world.ball().position());
-//        auto best_pass_opt = pass_generator.getBestPassSoFar();
-//        if (!best_pass_opt){
-//            continue;
-//        }
-//        AI::Passing::Pass best_pass = *best_pass_opt;
+        //        pass_generator.setWorld(world);
+        //        pass_generator.setPasserPoint(world.ball().position());
+        //        auto best_pass_opt = pass_generator.getBestPassSoFar();
+        //        if (!best_pass_opt){
+        //            continue;
+        //        }
+        //        AI::Passing::Pass best_pass = *best_pass_opt;
 
-        pass = AI::Passing::Pass(
-                world.ball().position(), {0.5,0.0}, 4, pass_time
-                );
+        pass = AI::Passing::Pass(world.ball().position(), {0.5, 0.0}, 4, pass_time);
         passer_tactic->updateParams(pass, world.ball());
-//        yield({passer_tactic});
+        //        yield({passer_tactic});
 
-        receiver_tactic->updateParams(
-                world.friendlyTeam(),
-                world.enemyTeam(), pass, world.ball());
-//
+        receiver_tactic->updateParams(world.friendlyTeam(), world.enemyTeam(), pass,
+                                      world.ball());
+        //
         yield({passer_tactic, receiver_tactic});
-//
-//        // The angle between each robot spaced out in a circle around the ball
-//        Angle angle_between_robots = Angle::full() / world.friendlyTeam().numRobots();
-//
-//        // Move the robots in a circle around the ball, facing the ball
-//        move_tactic_1->updateParams(
-//            world.ball().position() + Point::createFromAngle(angle_between_robots * 1),
-//            (angle_between_robots * 1) + Angle::half(), 0);
-//        move_tactic_2->updateParams(
-//            world.ball().position() + Point::createFromAngle(angle_between_robots * 2),
-//            (angle_between_robots * 2) + Angle::half(), 0);
-//        move_tactic_3->updateParams(
-//            world.ball().position() + Point::createFromAngle(angle_between_robots * 3),
-//            (angle_between_robots * 3) + Angle::half(), 0);
-//        move_tactic_4->updateParams(
-//            world.ball().position() + Point::createFromAngle(angle_between_robots * 4),
-//            (angle_between_robots * 4) + Angle::half(), 0);
-//        move_tactic_5->updateParams(
-//            world.ball().position() + Point::createFromAngle(angle_between_robots * 5),
-//            (angle_between_robots * 5) + Angle::half(), 0);
-//        move_tactic_6->updateParams(
-//            world.ball().position() + Point::createFromAngle(angle_between_robots * 6),
-//            (angle_between_robots * 6) + Angle::half(), 0);
-//
-//        // yield the Tactics this Play wants to run, in order of priority
-//        yield({move_tactic_1, move_tactic_2, move_tactic_3, move_tactic_4, move_tactic_5,
-//               move_tactic_6});
+        //
+        //        // The angle between each robot spaced out in a circle around the ball
+        //        Angle angle_between_robots = Angle::full() /
+        //        world.friendlyTeam().numRobots();
+        //
+        //        // Move the robots in a circle around the ball, facing the ball
+        //        move_tactic_1->updateParams(
+        //            world.ball().position() +
+        //            Point::createFromAngle(angle_between_robots * 1),
+        //            (angle_between_robots * 1) + Angle::half(), 0);
+        //        move_tactic_2->updateParams(
+        //            world.ball().position() +
+        //            Point::createFromAngle(angle_between_robots * 2),
+        //            (angle_between_robots * 2) + Angle::half(), 0);
+        //        move_tactic_3->updateParams(
+        //            world.ball().position() +
+        //            Point::createFromAngle(angle_between_robots * 3),
+        //            (angle_between_robots * 3) + Angle::half(), 0);
+        //        move_tactic_4->updateParams(
+        //            world.ball().position() +
+        //            Point::createFromAngle(angle_between_robots * 4),
+        //            (angle_between_robots * 4) + Angle::half(), 0);
+        //        move_tactic_5->updateParams(
+        //            world.ball().position() +
+        //            Point::createFromAngle(angle_between_robots * 5),
+        //            (angle_between_robots * 5) + Angle::half(), 0);
+        //        move_tactic_6->updateParams(
+        //            world.ball().position() +
+        //            Point::createFromAngle(angle_between_robots * 6),
+        //            (angle_between_robots * 6) + Angle::half(), 0);
+        //
+        //        // yield the Tactics this Play wants to run, in order of priority
+        //        yield({move_tactic_1, move_tactic_2, move_tactic_3, move_tactic_4,
+        //        move_tactic_5,
+        //               move_tactic_6});
     } while (true);
 }
 

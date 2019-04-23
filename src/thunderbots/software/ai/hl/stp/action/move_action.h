@@ -21,7 +21,8 @@ class MoveAction : public Action
      * @param loop_forever Continue yielding new Move Intents, even after we have reached
      *                     our goal
      */
-    explicit MoveAction(double close_to_dest_threshold = ROBOT_CLOSE_TO_DEST_THRESHOLD, bool loop_forever=false);
+    explicit MoveAction(double close_to_dest_threshold = ROBOT_CLOSE_TO_DEST_THRESHOLD,
+                        bool loop_forever              = false);
 
     /**
      * Returns the next Intent this MoveAction wants to run, given the parameters.
@@ -40,12 +41,9 @@ class MoveAction : public Action
      * @return A unique pointer to the Intent the MoveAction wants to run. If the
      * MoveAction is done, returns an empty/null pointer
      */
-    std::unique_ptr<Intent> updateStateAndGetNextIntent(const Robot& robot,
-                                                        Point destination,
-                                                        Angle final_orientation,
-                                                        double final_speed,
-                                                        bool enable_dribbler = false,
-                                                        bool enable_autokick = false);
+    std::unique_ptr<Intent> updateStateAndGetNextIntent(
+        const Robot& robot, Point destination, Angle final_orientation,
+        double final_speed, bool enable_dribbler = false, bool enable_autokick = false);
 
    private:
     std::unique_ptr<Intent> calculateNextIntent(

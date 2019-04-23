@@ -5,8 +5,14 @@
 const std::string MovePrimitive::PRIMITIVE_NAME = "Move Primitive";
 
 MovePrimitive::MovePrimitive(unsigned int robot_id, const Point &dest,
-                             const Angle &final_angle, double final_speed, bool enable_dribbler, bool enable_autokick)
-    : robot_id(robot_id), dest(dest), final_angle(final_angle), final_speed(final_speed), enable_dribbler(enable_dribbler), enable_autokick(enable_autokick)
+                             const Angle &final_angle, double final_speed,
+                             bool enable_dribbler, bool enable_autokick)
+    : robot_id(robot_id),
+      dest(dest),
+      final_angle(final_angle),
+      final_speed(final_speed),
+      enable_dribbler(enable_dribbler),
+      enable_autokick(enable_autokick)
 {
 }
 
@@ -50,18 +56,24 @@ double MovePrimitive::getFinalSpeed() const
     return final_speed;
 }
 
-bool MovePrimitive::getAutoKickEnabled() const {
+bool MovePrimitive::getAutoKickEnabled() const
+{
     return enable_autokick;
 }
 
-bool MovePrimitive::getDribblerEnabled() const {
+bool MovePrimitive::getDribblerEnabled() const
+{
     return enable_dribbler;
 }
 
 std::vector<double> MovePrimitive::getParameters() const
 {
-    std::vector<double> parameters = {dest.x(), dest.y(), final_angle.toRadians(),
-                                      final_speed, (double)enable_dribbler, (double)enable_autokick};
+    std::vector<double> parameters = {dest.x(),
+                                      dest.y(),
+                                      final_angle.toRadians(),
+                                      final_speed,
+                                      (double)enable_dribbler,
+                                      (double)enable_autokick};
 
     return parameters;
 }
@@ -80,11 +92,12 @@ bool MovePrimitive::operator==(const MovePrimitive &other) const
 {
     return this->robot_id == other.robot_id && this->dest == other.dest &&
            this->final_angle == other.final_angle &&
-           this->final_speed == other.final_speed && this->enable_dribbler == other.enable_dribbler && this->enable_autokick == other.enable_autokick;
+           this->final_speed == other.final_speed &&
+           this->enable_dribbler == other.enable_dribbler &&
+           this->enable_autokick == other.enable_autokick;
 }
 
 bool MovePrimitive::operator!=(const MovePrimitive &other) const
 {
     return !((*this) == other);
 }
-

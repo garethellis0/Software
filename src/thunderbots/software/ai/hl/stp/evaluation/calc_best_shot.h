@@ -20,9 +20,9 @@ namespace Evaluation
      *         interval through which the shot will go. A larger open angle generally
      *         indicates a safer shot. Returns std::nullopt if no shot found.
      */
-    std::optional<std::pair<Point, Angle>> calcBestShotOnEnemyGoal(const Field &field,
-                                                    const std::vector<Point> &obstacles,
-                                                    const Point &shot_start, double radius);
+    std::optional<std::pair<Point, Angle>> calcBestShotOnEnemyGoal(
+        const Field &field, const std::vector<Point> &obstacles, const Point &shot_start,
+        double radius);
 
     /**
      * Finds the length of the all continuous interval (angle-wise) of the
@@ -56,7 +56,9 @@ namespace Evaluation
      *         interval through which the shot will go. A larger open angle generally
      *         indicates a safer shot. Returns std::nullopt if no shot found.
      */
-    std::optional<std::pair<Point, Angle>> calcBestShotOnEnemyGoal(const Field &field, const Team &friendly_team, const Team &enemy_team, const Robot &shooting_robot);
+    std::optional<std::pair<Point, Angle>> calcBestShotOnEnemyGoal(
+        const Field &field, const Team &friendly_team, const Team &enemy_team,
+        const Robot &shooting_robot);
 
 
     // TODO: This should take a radius again.........
@@ -73,7 +75,9 @@ namespace Evaluation
      *         angular interval for each shot. A larger open angle generally indicates a
      *         safer shot.
      */
-    std::vector<std::pair<Point, Angle>> calcBestShotOnEnemyGoalAll(const Field &field, const Team &friendly_team, const Team &enemy_team, const Robot &shooting_robot);
+    std::vector<std::pair<Point, Angle>> calcBestShotOnEnemyGoalAll(
+        const Field &field, const Team &friendly_team, const Team &enemy_team,
+        const Robot &shooting_robot);
 
 }  // namespace Evaluation
 #endif

@@ -252,23 +252,28 @@ TEST(GeomUtilTest, test_angle_sweep_circles)
     EXPECT_NEAR(42.1928, testpair.second.toDegrees(), 1e-4);
 }
 
-TEST(GeomUtilTest, test_angle_sweep_circles_all_no_obstacles){
-    std::vector<std::pair<Point, Angle>> result = angleSweepCirclesAll({0,0}, {1,1}, {-1, 1}, {}, 0.1);
+TEST(GeomUtilTest, test_angle_sweep_circles_all_no_obstacles)
+{
+    std::vector<std::pair<Point, Angle>> result =
+        angleSweepCirclesAll({0, 0}, {1, 1}, {-1, 1}, {}, 0.1);
 
     ASSERT_EQ(1, result.size());
-    EXPECT_EQ(Point(0,1), result[0].first);
+    EXPECT_EQ(Point(0, 1), result[0].first);
     EXPECT_EQ(90, result[0].second.toDegrees());
 }
 
-TEST(GeomUtilTest, test_angle_sweep_circles_all_single_obstacles_pos_y_to_neg_y){
+TEST(GeomUtilTest, test_angle_sweep_circles_all_single_obstacles_pos_y_to_neg_y)
+{
     // Test with a single obstacle the is centered on the line segment that we are
     // sweeping over
 
-    std::vector<std::pair<Point, Angle>> result = angleSweepCirclesAll({0,0}, {1,-1}, {1, 1}, {{1,0}}, 0.01);
+    std::vector<std::pair<Point, Angle>> result =
+        angleSweepCirclesAll({0, 0}, {1, -1}, {1, 1}, {{1, 0}}, 0.01);
 
     ASSERT_EQ(2, result.size());
 
-    std::sort(result.begin(), result.end(), [](auto pair1, auto pair2){ return pair1.second < pair2.second; });
+    std::sort(result.begin(), result.end(),
+              [](auto pair1, auto pair2) { return pair1.second < pair2.second; });
 
     EXPECT_EQ(1, result[0].first.x());
     EXPECT_NEAR(-0.40, result[0].first.y(), 0.05);
@@ -276,15 +281,18 @@ TEST(GeomUtilTest, test_angle_sweep_circles_all_single_obstacles_pos_y_to_neg_y)
     EXPECT_NEAR(0.40, result[1].first.y(), 0.05);
 }
 
-TEST(GeomUtilTest, test_angle_sweep_circles_all_single_obstacles_neg_y_to_pos_y){
+TEST(GeomUtilTest, test_angle_sweep_circles_all_single_obstacles_neg_y_to_pos_y)
+{
     // Test with a single obstacle the is centered on the line segment that we are
     // sweeping over
 
-    std::vector<std::pair<Point, Angle>> result = angleSweepCirclesAll({0,0}, {1,1}, {1, -1}, {{1,0}}, 0.01);
+    std::vector<std::pair<Point, Angle>> result =
+        angleSweepCirclesAll({0, 0}, {1, 1}, {1, -1}, {{1, 0}}, 0.01);
 
     ASSERT_EQ(2, result.size());
 
-    std::sort(result.begin(), result.end(), [](auto pair1, auto pair2){ return pair1.second < pair2.second; });
+    std::sort(result.begin(), result.end(),
+              [](auto pair1, auto pair2) { return pair1.second < pair2.second; });
 
     EXPECT_EQ(1, result[0].first.x());
     EXPECT_NEAR(-0.40, result[0].first.y(), 0.05);
@@ -292,15 +300,18 @@ TEST(GeomUtilTest, test_angle_sweep_circles_all_single_obstacles_neg_y_to_pos_y)
     EXPECT_NEAR(0.40, result[1].first.y(), 0.05);
 }
 
-TEST(GeomUtilTest, test_angle_sweep_circles_all_single_obstacles_line_over_neg_x_axis){
+TEST(GeomUtilTest, test_angle_sweep_circles_all_single_obstacles_line_over_neg_x_axis)
+{
     // Test with a single obstacle the is centered on the line segment that we are
     // sweeping over
 
-    std::vector<std::pair<Point, Angle>> result = angleSweepCirclesAll({0,0}, {-1,1}, {-1, -1}, {{-1,0}}, 0.01);
+    std::vector<std::pair<Point, Angle>> result =
+        angleSweepCirclesAll({0, 0}, {-1, 1}, {-1, -1}, {{-1, 0}}, 0.01);
 
     ASSERT_EQ(2, result.size());
 
-    std::sort(result.begin(), result.end(), [](auto pair1, auto pair2){ return pair1.second < pair2.second; });
+    std::sort(result.begin(), result.end(),
+              [](auto pair1, auto pair2) { return pair1.second < pair2.second; });
 
     EXPECT_EQ(-1, result[0].first.x());
     EXPECT_NEAR(0.40, result[0].first.y(), 0.05);
@@ -308,15 +319,18 @@ TEST(GeomUtilTest, test_angle_sweep_circles_all_single_obstacles_line_over_neg_x
     EXPECT_NEAR(-0.40, result[1].first.y(), 0.05);
 }
 
-TEST(GeomUtilTest, test_angle_sweep_circles_all_single_obstacles_line_over_pos_y_axis){
+TEST(GeomUtilTest, test_angle_sweep_circles_all_single_obstacles_line_over_pos_y_axis)
+{
     // Test with a single obstacle the is centered on the line segment that we are
     // sweeping over
 
-    std::vector<std::pair<Point, Angle>> result = angleSweepCirclesAll({0,0}, {-1,1}, {1, 1}, {{0,1}}, 0.01);
+    std::vector<std::pair<Point, Angle>> result =
+        angleSweepCirclesAll({0, 0}, {-1, 1}, {1, 1}, {{0, 1}}, 0.01);
 
     ASSERT_EQ(2, result.size());
 
-    std::sort(result.begin(), result.end(), [](auto pair1, auto pair2){ return pair1.second < pair2.second; });
+    std::sort(result.begin(), result.end(),
+              [](auto pair1, auto pair2) { return pair1.second < pair2.second; });
 
     EXPECT_EQ(1, result[0].first.y());
     EXPECT_NEAR(0.40, result[0].first.x(), 0.05);
@@ -324,15 +338,18 @@ TEST(GeomUtilTest, test_angle_sweep_circles_all_single_obstacles_line_over_pos_y
     EXPECT_NEAR(-0.40, result[1].first.x(), 0.05);
 }
 
-TEST(GeomUtilTest, test_angle_sweep_circles_all_single_obstacles_line_over_neg_y_axis){
+TEST(GeomUtilTest, test_angle_sweep_circles_all_single_obstacles_line_over_neg_y_axis)
+{
     // Test with a single obstacle the is centered on the line segment that we are
     // sweeping over
 
-    std::vector<std::pair<Point, Angle>> result = angleSweepCirclesAll({0,0}, {-1,-1}, {1, -1}, {{0,-1}}, 0.01);
+    std::vector<std::pair<Point, Angle>> result =
+        angleSweepCirclesAll({0, 0}, {-1, -1}, {1, -1}, {{0, -1}}, 0.01);
 
     ASSERT_EQ(2, result.size());
 
-    std::sort(result.begin(), result.end(), [](auto pair1, auto pair2){ return pair1.second < pair2.second; });
+    std::sort(result.begin(), result.end(),
+              [](auto pair1, auto pair2) { return pair1.second < pair2.second; });
 
     EXPECT_EQ(-1, result[0].first.y());
     EXPECT_NEAR(-0.40, result[0].first.x(), 0.05);
