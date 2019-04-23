@@ -372,6 +372,11 @@ std::vector<std::pair<Point, Angle>> angleSweepCirclesAll(
         const Angle range1 = cent - span;
         const Angle range2 = cent + span;
 
+        if (range1 < Angle::zero() && range2 > end_angle - start_angle){
+            // Obstacle takes up entire angle we are sweeping
+            return {};
+        }
+
         if (range1 < -Angle::half() || range2 > Angle::half())
         {
             continue;
