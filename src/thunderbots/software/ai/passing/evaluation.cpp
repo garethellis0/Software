@@ -35,7 +35,9 @@ double AI::Passing::ratePass(const World& world, const AI::Passing::Pass& pass,
         in_region_quality = rectangleSigmoid(*target_region, pass.receiverPoint(), 0.1);
     }
 
-    double pass_quality = static_pass_quality * friendly_pass_rating * enemy_pass_rating *
+    double pass_quality = static_pass_quality *
+                            friendly_pass_rating *
+                            enemy_pass_rating *
                           shoot_pass_rating * in_region_quality;
 
     // Place strict limits on pass start time
@@ -43,18 +45,19 @@ double AI::Passing::ratePass(const World& world, const AI::Passing::Pass& pass,
         Util::DynamicParameters::AI::Passing::min_time_offset_for_pass_seconds.value();
     double max_pass_time_offset =
             Util::DynamicParameters::AI::Passing::max_time_offset_for_pass_seconds.value();
+
+    double time_offset = (pass.startTime() - world.ball().lastUpdateTimestamp()).getSeconds();
+//    double time_rating = (max_pass_time_offset - time_offset) / (max_pass_time_offset - min_pass_time_offset);
+//    pass_quality *= 0.5 - time_offset;
+
     // TODO (Issue #423): We should use the timestamp from the world instead of the ball
     pass_quality *= sigmoid(
         pass.startTime().getSeconds(),
         min_pass_time_offset + world.ball().lastUpdateTimestamp().getSeconds(), 0.001);
     // TODO: Test this upper bound!
-    pass_quality *= 1 - sigmoid(
-            pass.startTime().getSeconds(),
-            max_pass_time_offset + world.ball().lastUpdateTimestamp().getSeconds(), 0.001);
-
-    if (pass_quality > 0.1 && pass.startTime().getSeconds() >max_pass_time_offset + world.ball().lastUpdateTimestamp().getSeconds()){
-        std::cout << "Pass with bad time: " << pass << std::endl;
-    }
+//    pass_quality *= 1 - sigmoid(
+//            pass.startTime().getSeconds(),
+//            max_pass_time_offset + world.ball().lastUpdateTimestamp().getSeconds(), 0.001);
 
     // Place strict limits on the ball speed
     double min_pass_speed =
@@ -119,10 +122,13 @@ double AI::Passing::ratePassShootScore(const Field& field, const Team& enemy_tea
     }
 
     // TODO: Clean this crap up
-    Angle goal_angle = vertexAngle(field.friendlyGoalpostPos(), pass.passerPoint(),
-                                   field.friendlyGoalpostNeg())
+    Angle goal_angle = vertexAngle(field.enemyGoalpostNeg(), pass.receiverPoint(),
+                                   field.enemyCornerPos()).angleMod()
             .abs();
-    double net_percent_open = open_angle_to_goal.toDegrees() / goal_angle.toDegrees();
+    double net_percent_open = 0;
+    if (goal_angle > Angle::zero()){
+         net_percent_open = open_angle_to_goal.toDegrees() / goal_angle.toDegrees();
+    }
 
     // Create the shoot score by creating a sigmoid that goes to a large value as
     // we get to the ideal shoot angle.
@@ -201,8 +207,8 @@ double AI::Passing::calculateInterceptRisk(Robot enemy_robot, const Pass& pass)
     Duration time_until_pass = pass.startTime() - enemy_robot.lastUpdateTimestamp();
 
     // TODO: We need to do two checks here, one where we see if the enemy can intercept
-    // from its estimated future position/time, and one where we see if it can intercept
-    // from it's current position/time
+    //       from its estimated future position/time, and one where we see if it can intercept
+    //       from it's current position/time
 
     // Estimate where the enemy will be when we start the pass
 //    enemy_robot.updateStateToPredictedState(time_until_pass);

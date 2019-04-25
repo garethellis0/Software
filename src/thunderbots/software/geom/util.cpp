@@ -316,6 +316,7 @@ Segment getSide(const LegacyPolygon<N> &poly, unsigned int i)
     return Segment(getVertex(poly, i), getVertex(poly, (i + 1) % N));
 }
 
+// TODO: Unit test for 4 robots in net, and rewrite function FROM SCRATCH
 std::vector<std::pair<Point, Angle>> angleSweepCirclesAll(
     const Vector &src, const Vector &p1, const Vector &p2,
     const std::vector<Point> &obstacles, const double &radius)

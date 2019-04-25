@@ -291,7 +291,18 @@ TEST(GeomUtilTest, test_angle_sweep_circles_all_no_obstacles)
     EXPECT_EQ(90, result[0].second.toDegrees());
 }
 
-TEST(GeomUtilTest, test_angle_sweep_circles_all_single_obstacles_pos_y_to_neg_y)
+// TODO: Test for angle sweep circles all (4 robots blocking net, 1 off to th):
+//      p1: 3.02, -0.35
+//      p2: 3.02, 0.35
+//      obstacles:
+//          2.9326352539062501, -0.074152015686035161
+//          2.9364306640625002, -0.24578720092773437
+//          2.9275822753906251, 0.097546485900878901
+//          2.2308488769531252, 0.88921044921875003
+//      radius: 0.089999999999999997
+
+TEST(GeomUtilTest, test_ang
+le_sweep_circles_all_single_obstacles_pos_y_to_neg_y)
 {
     // Test with a single obstacle the is centered on the line segment that we are
     // sweeping over

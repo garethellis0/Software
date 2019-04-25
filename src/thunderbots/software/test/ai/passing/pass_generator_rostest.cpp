@@ -37,35 +37,36 @@ TEST_F(PassGeneratorRosTest, deleteme){
     new_enemy_team.updateRobots({
         Robot(0, Point(2, 0.0), Point(0,0), Angle::zero(), AngularVelocity::zero(), Timestamp::fromSeconds(0.3)),
         Robot(1, Point(2, 0.3), Point(0,0), Angle::zero(), AngularVelocity::zero(), Timestamp::fromSeconds(0.3)),
-        Robot(2, Point(2, -0.3), Point(0,0), Angle::zero(), AngularVelocity::zero(), Timestamp::fromSeconds(0.3)),
-        Robot(3, Point(0, -2), Point(0,0), Angle::zero(), AngularVelocity::zero(), Timestamp::fromSeconds(0.3)),
-        Robot(4, Point(0, 2), Point(0,0), Angle::zero(), AngularVelocity::zero(), Timestamp::fromSeconds(0.3)),
+        Robot(2, Point(2, -0.3), Point(0,0), Angle::zero(), AngularVelocity::zero(), Timestamp::fromSeconds(0.3))
+//        Robot(3, Point(0, -2), Point(0,0), Angle::zero(), AngularVelocity::zero(), Timestamp::fromSeconds(0.3)),
+//        Robot(4, Point(0, 2), Point(0,0), Angle::zero(), AngularVelocity::zero(), Timestamp::fromSeconds(0.3)),
                                 });
     world.updateEnemyTeamState(new_enemy_team);
 
 
-    AI::Passing::PassGenerator pass_generator(0.0);
+    AI::Passing::PassGenerator pass_generator(0.0, world);
+//        pass_generator.setWorld(world);
 
     do
     {
-        // Display the world
-        Util::CanvasMessenger::getInstance()->drawField(world.field());
-        for(const auto& r : world.friendlyTeam().getAllRobots()) {
-            Util::CanvasMessenger::getInstance()->drawPoint(r.position(), 0.2, 0, 100, 0, 255);
-        }
-        for(const auto& r : world.enemyTeam().getAllRobots()) {
-            Util::CanvasMessenger::getInstance()->drawPoint(r.position(), 0.2, 100, 0, 0, 255);
-        }
-        Util::CanvasMessenger::getInstance()->drawPoint(world.ball().position(), 0.15, 255, 140, 0, 255);
-
-
-//        Util::CanvasMessenger::getInstance()->drawPoint(world.field().friendlyCornerPos(), 0.2, 255, 0, 0, 255);
-//        Util::CanvasMessenger::getInstance()->drawPoint(world.field().enemyCornerPos(), 0.2, 0, 255, 0, 255);
-//        Util::CanvasMessenger::getInstance()->drawPoint(world.field().friendlyCornerNeg(), 0.2, 0, 0, 255, 255);
-//        Util::CanvasMessenger::getInstance()->drawPoint(world.field().enemyCornerNeg(), 0.2, 255, 0, 0, 255);
-//        Util::CanvasMessenger::getInstance()->publishAndClearLayers();
-
-        pass_generator.setWorld(world);
+//        // Display the world
+//        Util::CanvasMessenger::getInstance()->drawField(world.field());
+//        for(const auto& r : world.friendlyTeam().getAllRobots()) {
+//            Util::CanvasMessenger::getInstance()->drawPoint(r.position(), 0.2, 0, 100, 0, 255);
+//        }
+//        for(const auto& r : world.enemyTeam().getAllRobots()) {
+//            Util::CanvasMessenger::getInstance()->drawPoint(r.position(), 0.2, 100, 0, 0, 255);
+//        }
+//        Util::CanvasMessenger::getInstance()->drawPoint(world.ball().position(), 0.15, 255, 140, 0, 255);
+//
+//
+////        Util::CanvasMessenger::getInstance()->drawPoint(world.field().friendlyCornerPos(), 0.2, 255, 0, 0, 255);
+////        Util::CanvasMessenger::getInstance()->drawPoint(world.field().enemyCornerPos(), 0.2, 0, 255, 0, 255);
+////        Util::CanvasMessenger::getInstance()->drawPoint(world.field().friendlyCornerNeg(), 0.2, 0, 0, 255, 255);
+////        Util::CanvasMessenger::getInstance()->drawPoint(world.field().enemyCornerNeg(), 0.2, 255, 0, 0, 255);
+////        Util::CanvasMessenger::getInstance()->publishAndClearLayers();
+//
+//        pass_generator.setWorld(world);
         std::this_thread::yield();
     } while (true);
 }

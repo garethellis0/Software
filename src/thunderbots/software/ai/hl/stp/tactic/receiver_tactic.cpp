@@ -138,9 +138,9 @@ std::unique_ptr<Intent> ReceiverTactic::calculateNextIntent(
             // rather then the center of the robot
             Point ideal_position = closest_ball_pos - ideal_orientation_vec.norm(
                                                           DIST_TO_FRONT_OF_ROBOT_METERS +
-                                                          BALL_MAX_RADIUS_METERS);
+                                                          BALL_MAX_RADIUS_METERS*1.5);
 
-            std::cout << "ONE TIME" << std::endl;
+            std::cout << "ONE TIME: " << best_shot_target << std::endl;
 
             yield(move_action.updateStateAndGetNextIntent(
                 *robot, ideal_position, ideal_orientation, 0, false, true));

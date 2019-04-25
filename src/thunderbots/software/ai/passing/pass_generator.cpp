@@ -12,8 +12,10 @@
 using namespace AI::Passing;
 using namespace Util::DynamicParameters::AI::Passing;
 
-PassGenerator::PassGenerator(double min_reasonable_pass_quality)
+// TODO:
+PassGenerator::PassGenerator(double min_reasonable_pass_quality, const World& world)
     : min_reasonable_pass_quality(min_reasonable_pass_quality),
+      new_world(world),
       optimizer(optimizer_param_weights),
       best_known_pass(std::nullopt),
       target_region(std::nullopt),
@@ -32,11 +34,17 @@ PassGenerator::PassGenerator(double min_reasonable_pass_quality)
 
 void PassGenerator::setWorld(World world)
 {
-    // Take ownership of the world for the duration of this function
-    std::lock_guard<std::mutex> world_lock(world_mutex);
+//    // Take ownership of the world for the duration of this function
+//    std::lock_guard<std::mutex> world_lock(world_mutex);
+//
+//    // Update the world
+//    this->world = std::move(world);
 
-    // Update the world
-    this->world = std::move(world);
+    // Take ownership of the world for the duration of this function
+    std::lock_guard<std::mutex> new_world_lock(new_world_mutex);
+
+//    // Update the world
+//    this->new_world = std::move(world);
 }
 
 void PassGenerator::setPasserPoint(Point passer_point)
@@ -52,6 +60,14 @@ std::optional<Pass> PassGenerator::getBestPassSoFar()
 {
     // Take ownership of the best_known_pass for the duration of this function
     std::lock_guard<std::mutex> best_known_pass_lock(best_known_pass_mutex);
+//    std::lock_guard<std::mutex> world_lock(world_mutex);
+
+    if (best_known_pass){
+        std::cout << "Score: " << ratePass(*best_known_pass) << std::endl;
+        std::cout << "Offset: " << (best_known_pass->startTime() - world.ball().lastUpdateTimestamp()).getSeconds() << std::endl;
+        std::cout << *best_known_pass << std::endl;
+        std::cout << passes_to_optimize[0] << std::endl;
+    }
 
     return best_known_pass;
 }
@@ -87,6 +103,12 @@ void PassGenerator::continuouslyGeneratePasses()
     in_destructor_mutex.lock();
     while (!in_destructor)
     {
+        world_mutex.lock();
+        new_world_mutex.lock();
+        world = new_world;
+        new_world_mutex.unlock();
+        world_mutex.unlock();
+
         // Give up ownership of the in_destructor flag now that we're done the
         // conditional check
         in_destructor_mutex.unlock();
@@ -131,6 +153,7 @@ void PassGenerator::visualizeStuff() {
     world_mutex.lock();
     double field_length = world.field().length();
     double field_width = world.field().width();
+    Timestamp pass_time = world.ball().lastUpdateTimestamp() + Duration::fromSeconds(0.0);
     world_mutex.unlock();
 
     // Draw the gradient
@@ -143,7 +166,7 @@ void PassGenerator::visualizeStuff() {
         for(int i = 0; i < field_length * res; i++){
             for(int j = 0; j < field_width * res; j++){
                 Point p(i * 1/res - world.field().length()/2, j*1/res - world.field().width() / 2);
-                pass = Pass(pass.passerPoint(), p, pass.speed(), pass.startTime());
+                pass = Pass(pass.passerPoint(), p, 4, pass_time);
                 score = ratePass(pass);
                 painter->drawPoint(p, 1/res, 0, std::ceil(255.0 * score*4), std::ceil(255.0 * (1 - score*4)), 150);
             }
@@ -164,6 +187,11 @@ void PassGenerator::optimizePasses()
                 Pass pass = convertArrayToPass(pass_array);
                 return ratePass(pass);
             } catch (std::invalid_argument& e){
+                std::cout << "EXCEPTION FOR: ";
+                for (auto v : pass_array){
+                    std::cout << v;
+                }
+                std::cout << std::endl;
                 return 0.0;
             }
         };
@@ -184,6 +212,7 @@ void PassGenerator::optimizePasses()
         }
         catch (std::invalid_argument& e)
         {
+            std::cout << "EXCEPTION3 FOR: ";
             // Sometimes the gradient descent algorithm could return an invalid pass, if
             // so, we can just ignore it and carry on
         }
@@ -197,22 +226,24 @@ void PassGenerator::pruneAndReplacePasses()
     std::sort(passes_to_optimize.begin(), passes_to_optimize.end(),
               [this](Pass p1, Pass p2) { return comparePassQuality(p1, p2); });
 
-    // Merge Passes That Are Similar
-    // We start by assuming that the most similar passes will be right beside each other,
-    // then iterate over the entire list, building a new list as we go by only adding
-    // elements when they are dissimilar enough from the last element we added
-    // NOTE: This flips the passes so they are sorted by increasing quality
-    passes_to_optimize = std::accumulate(
-        passes_to_optimize.begin(), passes_to_optimize.end(), std::vector<Pass>(),
-        [this](std::vector<Pass>& passes, Pass curr_pass) {
-            // Check if we have no passes, or if this pass is too similar to the
-            // last pass we added to the list
-            if (passes.empty() || !passesEqual(curr_pass, passes.back()))
-            {
-                passes.emplace_back(curr_pass);
-            }
-            return passes;
-        });
+//    // Merge Passes That Are Similar
+//    // We start by assuming that the most similar passes will be right beside each other,
+//    // then iterate over the entire list, building a new list as we go by only adding
+//    // elements when they are dissimilar enough from the last element we added
+//    // NOTE: This flips the passes so they are sorted by increasing quality
+//    passes_to_optimize = std::accumulate(
+//        passes_to_optimize.begin(), passes_to_optimize.end(), std::vector<Pass>(),
+//        [this](std::vector<Pass>& passes, Pass curr_pass) {
+//            // Check if we have no passes, or if this pass is too similar to the
+//            // last pass we added to the list
+//            if (passes.empty() || !passesEqual(curr_pass, passes.back()))
+//            {
+//                passes.emplace_back(curr_pass);
+//            }
+//            return passes;
+//        });
+
+    double score1 = ratePass(passes_to_optimize[0]);
 
     // Replace the least promising passes with newly generated passes
     if (num_passes_to_keep_after_pruning.value() < num_passes_to_optimize.value())
@@ -224,14 +255,30 @@ void PassGenerator::pruneAndReplacePasses()
                 passes_to_optimize.begin() + num_passes_to_keep_after_pruning.value(),
                 passes_to_optimize.end());
         }
+    }
 
-        // Generate new passes to replace the ones we just removed
-        std::vector<Pass> new_passes =
+    // Sort the passes by decreasing quality
+    std::sort(passes_to_optimize.begin(), passes_to_optimize.end(),
+              [this](Pass p1, Pass p2) { return comparePassQuality(p1, p2); });
+    double score2 = ratePass(passes_to_optimize[0]);
+    if (score1 != score2){
+        std::cout << "VIOLATED" << std::endl;
+    }
+
+    // Generate new passes to replace the ones we just removed
+    std::vector<Pass> new_passes =
             generatePasses(num_passes_to_optimize.value() - passes_to_optimize.size());
 
-        // Append our newly generated passes to replace the passes we just removed
-        passes_to_optimize.insert(passes_to_optimize.end(), new_passes.begin(),
-                                  new_passes.end());
+    // Append our newly generated passes to replace the passes we just removed
+    passes_to_optimize.insert(passes_to_optimize.end(), new_passes.begin(),
+                              new_passes.end());
+
+    // Sort the passes by decreasing quality
+    std::sort(passes_to_optimize.begin(), passes_to_optimize.end(),
+              [this](Pass p1, Pass p2) { return comparePassQuality(p1, p2); });
+    double score3 = ratePass(passes_to_optimize[0]);
+    if (score1 > score3){
+        std::cout << "VIOLATED3" << std::endl;
     }
 }
 
@@ -267,6 +314,8 @@ double PassGenerator::ratePass(Pass pass)
     } catch (std::invalid_argument& e){
         // If the pass is invalid, just rate it as poorly as possible
         rating = 0;
+
+        std::cout << "EXCEPTION2 FOR: " << pass << std::endl;
     }
 
     return rating;
@@ -343,6 +392,13 @@ bool PassGenerator::passesEqual(AI::Passing::Pass pass1, AI::Passing::Pass pass2
 std::array<double, PassGenerator::NUM_PARAMS_TO_OPTIMIZE>
 PassGenerator::convertPassToArray(Pass pass)
 {
+    // Take ownership of the world for the duration of this function
+    std::lock_guard<std::mutex> world_lock(world_mutex);
+
+    // TODO (Issue #423): Need to use the world timestamp here when we have that
+    // TODO: What if this value is negative???
+    Duration pass_time_offset = pass.startTime() - world.ball().lastUpdateTimestamp();
+
     return {pass.receiverPoint().x(), pass.receiverPoint().y(), pass.speed(),
             pass.startTime().getSeconds()};
 }
@@ -350,12 +406,15 @@ PassGenerator::convertPassToArray(Pass pass)
 Pass PassGenerator::convertArrayToPass(
     std::array<double, PassGenerator::NUM_PARAMS_TO_OPTIMIZE> array)
 {
-    // Take ownership of the passer_point for the duration of this function
+    // Take ownership of the passer_point and world for the duration of this function
     std::lock_guard<std::mutex> passer_point_lock(passer_point_mutex);
+    std::lock_guard<std::mutex> world_lock(world_mutex);
 
     // Clamp the time to be >= 0, otherwise the TimeStamp will throw an exception
-    double clamped_time = std::max(0.0, array.at(3));
+    // TODO: What if this value is negative??
+    double time_offset_seconds = std::max(0.0, array.at(3));
+    Timestamp start_time = world.ball().lastUpdateTimestamp() + Duration::fromSeconds(time_offset_seconds);
 
     return Pass(passer_point, Point(array.at(0), array.at(1)), array.at(2),
-                Timestamp::fromSeconds(clamped_time));
+                Timestamp::fromSeconds(time_offset_seconds));
 }

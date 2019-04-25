@@ -53,7 +53,7 @@ namespace AI::Passing
          *                                    quality for a pass to be considered
          *                                    "reasonable", with higher being better
          */
-        explicit PassGenerator(double min_reasonable_pass_quality);
+        explicit PassGenerator(double min_reasonable_pass_quality, const World& world);
 
         /**
          * Updates the world
@@ -110,7 +110,7 @@ namespace AI::Passing
         // Weights used to normalize the parameters that we pass to GradientDescent
         // (see the GradientDescent documentation for details)
         static constexpr double PASS_SPACE_WEIGHT                          = 0.01;
-        static constexpr double PASS_TIME_WEIGHT                           = 1;
+        static constexpr double PASS_TIME_WEIGHT                           = 0.1;
         static constexpr double PASS_SPEED_WEIGHT                          = 1;
         std::array<double, NUM_PARAMS_TO_OPTIMIZE> optimizer_param_weights = {
             PASS_SPACE_WEIGHT, PASS_SPACE_WEIGHT, PASS_TIME_WEIGHT, PASS_SPEED_WEIGHT};
@@ -146,7 +146,7 @@ namespace AI::Passing
          *         form: {receiver_point.x, receiver_point.y, pass_speed_m_per_s
          *                pass_start_time}
          */
-        static std::array<double, NUM_PARAMS_TO_OPTIMIZE> convertPassToArray(Pass pass);
+        std::array<double, NUM_PARAMS_TO_OPTIMIZE> convertPassToArray(Pass pass);
 
         /**
          * Convert a given array to a Pass
@@ -232,6 +232,9 @@ namespace AI::Passing
         // TODO: Make this an optional, we should not optimize any passes until we
         //       have a start point
         World world;
+
+        std::mutex new_world_mutex;
+        World new_world;
 
         // The mutex for the passer_point
         std::mutex passer_point_mutex;
