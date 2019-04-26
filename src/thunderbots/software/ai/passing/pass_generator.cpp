@@ -62,12 +62,19 @@ std::optional<Pass> PassGenerator::getBestPassSoFar()
     std::lock_guard<std::mutex> best_known_pass_lock(best_known_pass_mutex);
 //    std::lock_guard<std::mutex> world_lock(world_mutex);
 
-    if (best_known_pass){
-        std::cout << "Score: " << ratePass(*best_known_pass) << std::endl;
-        std::cout << "Offset: " << (best_known_pass->startTime() - world.ball().lastUpdateTimestamp()).getSeconds() << std::endl;
-        std::cout << *best_known_pass << std::endl;
-        std::cout << passes_to_optimize[0] << std::endl;
+    if(!passes_to_optimize.empty()){
+        std::sort(passes_to_optimize.begin(), passes_to_optimize.end(),
+                  [this](Pass p1, Pass p2) { return comparePassQuality(p1, p2); });
+        return passes_to_optimize[0];
     }
+    return std::nullopt;
+
+//    if (best_known_pass){
+//        std::cout << "Score: " << ratePass(*best_known_pass) << std::endl;
+//        std::cout << "Offset: " << (best_known_pass->startTime() - world.ball().lastUpdateTimestamp()).getSeconds() << std::endl;
+//        std::cout << *best_known_pass << std::endl;
+//        std::cout << passes_to_optimize[0] << std::endl;
+//    }
 
     return best_known_pass;
 }
@@ -113,7 +120,13 @@ void PassGenerator::continuouslyGeneratePasses()
         // conditional check
         in_destructor_mutex.unlock();
 
+        if (getBestPassSoFar()){
+            std::cout << "Score before optimize: " << ratePass(*getBestPassSoFar()) << ":  " << *getBestPassSoFar() << std::endl;
+        }
         optimizePasses();
+        if (getBestPassSoFar()){
+            std::cout << "Score after optimize: " << ratePass(*getBestPassSoFar()) << ":  " << *getBestPassSoFar() << std::endl << std::endl;
+        }
         pruneAndReplacePasses();
         saveBestPass();
 

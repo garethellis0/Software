@@ -53,19 +53,19 @@ double AI::Passing::ratePass(const World& world, const AI::Passing::Pass& pass,
     // TODO (Issue #423): We should use the timestamp from the world instead of the ball
     pass_quality *= sigmoid(
         pass.startTime().getSeconds(),
-        min_pass_time_offset + world.ball().lastUpdateTimestamp().getSeconds(), 0.001);
+        min_pass_time_offset + world.ball().lastUpdateTimestamp().getSeconds(), 0.5);
     // TODO: Test this upper bound!
-//    pass_quality *= 1 - sigmoid(
-//            pass.startTime().getSeconds(),
-//            max_pass_time_offset + world.ball().lastUpdateTimestamp().getSeconds(), 0.001);
+    pass_quality *= 1 - sigmoid(
+            pass.startTime().getSeconds(),
+            max_pass_time_offset + world.ball().lastUpdateTimestamp().getSeconds(), 0.5);
 
     // Place strict limits on the ball speed
     double min_pass_speed =
         Util::DynamicParameters::AI::Passing::min_pass_speed_m_per_s.value();
     double max_pass_speed =
         Util::DynamicParameters::AI::Passing::max_pass_speed_m_per_s.value();
-    pass_quality *= sigmoid(pass.speed(), min_pass_speed, 0.001);
-    pass_quality *= 1 - sigmoid(pass.speed(), max_pass_speed, 0.001);
+    pass_quality *= sigmoid(pass.speed(), min_pass_speed, 0.5);
+    pass_quality *= 1 - sigmoid(pass.speed(), max_pass_speed, 0.5);
 
     return pass_quality;
 }
@@ -246,18 +246,22 @@ double AI::Passing::calculateInterceptRisk(Robot enemy_robot, const Pass& pass)
         (enemy_robot_time_to_pass_receive_position - (ball_time_to_pass_receive_position + pass_time_offset))
             .getSeconds();
 
+    // TODO: IGNORE *most* todo's here, THIS WORKS
+    // TODO: We might not take the smooth max here anymore?
     // We take a smooth "max" of these two values using a log-sum-exp function
     // https://en.wikipedia.org/wiki/LogSumExp (NOTE: we use the more computationally
     // stable version mentioned towards the bottom of the wiki page)
-    // TODO: Update comment here, we're now taking the MINIMUM
-    double max_time_diff_unsmooth = std::max(-robot_ball_time_diff_at_closest_pass_point,
+    // TODO: Update comment here, we're now taking the MINIMUM and negating it
+    double min_time_diff_unsmooth = std::max(-robot_ball_time_diff_at_closest_pass_point,
                                              -robot_ball_time_diff_at_pass_receive_point);
-    double max_time_diff_smooth =
-        max_time_diff_unsmooth +
-        std::log(std::exp(-robot_ball_time_diff_at_closest_pass_point -
-                          max_time_diff_unsmooth) +
-                 std::exp(-robot_ball_time_diff_at_pass_receive_point -
-                          max_time_diff_unsmooth));
+    // TODO: Figure out  how to do smooth min here
+//    double min_time_diff_smooth =
+//            -(min_time_diff_unsmooth +
+//        std::log(std::exp(-robot_ball_time_diff_at_closest_pass_point -
+//                          min_time_diff_unsmooth) +
+//                 std::exp(-robot_ball_time_diff_at_pass_receive_point -
+//                          min_time_diff_unsmooth)));
+    double min_time_diff_smooth = min_time_diff_unsmooth;
 
     // Whether or not the enemy will be able to intercept the pass can be determined
     // by whether or not they will be able to reach the pass receive position before
@@ -266,7 +270,7 @@ double AI::Passing::calculateInterceptRisk(Robot enemy_robot, const Pass& pass)
     // negative values. We then subtract this from 1 to essentially invert it, getting
     // a sigmoid that goes to 1 at negative values, and 0 at positive values.
     // TODO: This used to be `1 - sigmoid(...`, we changed it because of the max/min changes above. UPDATE COMMENT ACCORDINGLY
-    return sigmoid(max_time_diff_smooth, 0, 1);
+    return sigmoid(min_time_diff_smooth, 0, 1);
 }
 
 double AI::Passing::ratePassFriendlyCapability(const Team& friendly_team,

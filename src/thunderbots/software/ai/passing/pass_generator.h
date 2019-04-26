@@ -93,6 +93,7 @@ namespace AI::Passing
          * @return The best currently known pass, or `std::nullopt` if there is no
          *         reasonable pass
          */
+         // TODO: THis now returns the best pass so far, no longer with the score
         std::optional<Pass> getBestPassSoFar();
 
         /**
@@ -111,7 +112,7 @@ namespace AI::Passing
         // (see the GradientDescent documentation for details)
         static constexpr double PASS_SPACE_WEIGHT                          = 0.01;
         static constexpr double PASS_TIME_WEIGHT                           = 0.1;
-        static constexpr double PASS_SPEED_WEIGHT                          = 1;
+        static constexpr double PASS_SPEED_WEIGHT                          = 0.1;
         std::array<double, NUM_PARAMS_TO_OPTIMIZE> optimizer_param_weights = {
             PASS_SPACE_WEIGHT, PASS_SPACE_WEIGHT, PASS_TIME_WEIGHT, PASS_SPEED_WEIGHT};
 
