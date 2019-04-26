@@ -21,7 +21,7 @@ class CherryPickTactic : public Tactic
     /**
      * Creates a new CherryPickTactic
      */
-    explicit CherryPickTactic(const Rectangle& target_region, bool loop_forever);
+    explicit CherryPickTactic(const Rectangle &target_region, const World &world, bool loop_forever);
 
     std::string getName() const override;
 

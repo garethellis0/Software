@@ -33,28 +33,30 @@ std::vector<std::shared_ptr<Tactic>> ExamplePlay::getNextTactics(
     auto passer = std::make_shared<PasserTactic>(pass, world.ball().lastUpdateTimestamp(), false);
     auto receiver = std::make_shared<ReceiverTactic>(world.field(), world.friendlyTeam(), world.enemyTeam(), pass, world.ball(), false);
 
-    AI::Passing::PassGenerator pass_generator(0.00);
-
-    do {
-        pass_generator.setWorld(world);
-        pass_generator.setPasserPoint({2.7,-1.8});
-        auto pass_opt = pass_generator.getBestPassSoFar();
-//        if (pass_opt){
-//            std::cout << *pass_opt << std::endl;
-//        }
-    } while(true);
-    pass = *pass_generator.getBestPassSoFar();
-
-    do {
-        pass_generator.setWorld(world);
-        pass_generator.setPasserPoint(world.ball().position());
-    } while(!pass_generator.getBestPassSoFar());
-    pass = *pass_generator.getBestPassSoFar();
+    AI::Passing::PassGenerator pass_generator(0.00, world);
+//
+//    do {
+//        pass_generator.setWorld(world);
+//        pass_generator.setPasserPoint({2.7,-1.8});
+//        auto pass_opt = pass_generator.getBestPassSoFar();
+////        if (pass_opt){
+////            std::cout << *pass_opt << std::endl;
+////        }
+//    } while(true);
+//    pass = *pass_generator.getBestPassSoFar();
+//
+//    do {
+//        pass_generator.setWorld(world);
+//        pass_generator.setPasserPoint(world.ball().position());
+//    } while(!pass_generator.getBestPassSoFar());
+//    pass = *pass_generator.getBestPassSoFar();
 
     do
     {
         passer->updateParams(pass, world.ball().lastUpdateTimestamp());
         receiver->updateParams(world.friendlyTeam(), world.enemyTeam(), pass, world.ball());
+        pass_generator.setWorld(world);
+        pass_generator.setPasserPoint({2.7,-1.8});
 //        pass_generator.setWorld(world);
 //        pass_generator.setPasserPoint(world.ball().position());
 //        auto best_pass_opt  = pass_generator.getBestPassSoFar();
@@ -67,7 +69,8 @@ std::vector<std::shared_ptr<Tactic>> ExamplePlay::getNextTactics(
 //        } else {
 //            yield({});
 //        }
-        yield({passer, receiver});
+//        yield({passer, receiver});
+        yield({});
 
     } while (true);
 }

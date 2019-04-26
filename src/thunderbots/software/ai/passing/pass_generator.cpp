@@ -146,6 +146,7 @@ void PassGenerator::visualizeStuff() {
     // Take ownership of the world for the duration of this function
 //    std::lock_guard<std::mutex> world_lock(world_mutex);
 //    std::lock_guard<std::mutex> target_region_lock(target_region_mutex);
+    std::lock_guard<std::mutex> passer_point_lock(passer_point_mutex);
 
     // Draw all the points we have so far
     auto painter = Util::CanvasMessenger::getInstance();
@@ -164,29 +165,45 @@ void PassGenerator::visualizeStuff() {
 
     // Get field characteristics
     world_mutex.lock();
+    Rectangle field_area(world.field().enemyCornerNeg(), world.field().friendlyCornerPos());
     double field_length = world.field().length();
     double field_width = world.field().width();
     Timestamp pass_time = world.ball().lastUpdateTimestamp() + Duration::fromSeconds(0.0);
     world_mutex.unlock();
 
-    // Draw the gradient
-    std::optional<Pass> pass_opt = getBestPassSoFar();
-    if (pass_opt){
-        Pass pass = *pass_opt;
-        double score = ratePass(pass);
-        painter->drawPoint(pass.receiverPoint(), 0.1, 0, 255, 0, 255);
-        painter->drawPoint(pass.passerPoint(), 0.2, 255, 0, 0, 255);
-        for(int i = 0; i < field_length * res; i++){
-            for(int j = 0; j < field_width * res; j++){
-                Point p(i * 1/res - world.field().length()/2, j*1/res - world.field().width() / 2);
-                pass = Pass(pass.passerPoint(), p, 4, pass_time);
-                score = ratePass(pass);
-                painter->drawPoint(p, 1/res, 0, std::round(255.0 * score*4), std::round(255.0 * (1 - score*4)), 150);
-            }
-        }
-    }
+    const auto objective_function =
+            [&](Point p) {
+                try{
+                    double pass_speed = (max_pass_speed_m_per_s.value() + min_pass_speed_m_per_s.value())/2;
+                    Pass pass(passer_point, p, pass_speed, pass_time);
+                    return ratePass(pass);
+                } catch (std::invalid_argument& e){
+                    return 0.0;
+                }
+            };
 
-    painter->publishAndClearLayers();
+    painter->clearLayer(Util::CanvasMessenger::Layer::PASS_GENERATION);
+    painter->drawGradient(Util::CanvasMessenger::Layer::PASS_GENERATION, objective_function,
+            field_area, 0, 1, {0, 0, 255, 128}, {255, 0, 0, 128}, 10);
+
+    // Draw the gradient
+//    std::optional<Pass> pass_opt = getBestPassSoFar();
+//    if (pass_opt){
+//        Pass pass = *pass_opt;
+//        double score = ratePass(pass);
+//        painter->drawPoint(pass.receiverPoint(), 0.1, 0, 255, 0, 255);
+//        painter->drawPoint(pass.passerPoint(), 0.2, 255, 0, 0, 255);
+//        for(int i = 0; i < field_length * res; i++){
+//            for(int j = 0; j < field_width * res; j++){
+//                Point p(i * 1/res - world.field().length()/2, j*1/res - world.field().width() / 2);
+//                pass = Pass(pass.passerPoint(), p, 4, pass_time);
+//                score = ratePass(pass);
+//                painter->drawPoint(p, 1/res, 0, std::round(255.0 * score*4), std::round(255.0 * (1 - score*4)), 150);
+//            }
+//        }
+//    }
+//
+//    painter->publishAndClearLayers();
 
 }
 
