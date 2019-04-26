@@ -148,8 +148,8 @@ namespace Util
                                     int opacity) {
         Sprite sprite;
 
-        sprite.x = p.x() * 100 - (radius*100/2);
-        sprite.y =  -p.y() * 100 - (radius*100/2);
+        sprite.x = std::round(p.x() * 100 - (radius*100/2));
+        sprite.y =  std::round(-p.y() * 100 - (radius*100/2));
 
         sprite.width = radius * 100;
         sprite.height = radius * 100;
@@ -169,8 +169,8 @@ namespace Util
         Sprite field_sprite;
         field_sprite.width = field.length() * 100;
         field_sprite.height = field.width() * 100;
-        field_sprite.x = -field.length() * 100/2;
-        field_sprite.y = -field.width() * 100/2;
+        field_sprite.x = std::round(-field.length() * 100/2);
+        field_sprite.y = std::round(-field.width() * 100/2);
 
         drawSprite(0, field_sprite);
     }

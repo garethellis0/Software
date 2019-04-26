@@ -160,7 +160,7 @@ void PassGenerator::visualizeStuff() {
 //        score = ratePass(pass);
 //    }
 
-    double res = 5;
+    double res = 10;
 
     // Get field characteristics
     world_mutex.lock();
@@ -181,7 +181,7 @@ void PassGenerator::visualizeStuff() {
                 Point p(i * 1/res - world.field().length()/2, j*1/res - world.field().width() / 2);
                 pass = Pass(pass.passerPoint(), p, 4, pass_time);
                 score = ratePass(pass);
-                painter->drawPoint(p, 1/res, 0, std::ceil(255.0 * score*4), std::ceil(255.0 * (1 - score*4)), 150);
+                painter->drawPoint(p, 1/res, 0, std::round(255.0 * score*4), std::round(255.0 * (1 - score*4)), 150);
             }
         }
     }
