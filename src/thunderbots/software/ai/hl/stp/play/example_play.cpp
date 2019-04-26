@@ -53,10 +53,16 @@ std::vector<std::shared_ptr<Tactic>> ExamplePlay::getNextTactics(
 
     do
     {
-        passer->updateParams(pass, world.ball().lastUpdateTimestamp());
-        receiver->updateParams(world.friendlyTeam(), world.enemyTeam(), pass, world.ball());
+//        pass = AI::Passing::Pass(world.ball().position(), {0.5, -0.2}, 5, pass_start_time);
+//        passer->updateParams(pass, world.ball().lastUpdateTimestamp());
+//        receiver->updateParams(world.friendlyTeam(), world.enemyTeam(), pass, world.ball());
         pass_generator.setWorld(world);
-        pass_generator.setPasserPoint({2.7,-1.8});
+        pass_generator.setPasserPoint(world.ball().position());
+        auto best_pass = pass_generator.getBestPassSoFar();
+//        if (best_pass){
+//            passer->updateParams(*best_pass, world.ball().lastUpdateTimestamp());
+//            receiver->updateParams(world.friendlyTeam(), world.enemyTeam(), *best_pass, world.ball());
+//        }
 //        pass_generator.setWorld(world);
 //        pass_generator.setPasserPoint(world.ball().position());
 //        auto best_pass_opt  = pass_generator.getBestPassSoFar();

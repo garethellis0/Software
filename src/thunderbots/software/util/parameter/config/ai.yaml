@@ -56,7 +56,7 @@ AI:
     min_pass_speed_m_per_s:
       min: 0
       max: 5
-      default: 2.0
+      default: 3.0
       type: "double"
       description: "The minimum pass speed (in m/s)"
     max_pass_speed_m_per_s:

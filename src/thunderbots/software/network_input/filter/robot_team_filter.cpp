@@ -11,50 +11,29 @@ Team RobotTeamFilter::getFilteredData(
     const Team &current_team_state,
     const std::vector<SSLRobotDetection> &new_robot_detections)
 {
-    Team new_team_state = current_team_state;
-
-    for (auto robot_detection : new_robot_detections)
-    {
-        if (new_team_state.getRobotById(robot_detection.id))
-        {
-            Robot previous_robot_state = *new_team_state.getRobotById(robot_detection.id);
-
-            // Discard any data with an older timestamp. It's likely from a frame that
-            // hasn't been updated yet
-            if (previous_robot_state.lastUpdateTimestamp() >= robot_detection.timestamp)
-            {
-                continue;
-            }
-
-            Duration time_diff =
-                robot_detection.timestamp - previous_robot_state.lastUpdateTimestamp();
-
-            Vector new_robot_velocity =
-                robot_detection.position - previous_robot_state.position();
-            new_robot_velocity = new_robot_velocity.norm(new_robot_velocity.len() /
-                                                         time_diff.getSeconds());
-
-            AngularVelocity new_robot_angular_velocity =
-                robot_detection.orientation - previous_robot_state.orientation();
-            new_robot_angular_velocity /= time_diff.getSeconds();
-
-            Robot new_robot_state =
-                Robot(robot_detection.id, robot_detection.position, new_robot_velocity,
-                      robot_detection.orientation, new_robot_angular_velocity,
-                      robot_detection.timestamp);
-
-            new_team_state.updateRobots({new_robot_state});
-        }
-        else
-        {
-            Robot new_robot_state =
-                Robot(robot_detection.id, robot_detection.position, Vector(69, 69),
-                      robot_detection.orientation, AngularVelocity::zero(),
-                      robot_detection.timestamp);
-
-            new_team_state.updateRobots({new_robot_state});
+    for(auto d : new_robot_detections) {
+        // Add filters for any robot we haven't seen before
+        if(robot_filters.find(d.id) == robot_filters.end()) {
+            robot_filters.insert({d.id, RobotFilter(d.id)});
         }
     }
+
+    std::vector<FilteredRobotData> new_filtered_robot_data;
+    for(auto it = robot_filters.begin(); it != robot_filters.end(); it++) {
+        auto data = it->second.getFilteredData(new_robot_detections);
+        if(data) {
+            new_filtered_robot_data.emplace_back(*data);
+        }
+    }
+
+    std::vector<Robot> new_robots;
+    for(auto nfrd : new_filtered_robot_data) {
+        new_robots.emplace_back(
+                Robot(nfrd.id, nfrd.position, nfrd.velocity, nfrd.orientation, nfrd.angular_velocity, nfrd.timestamp));
+    }
+
+    Team new_team_state = current_team_state;
+    new_team_state.updateRobots(new_robots);
 
     return new_team_state;
 }

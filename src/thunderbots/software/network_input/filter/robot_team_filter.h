@@ -24,4 +24,6 @@ class RobotTeamFilter
      */
     Team getFilteredData(const Team& current_team_state,
                          const std::vector<SSLRobotDetection>& new_robot_detections);
+
+    std::map<int, RobotFilter> robot_filters;
 };

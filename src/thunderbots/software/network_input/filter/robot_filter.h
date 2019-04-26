@@ -5,6 +5,8 @@
 #include "geom/angle.h"
 #include "geom/point.h"
 #include "util/time/timestamp.h"
+#include <boost/circular_buffer.hpp>
+#include <optional>
 
 /**
  * A lightweight datatype used to input new data into the filter.
@@ -54,8 +56,8 @@ class RobotFilter
      *
      * @return The filtered data for the robot
      */
-    FilteredRobotData getFilteredData(
-        const std::vector<SSLRobotDetection> &new_robot_data);
+    std::optional<FilteredRobotData> getFilteredData(
+            const std::vector<SSLRobotDetection> &new_robot_data);
 
     /**
      * Returns the id of the Robot that this filter is filtering for
@@ -66,4 +68,5 @@ class RobotFilter
 
    private:
     unsigned int robot_id;
+    boost::circular_buffer<FilteredRobotData> previous_states;
 };

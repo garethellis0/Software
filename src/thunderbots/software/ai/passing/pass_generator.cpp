@@ -44,7 +44,7 @@ void PassGenerator::setWorld(World world)
     std::lock_guard<std::mutex> new_world_lock(new_world_mutex);
 
 //    // Update the world
-//    this->new_world = std::move(world);
+    this->new_world = std::move(world);
 }
 
 void PassGenerator::setPasserPoint(Point passer_point)
@@ -62,12 +62,12 @@ std::optional<Pass> PassGenerator::getBestPassSoFar()
     std::lock_guard<std::mutex> best_known_pass_lock(best_known_pass_mutex);
 //    std::lock_guard<std::mutex> world_lock(world_mutex);
 
-    if(!passes_to_optimize.empty()){
-        std::sort(passes_to_optimize.begin(), passes_to_optimize.end(),
-                  [this](Pass p1, Pass p2) { return comparePassQuality(p1, p2); });
-        return passes_to_optimize[0];
-    }
-    return std::nullopt;
+//    if(!passes_to_optimize.empty()){
+//        std::sort(passes_to_optimize.begin(), passes_to_optimize.end(),
+//                  [this](Pass p1, Pass p2) { return comparePassQuality(p1, p2); });
+//        return passes_to_optimize[0];
+//    }
+//    return std::nullopt;
 
 //    if (best_known_pass){
 //        std::cout << "Score: " << ratePass(*best_known_pass) << std::endl;
@@ -120,15 +120,18 @@ void PassGenerator::continuouslyGeneratePasses()
         // conditional check
         in_destructor_mutex.unlock();
 
-        if (getBestPassSoFar()){
-            std::cout << "Score before optimize: " << ratePass(*getBestPassSoFar()) << ":  " << *getBestPassSoFar() << std::endl;
-        }
+//        if (getBestPassSoFar()){
+//            std::cout << "Score before optimize: " << ratePass(*getBestPassSoFar()) << ":  " << *getBestPassSoFar() << std::endl;
+//        }
         optimizePasses();
-        if (getBestPassSoFar()){
-            std::cout << "Score after optimize: " << ratePass(*getBestPassSoFar()) << ":  " << *getBestPassSoFar() << std::endl << std::endl;
-        }
+//        if (getBestPassSoFar()){
+//            std::cout << "Score after optimize: " << ratePass(*getBestPassSoFar()) << ":  " << *getBestPassSoFar() << std::endl << std::endl;
+//        }
         pruneAndReplacePasses();
         saveBestPass();
+        if (getBestPassSoFar()){
+            std::cout << "Best so far: " << ratePass(*getBestPassSoFar()) << ":  " << *getBestPassSoFar() << std::endl;
+        }
 
         visualizeStuff();
 
@@ -168,23 +171,36 @@ void PassGenerator::visualizeStuff() {
     Rectangle field_area(world.field().enemyCornerNeg(), world.field().friendlyCornerPos());
     double field_length = world.field().length();
     double field_width = world.field().width();
-    Timestamp pass_time = world.ball().lastUpdateTimestamp() + Duration::fromSeconds(0.0);
+    Timestamp pass_zero_time = world.ball().lastUpdateTimestamp() + Duration::fromSeconds(0.0);
     world_mutex.unlock();
 
-    const auto objective_function =
-            [&](Point p) {
-                try{
-                    double pass_speed = (max_pass_speed_m_per_s.value() + min_pass_speed_m_per_s.value())/2;
-                    Pass pass(passer_point, p, pass_speed, pass_time);
-                    return ratePass(pass);
-                } catch (std::invalid_argument& e){
-                    return 0.0;
-                }
-            };
+    std::optional<Pass> pass_opt = getBestPassSoFar();
+    if (pass_opt) {
+        const auto objective_function =
+                [&](Point p) {
+                    try {
+                        double pass_speed = (max_pass_speed_m_per_s.value() +
+                                             min_pass_speed_m_per_s.value()) / 2;
+                        Timestamp pass_time = pass_zero_time + Duration::fromSeconds(
+                                min_time_offset_for_pass_seconds.value() +
+                                max_time_offset_for_pass_seconds.value());
+                        Pass pass(passer_point, p, pass_opt->speed(), pass_opt->startTime());
+                        return ratePass(pass);
+                    } catch (std::invalid_argument &e) {
+                        return 0.0;
+                    }
+                };
 
-    painter->clearLayer(Util::CanvasMessenger::Layer::PASS_GENERATION);
-    painter->drawGradient(Util::CanvasMessenger::Layer::PASS_GENERATION, objective_function,
-            field_area, 0, 1, {0, 0, 255, 128}, {255, 0, 0, 128}, 10);
+        painter->clearLayer(Util::CanvasMessenger::Layer::PASS_GENERATION);
+        painter->drawGradient(Util::CanvasMessenger::Layer::PASS_GENERATION,
+                              objective_function,
+                              field_area, 0, 0.02, {0, 0, 255, 160}, {255, 0, 0, 160},
+                              10);
+        painter->drawPoint(Util::CanvasMessenger::Layer::PASS_GENERATION, pass_opt->receiverPoint(), 0.05, {0, 255, 0, 255});
+    }
+    for (const Pass& pass : passes_to_optimize){
+        painter->drawPoint(Util::CanvasMessenger::Layer::PASS_GENERATION, pass.receiverPoint(), 0.03, {0, 255, 0, 150});
+    }
 
     // Draw the gradient
 //    std::optional<Pass> pass_opt = getBestPassSoFar();
@@ -256,22 +272,22 @@ void PassGenerator::pruneAndReplacePasses()
     std::sort(passes_to_optimize.begin(), passes_to_optimize.end(),
               [this](Pass p1, Pass p2) { return comparePassQuality(p1, p2); });
 
-//    // Merge Passes That Are Similar
-//    // We start by assuming that the most similar passes will be right beside each other,
-//    // then iterate over the entire list, building a new list as we go by only adding
-//    // elements when they are dissimilar enough from the last element we added
-//    // NOTE: This flips the passes so they are sorted by increasing quality
-//    passes_to_optimize = std::accumulate(
-//        passes_to_optimize.begin(), passes_to_optimize.end(), std::vector<Pass>(),
-//        [this](std::vector<Pass>& passes, Pass curr_pass) {
-//            // Check if we have no passes, or if this pass is too similar to the
-//            // last pass we added to the list
-//            if (passes.empty() || !passesEqual(curr_pass, passes.back()))
-//            {
-//                passes.emplace_back(curr_pass);
-//            }
-//            return passes;
-//        });
+    // Merge Passes That Are Similar
+    // We start by assuming that the most similar passes will be right beside each other,
+    // then iterate over the entire list, building a new list as we go by only adding
+    // elements when they are dissimilar enough from the last element we added
+    // NOTE: This flips the passes so they are sorted by increasing quality
+    passes_to_optimize = std::accumulate(
+        passes_to_optimize.begin(), passes_to_optimize.end(), std::vector<Pass>(),
+        [this](std::vector<Pass>& passes, Pass curr_pass) {
+            // Check if we have no passes, or if this pass is too similar to the
+            // last pass we added to the list
+            if (passes.empty() || !passesEqual(curr_pass, passes.back()))
+            {
+                passes.emplace_back(curr_pass);
+            }
+            return passes;
+        });
 
     double score1 = ratePass(passes_to_optimize[0]);
 

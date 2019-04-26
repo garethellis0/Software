@@ -248,14 +248,14 @@ std::vector<uint8_t> CanvasMessenger::Sprite::serialize(int size_scaling_factor)
 
     // These are all 16 bits, we need to split them
     Int16OrTwoInt8 x;
-    x.base = std::round(top_left_corner.x() * size_scaling_factor);
+    x.base = std::floor(top_left_corner.x() * size_scaling_factor);
     payload.emplace_back(x.result[1]);
     payload.emplace_back(x.result[0]);
 
     Int16OrTwoInt8 y;
     // We negate y because we want positive y to be upwards in the visualizer, which uses
     // the graphics convention of +y downwards
-    y.base = std::round(-top_left_corner.y() * size_scaling_factor);
+    y.base = std::floor(-top_left_corner.y() * size_scaling_factor);
     payload.emplace_back(y.result[1]);
     payload.emplace_back(y.result[0]);
 
