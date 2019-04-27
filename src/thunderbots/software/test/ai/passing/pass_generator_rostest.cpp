@@ -74,6 +74,10 @@ TEST_F(PassGeneratorRosTest, deleteme){
     } while (true);
 }
 
+// TODO:
+// - test for stability of points
+// - test for generate passes in specific region
+
 int main(int argc, char **argv)
 {
     // !! Don't forget to initialize ROS, since this is a test within the ros framework !!

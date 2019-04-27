@@ -174,6 +174,8 @@ void PassGenerator::visualizeStuff() {
     Timestamp pass_zero_time = world.ball().lastUpdateTimestamp() + Duration::fromSeconds(0.0);
     world_mutex.unlock();
 
+    painter->clearLayer(Util::CanvasMessenger::Layer::PASS_GENERATION);
+
     std::optional<Pass> pass_opt = getBestPassSoFar();
     if (pass_opt) {
         const auto objective_function =
@@ -190,13 +192,14 @@ void PassGenerator::visualizeStuff() {
                         return 0.0;
                     }
                 };
-
-        painter->clearLayer(Util::CanvasMessenger::Layer::PASS_GENERATION);
-//        painter->drawGradient(Util::CanvasMessenger::Layer::PASS_GENERATION,
-//                              objective_function,
-//                              field_area, 0, 0.02, {0, 0, 255, 160}, {255, 0, 0, 160},
-//                              10);
+        painter->drawGradient(Util::CanvasMessenger::Layer::PASS_GENERATION,
+                              objective_function,
+                              field_area, 0, 0.02, {0, 0, 255, 160}, {255, 0, 0, 160},
+                              10);
         painter->drawPoint(Util::CanvasMessenger::Layer::PASS_GENERATION, pass_opt->receiverPoint(), 0.05, {0, 255, 0, 255});
+    } else {
+        volatile int a;
+        std::cout << "NADAD " << std::endl;
     }
     for (const Pass& pass : passes_to_optimize){
         painter->drawPoint(Util::CanvasMessenger::Layer::PASS_GENERATION, pass.receiverPoint(), 0.03, {0, 255, 0, 150});

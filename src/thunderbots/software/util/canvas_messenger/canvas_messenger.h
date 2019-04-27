@@ -233,7 +233,7 @@ namespace Util
         };
 
         // The number of pixels per meter
-        static const int PIXELS_PER_METER = 100;
+        static const int PIXELS_PER_METER = 1000;
 
         // Colors
         static constexpr Color FIELD_COLOR         = {0, 153, 0, 255};

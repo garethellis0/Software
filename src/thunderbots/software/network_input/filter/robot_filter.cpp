@@ -26,8 +26,8 @@ std::optional<FilteredRobotData> RobotFilter::getFilteredData(
         average_detection.orientation = average_detection.orientation + d.orientation;
     }
 
-    average_detection.position.norm(average_detection.position.len() / new_data.size());
-    average_detection.orientation = average_detection.orientation / new_data.size();
+    average_detection.position = average_detection.position.norm(average_detection.position.len() / new_data.size());
+    average_detection.orientation = average_detection.orientation = average_detection.orientation / new_data.size();
 
     // average the new data
     FilteredRobotData new_filtered_data;
