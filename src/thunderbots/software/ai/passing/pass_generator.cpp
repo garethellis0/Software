@@ -192,10 +192,10 @@ void PassGenerator::visualizeStuff() {
                 };
 
         painter->clearLayer(Util::CanvasMessenger::Layer::PASS_GENERATION);
-        painter->drawGradient(Util::CanvasMessenger::Layer::PASS_GENERATION,
-                              objective_function,
-                              field_area, 0, 0.02, {0, 0, 255, 160}, {255, 0, 0, 160},
-                              10);
+//        painter->drawGradient(Util::CanvasMessenger::Layer::PASS_GENERATION,
+//                              objective_function,
+//                              field_area, 0, 0.02, {0, 0, 255, 160}, {255, 0, 0, 160},
+//                              10);
         painter->drawPoint(Util::CanvasMessenger::Layer::PASS_GENERATION, pass_opt->receiverPoint(), 0.05, {0, 255, 0, 255});
     }
     for (const Pass& pass : passes_to_optimize){

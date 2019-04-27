@@ -30,10 +30,10 @@ std::vector<std::shared_ptr<Tactic>> ExamplePlay::getNextTactics(
     Timestamp pass_start_time = world.ball().lastUpdateTimestamp() + Duration::fromSeconds(5);
 
     AI::Passing::Pass pass(world.ball().position(), {0.5, 0}, 4, pass_start_time);
-    auto passer = std::make_shared<PasserTactic>(pass, world.ball().lastUpdateTimestamp(), false);
+    auto passer = std::make_shared<PasserTactic>(pass, world.ball(), false);
     auto receiver = std::make_shared<ReceiverTactic>(world.field(), world.friendlyTeam(), world.enemyTeam(), pass, world.ball(), false);
 
-    AI::Passing::PassGenerator pass_generator(0.00, world);
+    AI::Passing::PassGenerator pass_generator(0.001, world);
 //
 //    do {
 //        pass_generator.setWorld(world);
@@ -51,6 +51,14 @@ std::vector<std::shared_ptr<Tactic>> ExamplePlay::getNextTactics(
 //    } while(!pass_generator.getBestPassSoFar());
 //    pass = *pass_generator.getBestPassSoFar();
 
+    std::optional<AI::Passing::Pass> best_pass;
+    while(!best_pass){
+        pass_generator.setWorld(world);
+        pass_generator.setPasserPoint(world.ball().position());
+        best_pass = pass_generator.getBestPassSoFar();
+        std::cout << "NO BEST PASS" << std::endl;
+    }
+
     do
     {
 //        pass = AI::Passing::Pass(world.ball().position(), {0.5, -0.2}, 5, pass_start_time);
@@ -58,11 +66,14 @@ std::vector<std::shared_ptr<Tactic>> ExamplePlay::getNextTactics(
 //        receiver->updateParams(world.friendlyTeam(), world.enemyTeam(), pass, world.ball());
         pass_generator.setWorld(world);
         pass_generator.setPasserPoint(world.ball().position());
-        auto best_pass = pass_generator.getBestPassSoFar();
-//        if (best_pass){
-//            passer->updateParams(*best_pass, world.ball().lastUpdateTimestamp());
-//            receiver->updateParams(world.friendlyTeam(), world.enemyTeam(), *best_pass, world.ball());
-//        }
+//        auto best_pass = pass_generator.getBestPassSoFar();
+        if (best_pass){
+            passer->updateParams(*best_pass, world.ball());
+            receiver->updateParams(world.friendlyTeam(), world.enemyTeam(), *best_pass, world.ball());
+            yield({passer, receiver});
+        } else {
+            yield({});
+        }
 //        pass_generator.setWorld(world);
 //        pass_generator.setPasserPoint(world.ball().position());
 //        auto best_pass_opt  = pass_generator.getBestPassSoFar();

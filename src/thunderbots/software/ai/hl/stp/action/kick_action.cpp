@@ -40,7 +40,7 @@ std::unique_ptr<Intent> KickAction::calculateNextIntent(
     // with something), but large enough we can reasonably get in the region and kick the
     // ball successfully.
     // This value is 'X' in the ASCII art below
-    double size_of_region_behind_ball = 6 * ROBOT_MAX_RADIUS_METERS;
+    double size_of_region_behind_ball = 4 * ROBOT_MAX_RADIUS_METERS;
 
     // ASCII art showing the region behind the ball
     // Diagram not to scale
@@ -84,10 +84,10 @@ std::unique_ptr<Intent> KickAction::calculateNextIntent(
             kick_origin + behind_ball.norm(DIST_TO_FRONT_OF_ROBOT_METERS * 0.0);
         Point behind_ball_vertex_B =
             behind_ball_vertex_A + behind_ball.norm(size_of_region_behind_ball) +
-            behind_ball.perp().norm(size_of_region_behind_ball);
+            behind_ball.perp().norm(size_of_region_behind_ball / 2);
         Point behind_ball_vertex_C =
             behind_ball_vertex_A + behind_ball.norm(size_of_region_behind_ball) -
-            behind_ball.perp().norm(size_of_region_behind_ball);
+            behind_ball.perp().norm(size_of_region_behind_ball / 2);
 
         Polygon behind_ball_region =
             Polygon({behind_ball_vertex_A, behind_ball_vertex_B, behind_ball_vertex_C});
@@ -95,9 +95,9 @@ std::unique_ptr<Intent> KickAction::calculateNextIntent(
         bool robot_behind_ball = behind_ball_region.containsPoint(robot->position());
         // The point in the middle of the region behind the ball
         Point point_behind_ball =
-            kick_origin + behind_ball.norm(DIST_TO_FRONT_OF_ROBOT_METERS * 0.5 +
+            kick_origin + behind_ball.norm(DIST_TO_FRONT_OF_ROBOT_METERS * 1 +
                                            size_of_region_behind_ball / 2);
-
+//
         // If we're not in position to kick, move into position
         if (!robot_behind_ball)
         {

@@ -182,13 +182,19 @@ static void shoot_tick(log_record_t *log) {
     dr_data_t states;
     dr_get(&states);
     PhysBot pb = setup_bot(states, destination, major_vec, minor_vec);
+    // TODO: Use shared constant here..........
+//    double max_v = 0.1;
+//    if (fmax(abs(pb.min.disp) - 0.09,0)/(pb.maj.disp+ 0.0001) < 1/3) {
+//        max_v = MAX_X_V;
+//    }
     if (pb.maj.disp > 0) {
       // tuned constants from testing
-      float major_par[3] = { 1.0f, MAX_X_A * 0.75f, MAX_X_V };
+      float major_par[3] = { 1.0f, MAX_X_A * 0.5f, MAX_X_V };
       plan_move(&pb.maj, major_par);
     }
+
     // tuned constants from testing
-    float minor_par[3] = {0, MAX_Y_A, MAX_Y_V * 2};
+    float minor_par[3] = {0, MAX_Y_A*3, MAX_Y_V / 2};
     plan_move(&pb.min, minor_par);
     plan_shoot_rotation(&pb, states.avel);
     float accel[3] = {0, 0, pb.rot.accel};
