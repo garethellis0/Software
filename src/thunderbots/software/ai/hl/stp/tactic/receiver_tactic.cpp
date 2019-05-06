@@ -85,6 +85,7 @@ std::unique_ptr<Intent> ReceiverTactic::calculateNextIntent(
     // Vector from the ball to the robot
     Vector robot_to_ball = ball.position() - robot->position();
 
+    // TODO: We can delete this section!!
     // The angle the robot will have to deflect the ball to shoot
     Angle abs_angle_between_pass_and_shot_vectors;
     // The percentage of open net the robot would shoot on
@@ -135,9 +136,9 @@ std::unique_ptr<Intent> ReceiverTactic::calculateNextIntent(
             // The best position is determined such that the robot stays in the ideal
             // orientation, but moves forwards/backwards so that the ball hits the kicker,
             // rather then the center of the robot
-            Point ideal_position = closest_ball_pos - ideal_orientation_vec.norm(
+            Point ideal_position = closest_ball_pos + ideal_orientation_vec.norm(
                                                           DIST_TO_FRONT_OF_ROBOT_METERS +
-                                                          BALL_MAX_RADIUS_METERS * 1.5);
+                                                          BALL_MAX_RADIUS_METERS * 1.0);
 
             yield(move_action.updateStateAndGetNextIntent(
                 *robot, ideal_position, ideal_orientation, 0, false, true));

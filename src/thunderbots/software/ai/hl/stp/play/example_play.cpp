@@ -2,6 +2,9 @@
 
 #include "ai/hl/stp/play/play_factory.h"
 #include "ai/hl/stp/tactic/move_tactic.h"
+#include "ai/passing/pass_generator.h"
+#include "ai/hl/stp/tactic/receiver_tactic.h"
+#include "ai/hl/stp/tactic/passer_tactic.h"
 
 const std::string ExamplePlay::name = "Example Play";
 
@@ -23,6 +26,50 @@ bool ExamplePlay::invariantHolds(const World &world) const
 std::vector<std::shared_ptr<Tactic>> ExamplePlay::getNextTactics(
     TacticCoroutine::push_type &yield, const World &world)
 {
+    AI::Passing::PassGenerator pass_generator(world, world.ball().position());
+    pass_generator.setPasserRobotId(0);
+
+    auto [pass, score] = pass_generator.getBestPassSoFar();
+    do {
+        pass_generator.setWorld(world);
+        pass_generator.setPasserPoint(world.ball().position());
+        auto best_pass_and_score = pass_generator.getBestPassSoFar();
+        pass = best_pass_and_score.first;
+                score = best_pass_and_score.second;
+        std::cout << "Score: " << score << std::endl;
+        std::cout << "Pass: " << pass << std::endl;
+        std::cout << "Offset: " << (pass.startTime() - world.ball().lastUpdateTimestamp()).getSeconds() << std::endl;
+        std::cout << std::endl;
+        yield({});
+    } while (score < 0.1 || isnan(score));
+
+    auto receiver_tactic = std::make_shared<ReceiverTactic>(world.field(), world.friendlyTeam(), world.enemyTeam(), pass, world.ball(), false);
+    auto passer_tactic = std::make_shared<PasserTactic>(pass, world.ball(), false);
+
+    do {
+        receiver_tactic->updateParams(world.friendlyTeam(), world.enemyTeam(), pass, world.ball());
+        passer_tactic->updateParams(pass, world.ball());
+        yield({receiver_tactic, passer_tactic});
+    } while (true);
+
+    do {
+        pass_generator.setWorld(world);
+        pass_generator.setPasserPoint(world.ball().position());
+        auto [pass, score] = pass_generator.getBestPassSoFar();
+        std::cout << "Score: " << score << std::endl;
+        std::cout << "Pass: " << pass << std::endl;
+        std::cout << "Offset: " << (pass.startTime() - world.ball().lastUpdateTimestamp()).getSeconds() << std::endl;
+        std::cout << std::endl;
+
+        if (score > 0.2){
+            receiver_tactic->updateParams(world.friendlyTeam(), world.enemyTeam(), pass, world.ball());
+            passer_tactic->updateParams(pass, world.ball());
+            yield({receiver_tactic, passer_tactic});
+        } else {
+            yield({});
+        }
+    } while (true);
+
     // Create MoveTactics that will loop forever
     auto move_tactic_1 = std::make_shared<MoveTactic>(true);
     auto move_tactic_2 = std::make_shared<MoveTactic>(true);

@@ -124,13 +124,13 @@ namespace AI::Passing
 
         // Weights used to normalize the parameters that we pass to GradientDescent
         // (see the GradientDescent documentation for details)
-        // These weights are *very* roughly the step that gradient descent will take
-        // in each respective dimension for a single iteration. They are tuned to
-        // ensure passes converge as fast as possible, but are also as stable as
-        // possible
-        static constexpr double PASS_SPACE_WEIGHT                          = 0.01;
+        // These weights affect how quickly gradient descent moves in each dimension.
+        // If they are too small the pass won't converge fast enough, if they are too
+        // large then gradient descent will overshoot and we won't stably converge to
+        // a pass. They were determined by tuning on the field.
+        static constexpr double PASS_SPACE_WEIGHT                          = 0.1;
         static constexpr double PASS_TIME_WEIGHT                           = 0.1;
-        static constexpr double PASS_SPEED_WEIGHT                          = 0.01;
+        static constexpr double PASS_SPEED_WEIGHT                          = 0.1;
         std::array<double, NUM_PARAMS_TO_OPTIMIZE> optimizer_param_weights = {
             PASS_SPACE_WEIGHT, PASS_SPACE_WEIGHT, PASS_TIME_WEIGHT, PASS_SPEED_WEIGHT};
 
