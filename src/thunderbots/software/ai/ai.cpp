@@ -13,11 +13,11 @@ AI::AI()
 {
 }
 
-std::vector<std::unique_ptr<Primitive>> AI::getPrimitives(const World &world) const
+std::vector<std::shared_ptr<Primitive>> AI::getPrimitives(const World &world) const
 {
-    std::vector<std::unique_ptr<Intent>> assignedIntents = high_level->getIntents(world);
+    std::vector<std::shared_ptr<Intent>> assignedIntents = high_level->getIntents(world);
 
-    std::vector<std::unique_ptr<Primitive>> assignedPrimitives =
+    std::vector<std::shared_ptr<Primitive>> assignedPrimitives =
         navigator->getAssignedPrimitives(world, assignedIntents);
 
     return assignedPrimitives;

@@ -27,9 +27,9 @@ class Navigator
      * @return A list of Primitives to be run by our Robots in order to work towards
      * achieving their Intents
      */
-    virtual std::vector<std::unique_ptr<Primitive>> getAssignedPrimitives(
+    virtual std::vector<std::shared_ptr<Primitive>> getAssignedPrimitives(
         const World &world,
-        const std::vector<std::unique_ptr<Intent>> &assignedIntents) = 0;
+        const std::vector<std::shared_ptr<Intent>> &assignedIntents) = 0;
 
     virtual ~Navigator() = default;
 };

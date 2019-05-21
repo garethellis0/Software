@@ -28,7 +28,7 @@ class ChipAction : public Action
      * @return A unique pointer to the Intent the ChipAction wants to run. If the
      * ChipAction is done, returns an empty/null pointer
      */
-    std::unique_ptr<Intent> updateStateAndGetNextIntent(const Robot& robot,
+    std::shared_ptr<Intent> updateStateAndGetNextIntent(const Robot& robot,
                                                         Point chip_origin,
                                                         Angle chip_direction,
                                                         double chip_distance_meters);
@@ -45,13 +45,13 @@ class ChipAction : public Action
      * @return A unique pointer to the Intent the ChipAction wants to run. If the
      * ChipAction is done, returns an empty/null pointer
      */
-    std::unique_ptr<Intent> updateStateAndGetNextIntent(const Robot& robot,
+    std::shared_ptr<Intent> updateStateAndGetNextIntent(const Robot& robot,
                                                         Point chip_origin,
                                                         Point chip_target,
                                                         double chip_distance_meters);
 
    private:
-    std::unique_ptr<Intent> calculateNextIntent(
+    std::shared_ptr<Intent> calculateNextIntent(
         intent_coroutine::push_type& yield) override;
 
     // Action parameters

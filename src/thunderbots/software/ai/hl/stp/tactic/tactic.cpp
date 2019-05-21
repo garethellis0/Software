@@ -27,13 +27,13 @@ void Tactic::updateRobot(const Robot &robot)
     this->robot = robot;
 }
 
-std::unique_ptr<Intent> Tactic::getNextIntent()
+std::shared_ptr<Intent> Tactic::getNextIntent()
 {
     if (!robot)
     {
         LOG(WARNING) << "Requesting the next Intent for a Tactic without a Robot assigned"
                      << std::endl;
-        return std::unique_ptr<Intent>{};
+        return std::shared_ptr<Intent>{};
     }
 
     auto next_intent = getNextIntentHelper();
@@ -56,21 +56,21 @@ std::unique_ptr<Intent> Tactic::getNextIntent()
     return next_intent;
 }
 
-std::unique_ptr<Intent> Tactic::calculateNextIntentWrapper(
+std::shared_ptr<Intent> Tactic::calculateNextIntentWrapper(
     intent_coroutine::push_type &yield)
 {
     // Yield a null pointer the very first time the function is called. This value will
     // never be seen/used by the rest of the system.
-    yield(std::unique_ptr<Intent>{});
+    yield(std::shared_ptr<Intent>{});
 
     // Anytime after the first function call, the calculateNextIntent function will be
     // used to perform the real logic
     return calculateNextIntent(yield);
 }
 
-std::unique_ptr<Intent> Tactic::getNextIntentHelper()
+std::shared_ptr<Intent> Tactic::getNextIntentHelper()
 {
-    std::unique_ptr<Intent> next_intent;
+    std::shared_ptr<Intent> next_intent;
     // Check if the coroutine "iterator" has any more work to do. Only run the coroutine
     // if there is work to be done otherwise the coroutine library will fail on an assert.
     if (*intent_sequence)

@@ -29,7 +29,7 @@ class KickAction : public Action
      * @return A unique pointer to the Intent the KickAction wants to run. If the
      * KickAction is done, returns an empty/null pointer
      */
-    std::unique_ptr<Intent> updateStateAndGetNextIntent(
+    std::shared_ptr<Intent> updateStateAndGetNextIntent(
         const Robot &robot, const Ball &ball, Point kick_origin, Angle kick_direction,
         double kick_speed_meters_per_second);
 
@@ -45,12 +45,12 @@ class KickAction : public Action
      * @return A unique pointer to the Intent the KickAction wants to run. If the
      * KickAction is done, returns an empty/null pointer
      */
-    std::unique_ptr<Intent> updateStateAndGetNextIntent(
+    std::shared_ptr<Intent> updateStateAndGetNextIntent(
         const Robot &robot, const Ball &ball, Point kick_origin, Point kick_target,
         double kick_speed_meters_per_second);
 
    private:
-    std::unique_ptr<Intent> calculateNextIntent(
+    std::shared_ptr<Intent> calculateNextIntent(
         intent_coroutine::push_type &yield) override;
 
     // Action parameters

@@ -1,11 +1,11 @@
 #include "ai/navigator/placeholder_navigator/placeholder_navigator.h"
 
-std::vector<std::unique_ptr<Primitive>> PlaceholderNavigator::getAssignedPrimitives(
-    const World &world, const std::vector<std::unique_ptr<Intent>> &assignedIntents)
+std::vector<std::shared_ptr<Primitive>> PlaceholderNavigator::getAssignedPrimitives(
+    const World &world, const std::vector<std::shared_ptr<Intent>> &assignedIntents)
 {
     this->world = world;
 
-    auto assigned_primitives = std::vector<std::unique_ptr<Primitive>>();
+    auto assigned_primitives = std::vector<std::shared_ptr<Primitive>>();
     for (const auto &intent : assignedIntents)
     {
         intent->accept(*this);

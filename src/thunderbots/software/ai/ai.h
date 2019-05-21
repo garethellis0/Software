@@ -27,9 +27,9 @@ class AI final
      * @return the Primitives that should be run by our Robots given the current state
      * of the world.
      */
-    std::vector<std::unique_ptr<Primitive>> getPrimitives(const World& world) const;
+    std::vector<std::shared_ptr<Primitive>> getPrimitives(const World& world) const;
 
    private:
-    std::unique_ptr<HL> high_level;
-    std::unique_ptr<Navigator> navigator;
+    std::shared_ptr<HL> high_level;
+    std::shared_ptr<Navigator> navigator;
 };

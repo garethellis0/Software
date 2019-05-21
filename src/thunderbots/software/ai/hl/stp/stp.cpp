@@ -14,7 +14,7 @@
 
 STP::STP(long random_seed) : random_number_generator(random_seed) {}
 
-std::vector<std::unique_ptr<Intent>> STP::getIntents(const World& world)
+std::vector<std::shared_ptr<Intent>> STP::getIntents(const World& world)
 {
     // Assign a new play if we don't currently have a play assigned, the current play's
     // invariant no longer holds, or the current play is done
@@ -36,7 +36,7 @@ std::vector<std::unique_ptr<Intent>> STP::getIntents(const World& world)
     // Run the current play
     auto tactics = current_play->getTactics(world);
 
-    std::vector<std::unique_ptr<Intent>> intents;
+    std::vector<std::shared_ptr<Intent>> intents;
     if (tactics)
     {
         // Assign robots to tactics
@@ -133,9 +133,9 @@ std::vector<std::shared_ptr<Tactic>> STP::assignRobotsToTactics(
     return tactics;
 }
 
-std::unique_ptr<Play> STP::calculateNewPlay(const World& world)
+std::shared_ptr<Play> STP::calculateNewPlay(const World& world)
 {
-    std::vector<std::unique_ptr<Play>> applicable_plays;
+    std::vector<std::shared_ptr<Play>> applicable_plays;
     for (const auto& play_constructor : PlayFactory::getRegisteredPlayConstructors())
     {
         auto play = play_constructor();

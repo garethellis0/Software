@@ -46,7 +46,7 @@ class CherryPickTactic : public Tactic
     double calculateRobotCost(const Robot& robot, const World& world) override;
 
    private:
-    std::unique_ptr<Intent> calculateNextIntent(
+    std::shared_ptr<Intent> calculateNextIntent(
         intent_coroutine::push_type& yield) override;
 
     // The region in which we want to position the cherry picking robot

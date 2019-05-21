@@ -40,12 +40,12 @@ class MoveAction : public Action
      * @return A unique pointer to the Intent the MoveAction wants to run. If the
      * MoveAction is done, returns an empty/null pointer
      */
-    std::unique_ptr<Intent> updateStateAndGetNextIntent(
+    std::shared_ptr<Intent> updateStateAndGetNextIntent(
         const Robot& robot, Point destination, Angle final_orientation,
         double final_speed, bool enable_dribbler = false, bool enable_autokick = false);
 
    private:
-    std::unique_ptr<Intent> calculateNextIntent(
+    std::shared_ptr<Intent> calculateNextIntent(
         intent_coroutine::push_type& yield) override;
 
     // Action parameters

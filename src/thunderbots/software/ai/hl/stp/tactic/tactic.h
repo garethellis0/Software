@@ -88,7 +88,7 @@ class Tactic
      * @return A unique pointer to the next Intent that should be run for the Tactic.
      * If the Tactic is done, a nullptr is returned.
      */
-    std::unique_ptr<Intent> getNextIntent();
+    std::shared_ptr<Intent> getNextIntent();
 
     /**
      * Returns the name of the Tactic
@@ -126,7 +126,7 @@ class Tactic
      * time this function is called, a null pointer will be returned (this does not
      * signify the Tactic is done).
      */
-    std::unique_ptr<Intent> calculateNextIntentWrapper(
+    std::shared_ptr<Intent> calculateNextIntentWrapper(
         intent_coroutine::push_type &yield);
 
     /**
@@ -139,7 +139,7 @@ class Tactic
      * @return A unique pointer to the next Intent that should be run for the Tactic.
      * If the Tactic is done, a nullptr is returned.
      */
-    virtual std::unique_ptr<Intent> calculateNextIntent(
+    virtual std::shared_ptr<Intent> calculateNextIntent(
         intent_coroutine::push_type &yield) = 0;
 
     /**
@@ -150,10 +150,10 @@ class Tactic
      * @return the next Intent this Tactic wants to run. If the Tactic is done, a nullptr
      * is returned
      */
-    std::unique_ptr<Intent> getNextIntentHelper();
+    std::shared_ptr<Intent> getNextIntentHelper();
 
     // The coroutine that sequentially returns the Intents the Tactic wants to run
-    std::unique_ptr<intent_coroutine::pull_type> intent_sequence;
+    std::shared_ptr<intent_coroutine::pull_type> intent_sequence;
     // Whether or not this Tactic is done
     bool done_;
     // Whether or not this tactic should loop forever by restarting each time it is done

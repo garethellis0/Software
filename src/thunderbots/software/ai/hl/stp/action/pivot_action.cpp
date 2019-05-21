@@ -8,7 +8,7 @@
 
 PivotAction::PivotAction() : Action() {}
 
-std::unique_ptr<Intent> PivotAction::updateStateAndGetNextIntent(const Robot& robot,
+std::shared_ptr<Intent> PivotAction::updateStateAndGetNextIntent(const Robot& robot,
                                                                  Point pivot_point,
                                                                  Angle final_angle,
                                                                  double pivot_radius)
@@ -22,7 +22,7 @@ std::unique_ptr<Intent> PivotAction::updateStateAndGetNextIntent(const Robot& ro
     return getNextIntent();
 }
 
-std::unique_ptr<Intent> PivotAction::calculateNextIntent(
+std::shared_ptr<Intent> PivotAction::calculateNextIntent(
     intent_coroutine::push_type& yield)
 {
     do

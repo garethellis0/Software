@@ -10,7 +10,7 @@
 
 KickAction::KickAction() : Action(), ball({0, 0}, {0, 0}, Timestamp::fromSeconds(0)) {}
 
-std::unique_ptr<Intent> KickAction::updateStateAndGetNextIntent(
+std::shared_ptr<Intent> KickAction::updateStateAndGetNextIntent(
     const Robot &robot, const Ball &ball, Point kick_origin, Point kick_target,
     double kick_speed_meters_per_second)
 {
@@ -19,7 +19,7 @@ std::unique_ptr<Intent> KickAction::updateStateAndGetNextIntent(
                                        kick_speed_meters_per_second);
 }
 
-std::unique_ptr<Intent> KickAction::updateStateAndGetNextIntent(
+std::shared_ptr<Intent> KickAction::updateStateAndGetNextIntent(
     const Robot &robot, const Ball &ball, Point kick_origin, Angle kick_direction,
     double kick_speed_meters_per_second)
 {
@@ -33,7 +33,7 @@ std::unique_ptr<Intent> KickAction::updateStateAndGetNextIntent(
     return getNextIntent();
 }
 
-std::unique_ptr<Intent> KickAction::calculateNextIntent(
+std::shared_ptr<Intent> KickAction::calculateNextIntent(
     intent_coroutine::push_type &yield)
 {
     // How large the triangle is that defines the region where the robot is

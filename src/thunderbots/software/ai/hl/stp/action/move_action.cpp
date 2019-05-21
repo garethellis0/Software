@@ -9,7 +9,7 @@ MoveAction::MoveAction(double close_to_dest_threshold, bool loop_forever)
 {
 }
 
-std::unique_ptr<Intent> MoveAction::updateStateAndGetNextIntent(
+std::shared_ptr<Intent> MoveAction::updateStateAndGetNextIntent(
     const Robot& robot, Point destination, Angle final_orientation, double final_speed,
     bool enable_dribbler, bool enable_autokick)
 {
@@ -24,7 +24,7 @@ std::unique_ptr<Intent> MoveAction::updateStateAndGetNextIntent(
     return getNextIntent();
 }
 
-std::unique_ptr<Intent> MoveAction::calculateNextIntent(
+std::shared_ptr<Intent> MoveAction::calculateNextIntent(
     intent_coroutine::push_type& yield)
 {
     // We use a do-while loop so that we return the Intent at least once. If the robot was

@@ -22,7 +22,7 @@ class STP : public HL
      */
     explicit STP(long random_seed = 0);
 
-    std::vector<std::unique_ptr<Intent>> getIntents(const World &world) override;
+    std::vector<std::shared_ptr<Intent>> getIntents(const World &world) override;
 
     /**
      * Given a list of tactics and the current World, returns a new list of tactics
@@ -46,7 +46,7 @@ class STP : public HL
         const World &world, std::vector<std::shared_ptr<Tactic>> tactics) const;
 
     /**
-     * Given the state of the world, returns a unique_ptr to the Play that should be run
+     * Given the state of the world, returns a shared_ptr to the Play that should be run
      * at this time. If multiple Plays are applicable and could be run at a given time,
      * one of them is chosen randomly.
      *
@@ -55,7 +55,7 @@ class STP : public HL
      * are applicable) for the given World state
      * @return A unique pointer to the Play that should be run by the AI
      */
-    std::unique_ptr<Play> calculateNewPlay(const World &world);
+    std::shared_ptr<Play> calculateNewPlay(const World &world);
 
     /**
      * Returns the name of the current play, if the current play is assigned. Otherwise
@@ -68,7 +68,7 @@ class STP : public HL
 
    private:
     // The Play that is currently running
-    std::unique_ptr<Play> current_play;
+    std::shared_ptr<Play> current_play;
     // The random number generator
     std::mt19937 random_number_generator;
 };

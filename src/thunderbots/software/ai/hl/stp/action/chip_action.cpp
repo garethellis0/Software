@@ -8,7 +8,7 @@
 
 ChipAction::ChipAction() : Action() {}
 
-std::unique_ptr<Intent> ChipAction::updateStateAndGetNextIntent(
+std::shared_ptr<Intent> ChipAction::updateStateAndGetNextIntent(
     const Robot& robot, Point chip_origin, Point chip_target, double chip_distance_meters)
 {
     return updateStateAndGetNextIntent(robot, chip_origin,
@@ -16,7 +16,7 @@ std::unique_ptr<Intent> ChipAction::updateStateAndGetNextIntent(
                                        chip_distance_meters);
 }
 
-std::unique_ptr<Intent> ChipAction::updateStateAndGetNextIntent(
+std::shared_ptr<Intent> ChipAction::updateStateAndGetNextIntent(
     const Robot& robot, Point chip_origin, Angle chip_direction,
     double chip_distance_meters)
 {
@@ -29,7 +29,7 @@ std::unique_ptr<Intent> ChipAction::updateStateAndGetNextIntent(
     return getNextIntent();
 }
 
-std::unique_ptr<Intent> ChipAction::calculateNextIntent(
+std::shared_ptr<Intent> ChipAction::calculateNextIntent(
     intent_coroutine::push_type& yield)
 {
     // How large the triangle is that defines the region where the robot is

@@ -16,9 +16,9 @@ class PlaceholderNavigator : public Navigator, public IntentVisitor
    public:
     explicit PlaceholderNavigator() = default;
 
-    std::vector<std::unique_ptr<Primitive>> getAssignedPrimitives(
+    std::vector<std::shared_ptr<Primitive>> getAssignedPrimitives(
         const World &world,
-        const std::vector<std::unique_ptr<Intent>> &assignedIntents) override;
+        const std::vector<std::shared_ptr<Intent>> &assignedIntents) override;
 
     /**
      * Visits a CatchIntent to perform an operation.
@@ -95,5 +95,5 @@ class PlaceholderNavigator : public Navigator, public IntentVisitor
     World world;
     // The current Primitive the navigator has created from an Intent.
     // This variable is set by each `visit` function
-    std::unique_ptr<Primitive> current_primitive;
+    std::shared_ptr<Primitive> current_primitive;
 };

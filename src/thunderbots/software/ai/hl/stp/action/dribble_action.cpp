@@ -9,7 +9,7 @@ DribbleAction::DribbleAction(double close_to_dest_threshold, bool loop_forever)
 {
 }
 
-std::unique_ptr<Intent> DribbleAction::updateStateAndGetNextIntent(
+std::shared_ptr<Intent> DribbleAction::updateStateAndGetNextIntent(
     const Robot& robot, const Point& dest, const Angle& final_angle, double rpm,
     bool small_kick_allowed)
 
@@ -24,7 +24,7 @@ std::unique_ptr<Intent> DribbleAction::updateStateAndGetNextIntent(
     return getNextIntent();
 }
 
-std::unique_ptr<Intent> DribbleAction::calculateNextIntent(
+std::shared_ptr<Intent> DribbleAction::calculateNextIntent(
     intent_coroutine::push_type& yield)
 {
     // We use a do-while loop so that we return the Intent at least once. If the robot was

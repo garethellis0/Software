@@ -37,7 +37,7 @@ void worldUpdateCallback(const thunderbots_msgs::World::ConstPtr &msg)
     World world = Util::ROSMessages::createWorldFromROSMessage(world_msg);
 
     // Get the Primitives the Robots should run from the AI
-    std::vector<std::unique_ptr<Primitive>> assignedPrimitives = ai.getPrimitives(world);
+    std::vector<std::shared_ptr<Primitive>> assignedPrimitives = ai.getPrimitives(world);
 
     // Put these Primitives into a message and publish it
     thunderbots_msgs::PrimitiveArray primitive_array_message;
