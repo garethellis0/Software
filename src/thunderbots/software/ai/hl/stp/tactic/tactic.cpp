@@ -53,24 +53,24 @@ std::unique_ptr<Intent> Tactic::getNextIntent()
         next_intent = getNextIntentHelper();
     }
 
-    return next_intent;
+    return std::unique_ptr<Intent>(next_intent);
 }
 
-std::unique_ptr<Intent> Tactic::calculateNextIntentWrapper(
+Intent* Tactic::calculateNextIntentWrapper(
     intent_coroutine::push_type &yield)
 {
     // Yield a null pointer the very first time the function is called. This value will
     // never be seen/used by the rest of the system.
-    yield(std::unique_ptr<Intent>{});
+    yield(nullptr);
 
     // Anytime after the first function call, the calculateNextIntent function will be
     // used to perform the real logic
     return calculateNextIntent(yield);
 }
 
-std::unique_ptr<Intent> Tactic::getNextIntentHelper()
+Intent* Tactic::getNextIntentHelper()
 {
-    std::unique_ptr<Intent> next_intent;
+    Intent* next_intent;
     // Check if the coroutine "iterator" has any more work to do. Only run the coroutine
     // if there is work to be done otherwise the coroutine library will fail on an assert.
     if (*intent_sequence)

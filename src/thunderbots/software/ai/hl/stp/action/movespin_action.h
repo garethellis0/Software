@@ -36,13 +36,13 @@ class MoveSpinAction : public Action
      * @return A unique pointer to the Intent the MoveSpinAction wants to run. If the
      * MoveSpinAction is done, returns an empty/null pointer
      */
-    std::unique_ptr<Intent> updateStateAndGetNextIntent(const Robot& robot,
+    Intent* updateStateAndGetNextIntent(const Robot& robot,
                                                         Point destination,
                                                         AngularVelocity angular_velocity);
 
    private:
-    std::unique_ptr<Intent> calculateNextIntent(
-        intent_coroutine::push_type& yield) override;
+    Intent * calculateNextIntent(
+            intent_coroutine::push_type &yield) override;
 
     // Action parameters
     Point destination;

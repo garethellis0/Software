@@ -8,17 +8,18 @@
 
 ChipAction::ChipAction() : Action() {}
 
-std::unique_ptr<Intent> ChipAction::updateStateAndGetNextIntent(
-    const Robot& robot, Point chip_origin, Point chip_target, double chip_distance_meters)
+Intent * ChipAction::updateStateAndGetNextIntent(
+        const Robot &robot, Point chip_origin, Point chip_target,
+        double chip_distance_meters)
 {
     return updateStateAndGetNextIntent(robot, chip_origin,
                                        (chip_target - chip_origin).orientation(),
                                        chip_distance_meters);
 }
 
-std::unique_ptr<Intent> ChipAction::updateStateAndGetNextIntent(
-    const Robot& robot, Point chip_origin, Angle chip_direction,
-    double chip_distance_meters)
+Intent * ChipAction::updateStateAndGetNextIntent(
+        const Robot &robot, Point chip_origin, Angle chip_direction,
+        double chip_distance_meters)
 {
     // Update the parameters stored by this Action
     this->robot                = robot;
@@ -29,8 +30,8 @@ std::unique_ptr<Intent> ChipAction::updateStateAndGetNextIntent(
     return getNextIntent();
 }
 
-std::unique_ptr<Intent> ChipAction::calculateNextIntent(
-    intent_coroutine::push_type& yield)
+Intent * ChipAction::calculateNextIntent(
+        intent_coroutine::push_type &yield)
 {
     // How large the triangle is that defines the region where the robot is
     // behind the ball and ready to chip.
@@ -100,12 +101,12 @@ std::unique_ptr<Intent> ChipAction::calculateNextIntent(
         // If we're not in position to chip, move into position
         if (!robot_behind_ball)
         {
-            yield(std::make_unique<MoveIntent>(robot->id(), point_behind_ball,
+            yield(new MoveIntent(robot->id(), point_behind_ball,
                                                chip_direction, 0.0, 0));
         }
         else
         {
-            yield(std::make_unique<ChipIntent>(robot->id(), chip_origin, chip_direction,
+            yield(new ChipIntent(robot->id(), chip_origin, chip_direction,
                                                chip_distance_meters, 0));
         }
     } while (true);

@@ -8,7 +8,7 @@
 
 PivotAction::PivotAction() : Action() {}
 
-std::unique_ptr<Intent> PivotAction::updateStateAndGetNextIntent(const Robot& robot,
+Intent* PivotAction::updateStateAndGetNextIntent(const Robot& robot,
                                                                  Point pivot_point,
                                                                  Angle final_angle,
                                                                  double pivot_radius)
@@ -22,8 +22,8 @@ std::unique_ptr<Intent> PivotAction::updateStateAndGetNextIntent(const Robot& ro
     return getNextIntent();
 }
 
-std::unique_ptr<Intent> PivotAction::calculateNextIntent(
-    intent_coroutine::push_type& yield)
+Intent * PivotAction::calculateNextIntent(
+        intent_coroutine::push_type &yield)
 {
     do
     {
@@ -43,12 +43,12 @@ std::unique_ptr<Intent> PivotAction::calculateNextIntent(
         // If we're not in position to pivot, move into position
         if ((robot->position() - point_of_entry).len() > ROBOT_MAX_RADIUS_METERS)
         {
-            yield(std::make_unique<MoveIntent>(robot->id(), point_of_entry, Angle::zero(),
+            yield(new MoveIntent(robot->id(), point_of_entry, Angle::zero(),
                                                0.0, 0));
         }
         else
         {
-            yield(std::make_unique<PivotIntent>(robot->id(), pivot_point, final_angle,
+            yield(new PivotIntent(robot->id(), pivot_point, final_angle,
                                                 pivot_radius, 0));
         }
     } while (true);

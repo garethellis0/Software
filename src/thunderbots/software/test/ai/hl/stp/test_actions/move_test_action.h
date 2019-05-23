@@ -34,8 +34,8 @@ class MoveTestAction : public Action
                                                         Point destination);
 
    private:
-    std::unique_ptr<Intent> calculateNextIntent(
-        intent_coroutine::push_type& yield) override;
+    Intent * calculateNextIntent(
+            intent_coroutine::push_type &yield) override;
 
     // Action parameters
     Point destination;

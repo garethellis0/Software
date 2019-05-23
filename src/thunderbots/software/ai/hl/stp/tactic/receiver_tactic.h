@@ -77,7 +77,7 @@ class ReceiverTactic : public Tactic
     // enemy goal with
     static constexpr Angle MAX_DEFLECTION_FOR_ONE_TOUCH_SHOT = Angle::ofDegrees(90);
 
-    std::unique_ptr<Intent> calculateNextIntent(
+    Intent* calculateNextIntent(
         intent_coroutine::push_type& yield) override;
 
     /**

@@ -42,7 +42,7 @@ class MoveTactic : public Tactic
     double calculateRobotCost(const Robot& robot, const World& world) override;
 
    private:
-    std::unique_ptr<Intent> calculateNextIntent(
+    Intent* calculateNextIntent(
         intent_coroutine::push_type& yield) override;
 
     // Tactic parameters

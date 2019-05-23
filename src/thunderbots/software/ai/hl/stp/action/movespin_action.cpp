@@ -7,7 +7,7 @@ MoveSpinAction::MoveSpinAction(double close_to_dest_threshold)
 {
 }
 
-std::unique_ptr<Intent> MoveSpinAction::updateStateAndGetNextIntent(
+Intent* MoveSpinAction::updateStateAndGetNextIntent(
     const Robot& robot, Point destination, AngularVelocity angular_velocity)
 {
     // Update the parameters stored by this Action
@@ -18,8 +18,8 @@ std::unique_ptr<Intent> MoveSpinAction::updateStateAndGetNextIntent(
     return getNextIntent();
 }
 
-std::unique_ptr<Intent> MoveSpinAction::calculateNextIntent(
-    intent_coroutine::push_type& yield)
+Intent * MoveSpinAction::calculateNextIntent(
+        intent_coroutine::push_type &yield)
 {
     // We use a do-while loop so that we return the Intent at least once. If the robot was
     // already moving somewhere else, but was told to run the MoveSpinAction to a
@@ -28,7 +28,7 @@ std::unique_ptr<Intent> MoveSpinAction::calculateNextIntent(
     // different location
     do
     {
-        yield(std::make_unique<MoveSpinIntent>(robot->id(), destination, angular_velocity,
+        yield(new MoveSpinIntent(robot->id(), destination, angular_velocity,
                                                0));
     } while ((robot->position() - destination).len() > close_to_dest_threshold);
 }

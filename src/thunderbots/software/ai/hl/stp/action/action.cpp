@@ -12,14 +12,14 @@ bool Action::done() const
     return !static_cast<bool>(intent_sequence);
 }
 
-std::unique_ptr<Intent> Action::getNextIntent()
+Intent * Action::getNextIntent()
 {
     if (!robot)
     {
         LOG(WARNING)
             << "Requesting the next Intent for an Action without a Robot assigned"
             << std::endl;
-        return std::unique_ptr<Intent>{};
+        return nullptr;
     }
 
     // If the coroutine "iterator" is done, the calculateNextIntent function has completed
@@ -31,15 +31,15 @@ std::unique_ptr<Intent> Action::getNextIntent()
         auto next_intent = intent_sequence.get();
         return next_intent;
     }
-    return std::unique_ptr<Intent>{};
+    return nullptr;
 }
 
-std::unique_ptr<Intent> Action::calculateNextIntentWrapper(
-    intent_coroutine::push_type &yield)
+Intent * Action::calculateNextIntentWrapper(
+        intent_coroutine::push_type &yield)
 {
     // Yield a null pointer the very first time the function is called. This value will
     // never be seen/used by the rest of the system.
-    yield(std::unique_ptr<Intent>{});
+    yield(nullptr);
 
     // Anytime after the first function call, the calculateNextIntent function will be
     // used to perform the real logic

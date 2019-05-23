@@ -9,9 +9,10 @@ MoveAction::MoveAction(double close_to_dest_threshold, bool loop_forever)
 {
 }
 
-std::unique_ptr<Intent> MoveAction::updateStateAndGetNextIntent(
-    const Robot& robot, Point destination, Angle final_orientation, double final_speed,
-    bool enable_dribbler, bool enable_autokick)
+Intent * MoveAction::updateStateAndGetNextIntent(
+        const Robot &robot, Point destination, Angle final_orientation,
+        double final_speed,
+        bool enable_dribbler, bool enable_autokick)
 {
     // Update the parameters stored by this Action
     this->robot             = robot;
@@ -24,8 +25,8 @@ std::unique_ptr<Intent> MoveAction::updateStateAndGetNextIntent(
     return getNextIntent();
 }
 
-std::unique_ptr<Intent> MoveAction::calculateNextIntent(
-    intent_coroutine::push_type& yield)
+Intent * MoveAction::calculateNextIntent(
+        intent_coroutine::push_type &yield)
 {
     // We use a do-while loop so that we return the Intent at least once. If the robot was
     // already moving somewhere else, but was told to run the MoveAction to a destination
@@ -34,7 +35,7 @@ std::unique_ptr<Intent> MoveAction::calculateNextIntent(
     // location
     do
     {
-        yield(std::make_unique<MoveIntent>(robot->id(), destination, final_orientation,
+        yield(new MoveIntent(robot->id(), destination, final_orientation,
                                            final_speed, 0, enable_dribbler,
                                            enable_autokick));
     } while (loop_forever ||

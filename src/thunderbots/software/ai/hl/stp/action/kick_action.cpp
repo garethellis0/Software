@@ -10,7 +10,7 @@
 
 KickAction::KickAction() : Action(), ball({0, 0}, {0, 0}, Timestamp::fromSeconds(0)) {}
 
-std::unique_ptr<Intent> KickAction::updateStateAndGetNextIntent(
+Intent* KickAction::updateStateAndGetNextIntent(
     const Robot &robot, const Ball &ball, Point kick_origin, Point kick_target,
     double kick_speed_meters_per_second)
 {
@@ -19,7 +19,7 @@ std::unique_ptr<Intent> KickAction::updateStateAndGetNextIntent(
                                        kick_speed_meters_per_second);
 }
 
-std::unique_ptr<Intent> KickAction::updateStateAndGetNextIntent(
+Intent* KickAction::updateStateAndGetNextIntent(
     const Robot &robot, const Ball &ball, Point kick_origin, Angle kick_direction,
     double kick_speed_meters_per_second)
 {
@@ -33,8 +33,8 @@ std::unique_ptr<Intent> KickAction::updateStateAndGetNextIntent(
     return getNextIntent();
 }
 
-std::unique_ptr<Intent> KickAction::calculateNextIntent(
-    intent_coroutine::push_type &yield)
+Intent * KickAction::calculateNextIntent(
+        intent_coroutine::push_type &yield)
 {
     // How large the triangle is that defines the region where the robot is
     // behind the ball and ready to kick.
@@ -103,12 +103,12 @@ std::unique_ptr<Intent> KickAction::calculateNextIntent(
         // If we're not in position to kick, move into position
         if (!robot_behind_ball)
         {
-            yield(std::make_unique<MoveIntent>(robot->id(), point_behind_ball,
+            yield(new MoveIntent(robot->id(), point_behind_ball,
                                                kick_direction, 0.0, 0));
         }
         else
         {
-            yield(std::make_unique<KickIntent>(robot->id(), kick_origin, kick_direction,
+            yield(new KickIntent(robot->id(), kick_origin, kick_direction,
                                                kick_speed_meters_per_second, 0));
         }
 

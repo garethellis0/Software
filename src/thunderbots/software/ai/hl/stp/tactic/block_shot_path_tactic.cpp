@@ -43,7 +43,7 @@ Point BlockShotPathTactic::getBlockPosition()
     return block_position;
 }
 
-std::unique_ptr<Intent> BlockShotPathTactic::calculateNextIntent(
+Intent* BlockShotPathTactic::calculateNextIntent(
     intent_coroutine::push_type& yield)
 {
     MoveAction move_action = MoveAction();

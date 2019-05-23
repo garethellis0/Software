@@ -33,7 +33,7 @@ double CherryPickTactic::calculateRobotCost(const Robot& robot, const World& wor
     return dist(robot.position(), target_region);
 }
 
-std::unique_ptr<Intent> CherryPickTactic::calculateNextIntent(
+Intent* CherryPickTactic::calculateNextIntent(
     intent_coroutine::push_type& yield)
 {
     MoveAction move_action   = MoveAction();

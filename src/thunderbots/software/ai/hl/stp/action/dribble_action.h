@@ -38,15 +38,15 @@ class DribbleAction : public Action
      * @return A unique pointer to the Intent the DribbleAction wants to run. If the
      * DribbleAction is done, returns an empty/null pointer
      */
-    std::unique_ptr<Intent> updateStateAndGetNextIntent(const Robot& robot,
+    Intent* updateStateAndGetNextIntent(const Robot& robot,
                                                         const Point& dest,
                                                         const Angle& final_angle,
                                                         double rpm,
                                                         bool small_kick_allowed);
 
    private:
-    std::unique_ptr<Intent> calculateNextIntent(
-        intent_coroutine::push_type& yield) override;
+    Intent * calculateNextIntent(
+            intent_coroutine::push_type &yield) override;
 
     // Action parameters
     Point destination;

@@ -8,7 +8,10 @@
 
 // We typedef the coroutine return type to make it shorter, more descriptive,
 // and easier to work with
-typedef boost::coroutines2::coroutine<std::unique_ptr<Intent>> intent_coroutine;
+// NOTE: We use a raw pointer instead of a unique_ptr because coroutines do not
+//       properly pass ownership of unique_ptr's, resulting in segfaults when the
+//       coroutine attempts to deallocate it
+typedef boost::coroutines2::coroutine<Intent*> intent_coroutine;
 
 /**
  * The Action class is the lowest level of abstraction in our STP architecture.
@@ -35,6 +38,7 @@ class Action
     virtual ~Action() = default;
 
    protected:
+    // TODO: We should maybe make the raw pointer version protected and a public unique ptr one
     /**
      * Runs the coroutine and get the next Intent to run from the calculateNextIntent
      * function. If the Action is not done, the next Intent is returned. If the Action
@@ -43,7 +47,7 @@ class Action
      * @return A unique pointer to the next Intent that should be run for the Action.
      * If the Action is done, an empty/null unique pointer is returned.
      */
-    std::unique_ptr<Intent> getNextIntent();
+    Intent * getNextIntent();
 
     // The coroutine that sequentially returns the Intents the Action wants to run
     intent_coroutine::pull_type intent_sequence;
@@ -51,6 +55,7 @@ class Action
     std::optional<Robot> robot;
 
    private:
+    // TODO: update this comment
     /**
      * A wrapper function for the calculateNextIntent function.
      *
@@ -73,9 +78,10 @@ class Action
      * time this function is called, a null pointer will be returned (this does not
      * signify the Action is done).
      */
-    std::unique_ptr<Intent> calculateNextIntentWrapper(
-        intent_coroutine::push_type &yield);
+    Intent* calculateNextIntentWrapper(
+            intent_coroutine::push_type &yield);
 
+    // TODO: update this comment!
     /**
      * Calculates the next Intent for the Action. If the Action is done
      * (ie. it has achieved its objective and has no more Intents to return),
@@ -86,6 +92,6 @@ class Action
      * @return A unique pointer to the next Intent that should be run for the Action.
      * If the Action is done, an empty/null unique pointer is returned.
      */
-    virtual std::unique_ptr<Intent> calculateNextIntent(
-        intent_coroutine::push_type &yield) = 0;
+    virtual Intent * calculateNextIntent(
+            intent_coroutine::push_type &yield) = 0;
 };
