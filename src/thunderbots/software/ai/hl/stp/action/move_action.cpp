@@ -34,7 +34,7 @@ std::shared_ptr<Intent> MoveAction::calculateNextIntent(
     // location
     do
     {
-        yield(std::make_unique<MoveIntent>(robot->id(), destination, final_orientation,
+        yield(std::make_shared<MoveIntent>(robot->id(), destination, final_orientation,
                                            final_speed, 0, enable_dribbler,
                                            enable_autokick));
     } while (loop_forever ||
