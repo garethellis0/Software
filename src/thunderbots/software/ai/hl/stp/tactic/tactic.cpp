@@ -65,21 +65,21 @@ std::unique_ptr<Intent> Tactic::calculateNextIntentWrapper(
 
     // Anytime after the first function call, the calculateNextIntent function will be
     // used to perform the real logic
-    return calculateNextIntent(yield);
+    yield(calculateNextIntent(yield));
 }
 
 std::unique_ptr<Intent> Tactic::getNextIntentHelper()
 {
-    std::unique_ptr<Intent> next_intent;
+    std::unique_ptr<Intent> next_intent = {};
     // Check if the coroutine "iterator" has any more work to do. Only run the coroutine
     // if there is work to be done otherwise the coroutine library will fail on an assert.
     if (*intent_sequence)
     {
-        // Run the coroutine
-        (*intent_sequence)();
         // Get the result of running the coroutine, which is the next Intent the Tactic
         // wants to run
         next_intent = intent_sequence->get();
+        // Run the coroutine
+        (*intent_sequence)();
     }
 
     // The Tactic is considered done once the next_intent becomes a nullptr. This could

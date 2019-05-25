@@ -10,7 +10,7 @@
 using namespace AI::Passing;
 using namespace Util::DynamicParameters::AI::Passing;
 
-PassGenerator::PassGenerator(const World& world, const Point& passer_point)
+PassGenerator::PassGenerator(World world, Point passer_point)
     : updated_world(world),
       world(world),
       passer_robot_id(std::nullopt),

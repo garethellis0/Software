@@ -154,14 +154,36 @@ target_link_libraries(network_input
         )
 
 file(GLOB_RECURSE AI_LOGIC_SRC LIST_DIRECTORIES false CONFIGURE_DEPENDS
-        ${CMAKE_CURRENT_SOURCE_DIR}/ai/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/ai/*.h
+        #${CMAKE_CURRENT_SOURCE_DIR}/ai/*.cpp
+        #${CMAKE_CURRENT_SOURCE_DIR}/ai/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/passing/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/world/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/world/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/hl/stp/play/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/hl/stp/evaluation/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/primitive/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/primitive/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/navigator/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/navigator/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/evaluation/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/evaluation/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/geom/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/geom/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/util/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/util/*.cpp
         )
 add_executable (ai_logic
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/intent/move_intent.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/intent/intent.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/hl/stp/tactic/move_tactic.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/hl/stp/action/move_action.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/hl/stp/play/play.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/hl/stp/action/action.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/hl/stp/tactic/tactic.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/hl/stp/stp.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/ai.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai/hl/stp/primitive/
         ${AI_LOGIC_SRC}
         ${SHARED_UTIL_SRC}
 	)

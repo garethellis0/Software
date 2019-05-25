@@ -34,9 +34,11 @@ std::unique_ptr<Intent> MoveAction::calculateNextIntent(
     // location
     do
     {
-        yield(std::make_unique<MoveIntent>(robot->id(), destination, final_orientation,
+        auto intent = std::make_unique<MoveIntent>(robot->id(), destination, final_orientation,
                                            final_speed, 0, enable_dribbler,
-                                           enable_autokick));
+                                           enable_autokick);
+        yield(std::move(intent));
     } while (loop_forever ||
              (robot->position() - destination).len() > close_to_dest_threshold);
+    volatile int a;
 }

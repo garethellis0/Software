@@ -3,6 +3,8 @@
 #include "ai/hl/stp/play/play_factory.h"
 #include "ai/hl/stp/tactic/move_tactic.h"
 
+#include "ai/passing/pass_generator.h"
+
 const std::string ExamplePlay::name = "Example Play";
 
 std::string ExamplePlay::getName() const
@@ -23,6 +25,10 @@ bool ExamplePlay::invariantHolds(const World &world) const
 std::vector<std::shared_ptr<Tactic>> ExamplePlay::getNextTactics(
     TacticCoroutine::push_type &yield, const World &world)
 {
+    AI::Passing::PassGenerator pgen0(world, {0,0});
+    AI::Passing::PassGenerator pgen1(world, {0,0});
+    AI::Passing::PassGenerator pgen2(world, {0,0});
+
     // Create MoveTactics that will loop forever
     auto move_tactic_1 = std::make_shared<MoveTactic>(true);
     auto move_tactic_2 = std::make_shared<MoveTactic>(true);

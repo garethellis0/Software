@@ -27,8 +27,8 @@ std::unique_ptr<Intent> Action::getNextIntent()
     if (intent_sequence)
     {
         // Calculate and return the next Intent
-        intent_sequence();
         auto next_intent = intent_sequence.get();
+        intent_sequence();
         return next_intent;
     }
     return std::unique_ptr<Intent>{};
@@ -43,5 +43,5 @@ std::unique_ptr<Intent> Action::calculateNextIntentWrapper(
 
     // Anytime after the first function call, the calculateNextIntent function will be
     // used to perform the real logic
-    return calculateNextIntent(yield);
+    yield(calculateNextIntent(yield));
 }

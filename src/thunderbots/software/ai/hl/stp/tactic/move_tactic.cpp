@@ -33,7 +33,8 @@ std::unique_ptr<Intent> MoveTactic::calculateNextIntent(
     MoveAction move_action = MoveAction();
     do
     {
-        yield(move_action.updateStateAndGetNextIntent(*robot, destination,
-                                                      final_orientation, final_speed));
+        auto next_intent = move_action.updateStateAndGetNextIntent(*robot, destination, final_orientation, final_speed);
+        volatile int a;
+        yield(std::move(next_intent));
     } while (!move_action.done());
 }

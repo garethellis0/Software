@@ -63,7 +63,7 @@ namespace AI::Passing
          * @param world The world we're passing int
          * @param passer_point The point we're passing from
          */
-        explicit PassGenerator(const World& world, const Point& passer_point);
+        explicit PassGenerator(World world, Point passer_point);
 
         /**
          * Updates the world

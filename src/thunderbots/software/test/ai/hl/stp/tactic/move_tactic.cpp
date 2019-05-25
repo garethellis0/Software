@@ -7,6 +7,7 @@
 
 TEST(MoveTacticTest, robot_far_from_destination)
 {
+    std::cout << "robot_far_from_destination" << std::endl;
     Robot robot = Robot(0, Point(), Vector(), Angle::zero(), AngularVelocity::zero(),
                         Timestamp::fromSeconds(0));
 
@@ -16,7 +17,7 @@ TEST(MoveTacticTest, robot_far_from_destination)
     auto intent_ptr = tactic.getNextIntent();
 
     // Check an intent was returned (the pointer is not null)
-    EXPECT_TRUE(intent_ptr);
+    ASSERT_TRUE(intent_ptr);
 
     MoveIntent move_intent = dynamic_cast<MoveIntent &>(*intent_ptr);
     EXPECT_EQ(0, move_intent.getRobotId());
@@ -27,6 +28,8 @@ TEST(MoveTacticTest, robot_far_from_destination)
 
 TEST(MoveTacticTest, robot_at_destination)
 {
+    std::cout << "robot_at_destination" << std::endl;
+
     Robot robot = Robot(0, Point(), Vector(0, 0), Angle::zero(), AngularVelocity::zero(),
                         Timestamp::fromSeconds(0));
 
@@ -45,6 +48,7 @@ TEST(MoveTacticTest, robot_at_destination)
 
 TEST(MoveTacticTest, test_calculate_robot_cost)
 {
+    std::cout << "test_calculate_robot_cost" << std::endl;
     World world = ::Test::TestUtil::createBlankTestingWorld();
     world.updateFieldGeometry(::Test::TestUtil::createSSLDivBField());
 
