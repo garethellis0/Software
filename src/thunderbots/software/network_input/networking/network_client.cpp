@@ -177,6 +177,7 @@ void NetworkClient::filterAndPublishVisionData(SSL_WrapperPacket packet)
         world_msg.enemy_team = enemy_team_msg;
     }
 
+    world_msg = Util::ROSMessages::invertMsgFieldSide(world_msg);
     world_publisher.publish(world_msg);
 }
 

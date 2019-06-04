@@ -2,10 +2,9 @@
 
 #include "ai/hl/stp/play/play_factory.h"
 #include "ai/hl/stp/tactic/move_tactic.h"
-#include "ai/passing/pass.h"
-#include "ai/passing/pass_generator.h"
-#include "ai/hl/stp/tactic/receiver_tactic.h"
+
 #include "ai/hl/stp/tactic/passer_tactic.h"
+#include "ai/hl/stp/tactic/receiver_tactic.h"
 
 const std::string ExamplePlay::name = "Example Play";
 
@@ -38,7 +37,6 @@ void ExamplePlay::getNextTactics(
         passer->updateParams(pass, world.ball());
         receiver->updateParams(world.friendlyTeam(), world.enemyTeam(), pass, world.ball());
         yield({passer, receiver});
-
     } while (true);
 }
 
