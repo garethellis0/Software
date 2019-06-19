@@ -128,6 +128,7 @@ void CornerKickPlay::getNextTactics(TacticCoroutine::push_type &yield)
     Timestamp commit_stage_start_time = world.ball().lastUpdateTimestamp();
     do
     {
+        LOG(INFO) << "min_score: " << min_score;
         // TODO: Bit of hack this.......
         // Continue trying to align to deal with the case where we've finished
         // aligning but there's not passing to
@@ -152,6 +153,7 @@ void CornerKickPlay::getNextTactics(TacticCoroutine::push_type &yield)
         min_score = 1 - std::min(time_since_commit_stage_start.getSeconds() /
                                      MAX_TIME_TO_COMMIT_TO_PASS.getSeconds(),
                                  1.0);
+        LOG(INFO) << "Finished aligning to ball: " << (bool)align_to_ball_tactic->done();
     } while (!align_to_ball_tactic->done() ||
              best_pass_and_score_so_far.second < min_score);
 
