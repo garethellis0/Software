@@ -22,6 +22,21 @@ bool ShootOrPassPlay::invariantHolds(const World &world) const
 
 void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
 {
+    // TODO: general description of play here like you have for corner kick
+
+    // Create two cherry-pickers in the front two halves
+    // Create patrollers off to the sides in loops
+    // Start a PassGenerator from the current ball position
+    // Move robot into position to pass/shoot (facing the net)
+    // Start a 2 second timer over which we linearly decrease score tolerance
+    // do
+    //      shoot on the enemy net if we have an open shot
+    //      if good enough pass found, take it
+    //      if enemy within X meters of us, chip the ball to the enemy corners in such a way that it goes out the side of the field (to set positions)
+    // while(...)
+
+
+
     // Create MoveTactics that will loop forever
     auto move_tactic_1 = std::make_shared<MoveTactic>(true);
     auto move_tactic_2 = std::make_shared<MoveTactic>(true);
