@@ -672,6 +672,7 @@ if (CATKIN_ENABLE_TESTING)
             ai/hl/stp/action/move_action.cpp
             ai/hl/stp/action/stop_action.cpp
             ai/hl/stp/evaluation/calc_best_shot.cpp
+            ai/hl/stp/play/corner_kick_play.cpp
             ai/hl/stp/play/example_play.cpp
             ai/hl/stp/play/stop_play.cpp
             ai/hl/stp/play/play.cpp
