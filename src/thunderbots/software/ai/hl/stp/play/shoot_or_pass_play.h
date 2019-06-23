@@ -3,6 +3,8 @@
 #include "ai/hl/stp/play/play.h"
 #include "ai/hl/stp/tactic/move_tactic.h"
 #include "ai/hl/stp/tactic/cherry_pick_tactic.h"
+#include "ai/hl/stp/tactic/patrol_tactic.h"
+#include "ai/hl/stp/tactic/shoot_goal_tactic.h"
 #include "ai/passing/pass_generator.h"
 
 /**
@@ -52,6 +54,13 @@ private:
      * @param align_to_ball_tactic
      */
     void updateAlignToBallTactic(std::shared_ptr<MoveTactic> align_to_ball_tactic);
+
+    /**
+     * Update the given shoot goal tactic
+     *
+     * @param shoot_tactic
+     */
+    void updateShootGoalTactic(std::shared_ptr<ShootGoalTactic> shoot_tactic);
 
     /**
      * Updates the pass generator

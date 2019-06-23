@@ -3,6 +3,7 @@
 #include <g3log/g3log.hpp>
 
 #include "ai/hl/stp/evaluation/calc_best_shot.h"
+#include "ai/hl/stp/tactic/shoot_goal_tactic.h"
 #include "ai/hl/stp/play/play_factory.h"
 #include "ai/hl/stp/tactic/cherry_pick_tactic.h"
 #include "ai/hl/stp/tactic/move_tactic.h"
@@ -79,11 +80,15 @@ void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
                                        AT_PATROL_POINT_TOLERANCE, SPEED_AT_PATROL_POINTS);
 
     // Have a robot keep trying to take a shot
-    auto shoot_tactic = std::make_shared<ShootAtNetTactic>();
+    auto shoot_tactic = std::make_shared<ShootGoalTactic>(world.field(), world.friendlyTeam(), world.enemyTeam(), world.ball(), MIN_NET_PERCENT_OPEN_FOR_SHOT);
 
-    // Start a PassGenerator that will continuously optimize passes
-    // TODO: we need to set the target region to the upper 3/4 of the field!!
+    // Start a PassGenerator that will continuously optimize passes into roughly
+    // the enemy half of the field
     PassGenerator pass_generator(world, world.ball().position(), PassType::RECEIVE_AND_DRIBBLE);
+    pass_generator.setTargetRegion(Rectangle(
+            Point(-(world.field().length() / 4), world.field().width()/2),
+            world.field().enemyCornerNeg()
+            ));
     std::pair<Pass, double> best_pass_and_score_so_far =
         pass_generator.getBestPassSoFar();
 
@@ -91,20 +96,19 @@ void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
     // score of 1) and decreasing this threshold over time
     double min_pass_score_threshold = 1.0;
     // TODO: change this to use the world timestamp (Issue #423)
-    // TODO: rename this?
-    Timestamp commit_stage_start_time = world.ball().lastUpdateTimestamp();
+    Timestamp pass_optimization_start_time = world.ball().lastUpdateTimestamp();
     // This boolean indicates if we're ready to perform a pass
     bool ready_to_pass = false;
     // Whether or not we've set the passer robot in the PassGenerator
     bool set_passer_robot_in_passgenerator = false;
     do {
 
-        // TODO: update patrol tactics
-        // TODO: update shoot tactic
+        // TODO: Update "crease defenders" here when they're done
+        updateShootGoalTactic(shoot_tactic);
         updateCherryPickTactics({cherry_pick_tactic_pos_y, cherry_pick_tactic_neg_y});
         updatePassGenerator(pass_generator);
 
-        yield({shoot_tactic, cherry_pick_tactic_neg_y, cherry_pick_tactic_pos_y, patrol_tactic_pos_y, patrol_tactic_neg_y})
+        yield({shoot_tactic, cherry_pick_tactic_neg_y, cherry_pick_tactic_pos_y, patrol_tactic_pos_y, patrol_tactic_neg_y});
 
         // If there is a robot assigned to shoot, we assume this is the robot
         // that will be taking the shot
@@ -125,14 +129,14 @@ void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
         if (set_passer_robot_in_passgenerator){
             // TODO: change this to use the world timestamp (Issue #423)
             Duration time_since_commit_stage_start =
-                    world.ball().lastUpdateTimestamp() - commit_stage_start_time;
+                    world.ball().lastUpdateTimestamp() - pass_optimization_start_time;
             min_pass_score_threshold =
                     1 - std::min(time_since_commit_stage_start.getSeconds() /
                                  MAX_TIME_TO_COMMIT_TO_PASS.getSeconds(),
                                  1.0 - ABS_MIN_PASS_QUALITY);
         }
 
-    } while(!ready_to_pass && !shoot_tactic->hasShot());
+    } while(!ready_to_pass && !shoot_tactic->hasShotAvailable());
 
     // Destruct the PassGenerator and CherryPick tactics (which contain a PassGenerator
     // each) to save a significant number of CPU cycles
@@ -184,6 +188,10 @@ void ShootOrPassPlay::updateAlignToBallTactic(
     align_to_ball_tactic->updateParams(
         world.ball().position() - ball_to_enemy_net_vec.norm(ROBOT_MAX_RADIUS_METERS * 2),
         ball_to_enemy_net_vec.orientation(), 0);
+}
+
+void ShootOrPassPlay::updateShootGoalTactic(std::shared_ptr<ShootGoalTactic> shoot_tactic){
+    shoot_tactic->updateParams(world.field(), world.friendlyTeam(), world.enemyTeam(), world.ball());
 }
 
 void ShootOrPassPlay::updatePassGenerator(PassGenerator &pass_generator)
