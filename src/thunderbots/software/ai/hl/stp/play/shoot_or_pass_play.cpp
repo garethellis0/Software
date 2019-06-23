@@ -9,6 +9,7 @@
 #include "ai/hl/stp/tactic/move_tactic.h"
 #include "ai/hl/stp/tactic/patrol_tactic.h"
 #include "ai/hl/stp/tactic/passer_tactic.h"
+#include "ai/hl/stp/evaluation/possession.h"
 #include "ai/hl/stp/tactic/receiver_tactic.h"
 #include "ai/passing/pass_generator.h"
 #include "shared/constants.h"
@@ -16,13 +17,12 @@
 
 using namespace AI::Passing;
 
-const std::string ShootOrPassPlay::name = "Example Play";
+const std::string ShootOrPassPlay::name = "ShootOrPass Play";
 
 ShootOrPassPlay::ShootOrPassPlay()
     : MAX_TIME_TO_COMMIT_TO_PASS(Duration::fromSeconds(2.0))
 {
 }
-
 
 std::string ShootOrPassPlay::getName() const
 {
@@ -31,30 +31,27 @@ std::string ShootOrPassPlay::getName() const
 
 bool ShootOrPassPlay::isApplicable(const World &world) const
 {
-    return true;
+    return Evaluation::teamHasPossession(world.friendlyTeam(), world.ball());
 }
 
 bool ShootOrPassPlay::invariantHolds(const World &world) const
 {
-    return true;
+    return Evaluation::teamHasPossession(world.friendlyTeam(), world.ball());
 }
 
 void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
 {
-    // TODO: general description of play here like you have for corner kick
-    // TODO: break things out here into function calls per-stage
-
-    // Create two cherry-pickers in the front two halves
-    // Create patrollers off to the sides in loops
-    // Start a PassGenerator from the current ball position
-    // Move robot into position to pass/shoot (facing the net)
-    // Start a 2 second timer over which we linearly decrease score tolerance
-    // do
-    //      shoot on the enemy net if we have an open shot
-    //      if good enough pass found, take it
-    //      if enemy within X meters of us, chip the ball to the enemy corners in such a
-    //            way that it goes out the side of the field (to set positions)
-    // while(...)
+    /**
+     * There are two main stages to this Play:
+     * 1. Shoot while optimizing passes
+     *  - In this stage we try our best to shoot, while also optimizing passes
+     *  - Two robots move up to cherry-pick, two stay back as defenders, one is the
+     *    shooter/potential passer
+     * 2. If we could not shoot, perform the best pass we currently know about
+     *  - In this stage the shooter should be re-assigned to be a passer, one of
+     *    the cherry-pick tactics should be re-assigned to be a receiver, and the
+     *    two defenders continue to defend
+     */
 
     // Have two robots cherry-pick on the +y and -y sides of the field
     auto cherry_pick_tactic_pos_y = std::make_shared<CherryPickTactic>(
@@ -80,7 +77,7 @@ void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
                                        AT_PATROL_POINT_TOLERANCE, SPEED_AT_PATROL_POINTS);
 
     // Have a robot keep trying to take a shot
-    auto shoot_tactic = std::make_shared<ShootGoalTactic>(world.field(), world.friendlyTeam(), world.enemyTeam(), world.ball(), MIN_NET_PERCENT_OPEN_FOR_SHOT);
+    auto shoot_tactic = std::make_shared<ShootGoalTactic>(world.field(), world.friendlyTeam(), world.enemyTeam(), world.ball(), MIN_NET_PERCENT_OPEN_FOR_SHOT, std::nullopt, false);
 
     // Start a PassGenerator that will continuously optimize passes into roughly
     // the enemy half of the field
@@ -101,6 +98,7 @@ void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
     bool ready_to_pass = false;
     // Whether or not we've set the passer robot in the PassGenerator
     bool set_passer_robot_in_passgenerator = false;
+
     do {
 
         // TODO: Update "crease defenders" here when they're done
@@ -127,6 +125,7 @@ void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
         // our threshold based on how long the PassGenerator as been running since
         // we set it
         if (set_passer_robot_in_passgenerator){
+
             // TODO: change this to use the world timestamp (Issue #423)
             Duration time_since_commit_stage_start =
                     world.ball().lastUpdateTimestamp() - pass_optimization_start_time;
@@ -160,11 +159,14 @@ void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
                                                  world.enemyTeam(), pass, world.ball(), false);
         do
         {
+            // TODO: Update "crease defenders" here when they're done
             passer->updateParams(pass, world.ball());
             receiver->updateParams(world.friendlyTeam(), world.enemyTeam(), pass,
                                    world.ball());
             yield({passer, receiver, patrol_tactic_pos_y, patrol_tactic_neg_y});
         } while (!receiver->done());
+    } else {
+        LOG(DEBUG) << "Took shot";
     }
 
     LOG(DEBUG) << "Finished";
