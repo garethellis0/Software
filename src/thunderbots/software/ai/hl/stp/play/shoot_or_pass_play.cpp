@@ -62,7 +62,7 @@ void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
         world, Rectangle(world.field().centerPoint(), world.field().enemyCornerNeg()));
 
     // Have two robots patrol along a line near the sides of the field
-    // TODO: make these two patrollers into defenders
+    // TODO: make these two patrollers into "crease defenders"
     double half_field_width        = world.field().width() / 2;
     double patrol_point_y_position = half_field_width - half_field_width / 4;
     auto patrol_tactic_pos_y =
@@ -82,9 +82,8 @@ void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
     auto shoot_tactic = std::make_shared<ShootAtNetTactic>();
 
     // Start a PassGenerator that will continuously optimize passes
-    // TODO: we need to be able to optimize for passes instead of just one-times here!!
-    // TODO: we need to set the target region to the upper 3/4 of the field
-    PassGenerator pass_generator(world, world.ball().position());
+    // TODO: we need to set the target region to the upper 3/4 of the field!!
+    PassGenerator pass_generator(world, world.ball().position(), PassType::RECEIVE_AND_DRIBBLE);
     std::pair<Pass, double> best_pass_and_score_so_far =
         pass_generator.getBestPassSoFar();
 
