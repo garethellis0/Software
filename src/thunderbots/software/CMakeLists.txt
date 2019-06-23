@@ -836,7 +836,10 @@ if (CATKIN_ENABLE_TESTING)
             util/time/time.cpp
             util/time/timestamp.cpp
             )
-    target_link_libraries(passing_test ${catkin_LIBRARIES})
+    target_link_libraries(passing_test
+            ${catkin_LIBRARIES}
+            ${G3LOG}
+            )
 
     catkin_add_gtest(gradient_descent_optimizer_test
             test/util/gradient_descent_optimizer.cpp
