@@ -82,8 +82,8 @@ std::optional<std::pair<Point, double>> ShootGoalTactic::getShotData() const
                                                              enemy_team, ball.position());
     if (best_shot_opt)
     {
-        double net_percent_open =
-            Evaluation::calcShotOpenNetPercentage(field, ball.position(), *best_shot_opt);
+        double net_percent_open = Evaluation::calcShotOpenEnemyNetPercentage(
+            field, ball.position(), *best_shot_opt);
         return std::make_pair(best_shot_opt->first, net_percent_open);
     }
 
@@ -99,16 +99,16 @@ void ShootGoalTactic::shootUntilShotBlocked(KickAction &kick_action,
     {
         if (!isEnemyAboutToStealBall())
         {
-            // If we are in the middle of committing to a shot but an enemy is about to
-            // steal the ball we chip instead to just get over the enemy. We do not adjust
-            // the point we are targeting since that may take more time to realign to, and
-            // we need to be very quick so the enemy doesn't get the ball
             yield(kick_action.updateStateAndGetNextIntent(
                 *robot, ball, ball.position(), shot_target->first,
                 BALL_MAX_SPEED_METERS_PER_SECOND - 0.5));
         }
         else
         {
+            // If we are in the middle of committing to a shot but an enemy is about to
+            // steal the ball we chip instead to just get over the enemy. We do not adjust
+            // the point we are targeting since that may take more time to realign to, and
+            // we need to be very quick so the enemy doesn't get the ball
             yield(chip_action.updateStateAndGetNextIntent(*robot, ball, ball.position(),
                                                           shot_target->first, CHIP_DIST));
         }
@@ -140,8 +140,8 @@ void ShootGoalTactic::calculateNextIntent(IntentCoroutine::push_type &yield)
             // If an enemy is about to steal the ball from us, we try chip over them to
             // try recover the ball after, which is better than being stripped of the ball
             // and directly losing possession that way
-            yield(chip_action.updateStateAndGetNextIntent(*robot, ball, ball.position(),
-                                                          fallback_chip_target, 0.5));
+            yield(chip_action.updateStateAndGetNextIntent(
+                *robot, ball, ball.position(), fallback_chip_target, CHIP_DIST));
         }
         else
         {
@@ -151,7 +151,7 @@ void ShootGoalTactic::calculateNextIntent(IntentCoroutine::push_type &yield)
             Point behind_ball =
                 ball.position() +
                 behind_ball_vector.norm(BALL_MAX_RADIUS_METERS +
-                                        DIST_TO_FRONT_OF_ROBOT_METERS + 0.05);
+                                        DIST_TO_FRONT_OF_ROBOT_METERS + TRACK_BALL_DIST);
 
             // The default behaviour is to move behind the ball and face the net
             yield(move_action.updateStateAndGetNextIntent(

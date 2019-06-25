@@ -21,6 +21,8 @@ AI:
         - "Corner Kick Play"
         - "KickoffEnemy Play"
         - "Shoot Or Pass Play"
+        - "Defense Play"
+        - "KickoffEnemy Play"
     description: >-
         Specifies the ai play that should be in use
   refbox:
