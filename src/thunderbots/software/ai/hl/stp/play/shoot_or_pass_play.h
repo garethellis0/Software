@@ -31,7 +31,7 @@ private:
     static constexpr double AT_PATROL_POINT_TOLERANCE = 0.3;
 
     // The speed each patrolling robot should be moving through its control point
-    static constexpr double SPEED_AT_PATROL_POINTS = 0.5;
+    static constexpr double SPEED_AT_PATROL_POINTS = 0.0;
 
     // The maximum time that we will wait before committing to a pass
     const Duration MAX_TIME_TO_COMMIT_TO_PASS;

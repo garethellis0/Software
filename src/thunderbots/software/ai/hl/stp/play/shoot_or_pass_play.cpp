@@ -17,7 +17,7 @@
 
 using namespace AI::Passing;
 
-const std::string ShootOrPassPlay::name = "ShootOrPass Play";
+const std::string ShootOrPassPlay::name = "Shoot Or Pass Play";
 
 ShootOrPassPlay::ShootOrPassPlay()
     : MAX_TIME_TO_COMMIT_TO_PASS(Duration::fromSeconds(2.0))
@@ -106,7 +106,7 @@ void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
         updateCherryPickTactics({cherry_pick_tactic_pos_y, cherry_pick_tactic_neg_y});
         updatePassGenerator(pass_generator);
 
-        yield({shoot_tactic, cherry_pick_tactic_neg_y, cherry_pick_tactic_pos_y, patrol_tactic_pos_y, patrol_tactic_neg_y});
+        yield({shoot_tactic, cherry_pick_tactic_neg_y, cherry_pick_tactic_pos_y/*, patrol_tactic_pos_y, patrol_tactic_neg_y*/});
 
         // If there is a robot assigned to shoot, we assume this is the robot
         // that will be taking the shot
