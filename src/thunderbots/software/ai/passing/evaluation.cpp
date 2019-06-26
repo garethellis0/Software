@@ -18,7 +18,7 @@
 using namespace Passing;
 using namespace AI::Evaluation;
 
-double AI::Passing::ratePass(const World& world, const AI::Passing::Pass& pass,
+double Passing::ratePass(const World& world, const Passing::Pass& pass,
                              const std::optional<Rectangle>& target_region,
                              std::optional<unsigned int> passer_robot_id,
                              PassType pass_type)

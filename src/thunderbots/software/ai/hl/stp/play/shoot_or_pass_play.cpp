@@ -15,12 +15,13 @@
 #include "shared/constants.h"
 #include "util/logger/custom_logging_levels.h"
 
-using namespace AI::Passing;
+using namespace Passing;
 
 const std::string ShootOrPassPlay::name = "Shoot Or Pass Play";
 
 ShootOrPassPlay::ShootOrPassPlay()
-    : MAX_TIME_TO_COMMIT_TO_PASS(Duration::fromSeconds(2.0))
+    : MAX_TIME_TO_COMMIT_TO_PASS(Duration::fromSeconds(2.0)),
+    MIN_NET_OPEN_ANGLE_FOR_SHOT(Angle::ofDegrees(3))
 {
 }
 
@@ -77,7 +78,7 @@ void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
                                        AT_PATROL_POINT_TOLERANCE, SPEED_AT_PATROL_POINTS);
 
     // Have a robot keep trying to take a shot
-    auto shoot_tactic = std::make_shared<ShootGoalTactic>(world.field(), world.friendlyTeam(), world.enemyTeam(), world.ball(), MIN_NET_PERCENT_OPEN_FOR_SHOT, std::nullopt, false);
+    auto shoot_tactic = std::make_shared<ShootGoalTactic>(world.field(), world.friendlyTeam(), world.enemyTeam(), world.ball(), MIN_NET_OPEN_ANGLE_FOR_SHOT, std::nullopt, false);
 
     // Start a PassGenerator that will continuously optimize passes into roughly
     // the enemy half of the field
@@ -106,7 +107,10 @@ void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
         updateCherryPickTactics({cherry_pick_tactic_pos_y, cherry_pick_tactic_neg_y});
         updatePassGenerator(pass_generator);
 
-        yield({shoot_tactic, cherry_pick_tactic_neg_y, cherry_pick_tactic_pos_y/*, patrol_tactic_pos_y, patrol_tactic_neg_y*/});
+        LOG(DEBUG) << "Best pass so far is: " << best_pass_and_score_so_far.first;
+        LOG(DEBUG) << "      with score of: " << best_pass_and_score_so_far.second;
+
+        yield({shoot_tactic, cherry_pick_tactic_neg_y, /* cherry_pick_tactic_pos_y, patrol_tactic_pos_y, patrol_tactic_neg_y*/});
 
         // If there is a robot assigned to shoot, we assume this is the robot
         // that will be taking the shot
@@ -135,7 +139,9 @@ void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
                                  1.0 - ABS_MIN_PASS_QUALITY);
         }
 
-    } while(!ready_to_pass && !shoot_tactic->hasShotAvailable());
+        LOG(DEBUG) << "LOOP END";
+//    } while(!ready_to_pass || shoot_tactic->hasShotAvailable());
+    } while(!ready_to_pass || false);
 
     // Destruct the PassGenerator and CherryPick tactics (which contain a PassGenerator
     // each) to save a significant number of CPU cycles
@@ -145,7 +151,8 @@ void ShootOrPassPlay::getNextTactics(TacticCoroutine::push_type &yield)
     cherry_pick_tactic_neg_y->~CherryPickTactic();
 
     // If the shoot tactic has finished, we are done this play, otherwise we need to pass
-    if (!shoot_tactic->done()){
+//    if (!shoot_tactic->hasShotAvailable()){
+    if (true){
         // Commit to a pass
         Pass pass = best_pass_and_score_so_far.first;
 

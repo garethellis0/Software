@@ -7,7 +7,7 @@
 #include "ai/hl/stp/action/move_action.h"
 #include "geom/util.h"
 
-using namespace AI::Passing;
+using namespace Passing;
 
 CherryPickTactic::CherryPickTactic(const World& world, const Rectangle& target_region)
     : pass_generator(world, world.ball().position(), PassType::ONE_TOUCH_SHOT),
@@ -38,6 +38,7 @@ void CherryPickTactic::calculateNextIntent(IntentCoroutine::push_type& yield)
 {
     MoveAction move_action = MoveAction(MoveAction::ROBOT_CLOSE_TO_DEST_THRESHOLD, true);
     auto best_pass_and_score = pass_generator.getBestPassSoFar();
+//    std::cout << "HERE" << std::endl;
     do
     {
         pass_generator.setWorld(world);

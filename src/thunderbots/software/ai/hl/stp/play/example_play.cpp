@@ -23,9 +23,11 @@ bool ExamplePlay::invariantHolds(const World &world) const
 
 void ExamplePlay::getNextTactics(TacticCoroutine::push_type &yield)
 {
+    // TODO: revert changes to this file
+
     // Create MoveTactics that will loop forever
     auto move_tactic_1 = std::make_shared<ShootGoalTactic>(
-        world.field(), world.friendlyTeam(), world.enemyTeam(), world.ball(), 0.1,
+        world.field(), world.friendlyTeam(), world.enemyTeam(), world.ball(), Angle::ofDegrees(1),
         world.field().enemyCornerPos(), true);
     //    auto move_tactic_2 = std::make_shared<MoveTactic>(true);
     //    auto move_tactic_3 = std::make_shared<MoveTactic>(true);

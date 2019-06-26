@@ -37,7 +37,7 @@ private:
     const Duration MAX_TIME_TO_COMMIT_TO_PASS;
 
     // The minimum open net percentage we will try to shoot at
-    static constexpr double MIN_NET_PERCENT_OPEN_FOR_SHOT = 0.1;
+    const Angle MIN_NET_OPEN_ANGLE_FOR_SHOT;
 
     // The absolute minimum pass quality we're willing to accept
     static constexpr double ABS_MIN_PASS_QUALITY = 0.05;
@@ -67,5 +67,5 @@ private:
      *
      * @param pass_generator
      */
-    void updatePassGenerator(AI::Passing::PassGenerator &pass_generator);
+    void updatePassGenerator(Passing::PassGenerator &pass_generator);
 };
