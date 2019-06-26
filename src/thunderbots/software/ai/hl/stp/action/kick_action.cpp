@@ -10,23 +10,24 @@
 
 KickAction::KickAction() : Action(), ball({0, 0}, {0, 0}, Timestamp::fromSeconds(0)) {}
 
-std::unique_ptr<Intent> KickAction::updateStateAndGetNextIntent(
-    const Robot &robot, const Ball &ball, Point kick_origin, Point kick_target,
-    double kick_speed_meters_per_second)
+std::unique_ptr<Intent>
+KickAction::updateStateAndGetNextIntent(const Robot &robot, const Ball &ball,
+                                        Point kick_target,
+                                        double kick_speed_meters_per_second)
 {
-    return updateStateAndGetNextIntent(robot, ball, kick_origin,
-                                       (kick_target - kick_origin).orientation(),
+    return updateStateAndGetNextIntent(robot, ball,
+                                       (kick_target - ball.position()).orientation(),
                                        kick_speed_meters_per_second);
 }
 
-std::unique_ptr<Intent> KickAction::updateStateAndGetNextIntent(
-    const Robot &robot, const Ball &ball, Point kick_origin, Angle kick_direction,
-    double kick_speed_meters_per_second)
+std::unique_ptr<Intent>
+KickAction::updateStateAndGetNextIntent(const Robot &robot, const Ball &ball,
+                                        Angle kick_direction,
+                                        double kick_speed_meters_per_second)
 {
     // Update the parameters stored by this Action
     this->robot                        = robot;
     this->ball                         = ball;
-    this->kick_origin                  = kick_origin;
     this->kick_direction               = kick_direction;
     this->kick_speed_meters_per_second = kick_speed_meters_per_second;
 
@@ -76,7 +77,7 @@ void KickAction::calculateNextIntent(IntentCoroutine::push_type &yield)
 
         // We make the region close enough to the ball so that the robot will still be
         // inside it when taking the kick.
-        Point behind_ball_vertex_A = kick_origin;
+        Point behind_ball_vertex_A = ball.position();
         Point behind_ball_vertex_B =
             behind_ball_vertex_A + behind_ball.norm(size_of_region_behind_ball) +
             behind_ball.perp().norm(size_of_region_behind_ball / 2);
@@ -90,7 +91,7 @@ void KickAction::calculateNextIntent(IntentCoroutine::push_type &yield)
         bool robot_behind_ball = behind_ball_region.containsPoint(robot->position());
         // The point in the middle of the region behind the ball
         Point point_behind_ball =
-            kick_origin + behind_ball.norm(size_of_region_behind_ball * 3 / 4);
+            ball.position() + behind_ball.norm(size_of_region_behind_ball * 3 / 4);
 
         // If we're not in position to kick, move into position
         if (!robot_behind_ball)
@@ -100,7 +101,7 @@ void KickAction::calculateNextIntent(IntentCoroutine::push_type &yield)
         }
         else
         {
-            yield(std::make_unique<KickIntent>(robot->id(), kick_origin, kick_direction,
+            yield(std::make_unique<KickIntent>(robot->id(), ball.position(), kick_direction,
                                                kick_speed_meters_per_second, 0));
         }
     } while (true);

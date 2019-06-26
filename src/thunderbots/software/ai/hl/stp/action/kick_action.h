@@ -6,8 +6,7 @@
 #include "geom/point.h"
 
 /**
- * The KickAction makes the robot take a kick from the given location in the given
- * direction, with the given power.
+ * The KickAction makes the robot kick the ball in a given direction or towards a given target
  */
 class KickAction : public Action
 {
@@ -29,9 +28,10 @@ class KickAction : public Action
      * @return A unique pointer to the Intent the KickAction wants to run. If the
      * KickAction is done, returns an empty/null pointer
      */
-    std::unique_ptr<Intent> updateStateAndGetNextIntent(
-        const Robot &robot, const Ball &ball, Point kick_origin, Angle kick_direction,
-        double kick_speed_meters_per_second);
+    std::unique_ptr<Intent>
+    updateStateAndGetNextIntent(const Robot &robot, const Ball &ball,
+                                Angle kick_direction,
+                                double kick_speed_meters_per_second);
 
     /**
      * Returns the next Intent this KickAction wants to run, given the parameters.
@@ -53,16 +53,15 @@ class KickAction : public Action
      * @return A unique pointer to the Intent the KickAction wants to run. If the
      * KickAction is done, returns an empty/null pointer
      */
-    std::unique_ptr<Intent> updateStateAndGetNextIntent(
-        const Robot &robot, const Ball &ball, Point kick_origin, Point kick_target,
-        double kick_speed_meters_per_second);
+    std::unique_ptr<Intent>
+    updateStateAndGetNextIntent(const Robot &robot, const Ball &ball, Point kick_target,
+                                double kick_speed_meters_per_second);
 
    private:
     void calculateNextIntent(IntentCoroutine::push_type &yield) override;
 
     // Action parameters
     Ball ball;
-    Point kick_origin;
     Angle kick_direction;
     double kick_speed_meters_per_second;
 };

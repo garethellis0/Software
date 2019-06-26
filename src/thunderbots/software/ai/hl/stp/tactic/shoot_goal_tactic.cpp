@@ -100,8 +100,8 @@ void ShootGoalTactic::shootUntilShotBlocked(KickAction &kick_action,
         if (!isEnemyAboutToStealBall())
         {
             yield(kick_action.updateStateAndGetNextIntent(
-                *robot, ball, ball.position(), shot_target->first,
-                BALL_MAX_SPEED_METERS_PER_SECOND - 0.5));
+                    *robot, ball, shot_target->first,
+                    BALL_MAX_SPEED_METERS_PER_SECOND - 0.5));
         }
         else
         {

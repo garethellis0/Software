@@ -12,7 +12,7 @@ TEST(KickActionTest, robot_behind_ball_kicking_towards_positive_x_positive_y)
     Ball ball({0, 0}, robot.position(), Timestamp::fromSeconds(0));
     KickAction action = KickAction();
 
-    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball, ball.position(),
+    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball,
                                                          Angle::zero(), 5.0);
 
     // Check an intent was returned (the pointer is not null)
@@ -40,7 +40,7 @@ TEST(KickActionTest, robot_behind_ball_kicking_towards_negative_x_positive_y)
     Ball ball({-2.5, 2.5}, robot.position(), Timestamp::fromSeconds(0));
     KickAction action = KickAction();
 
-    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball, ball.position(),
+    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball,
                                                          Angle::ofDegrees(105), 5.0);
 
     // Check an intent was returned (the pointer is not null)
@@ -68,7 +68,7 @@ TEST(KickActionTest, robot_behind_ball_kicking_towards_negative_x_negative_y)
     Ball ball({-0.05, -0.2}, robot.position(), Timestamp::fromSeconds(0));
     KickAction action = KickAction();
 
-    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball, ball.position(),
+    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball,
                                                          Angle::ofDegrees(255), 3.0);
 
     // Check an intent was returned (the pointer is not null)
@@ -96,7 +96,7 @@ TEST(KickActionTest, robot_behind_ball_kicking_towards_positive_x_negative_y)
     Ball ball({0, 0}, robot.position(), Timestamp::fromSeconds(0));
     KickAction action = KickAction();
 
-    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball, ball.position(),
+    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball,
                                                          Angle::ofDegrees(306), 5.0);
 
     // Check an intent was returned (the pointer is not null)
@@ -124,7 +124,7 @@ TEST(KickActionTest, robot_not_behind_ball_kicking_towards_positive_x_positive_y
     Ball ball({0, 0}, robot.position(), Timestamp::fromSeconds(0));
     KickAction action = KickAction();
 
-    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball, ball.position(),
+    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball,
                                                          Angle::zero(), 5.0);
 
     // Check an intent was returned (the pointer is not null)
@@ -153,7 +153,7 @@ TEST(KickActionTest, robot_not_behind_ball_kicking_towards_negative_x_positive_y
     Ball ball({-2.5, 2.5}, robot.position(), Timestamp::fromSeconds(0));
     KickAction action = KickAction();
 
-    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball, ball.position(),
+    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball,
                                                          Angle::ofDegrees(105), 5.0);
 
     // Check an intent was returned (the pointer is not null)
@@ -182,7 +182,7 @@ TEST(KickActionTest, robot_not_behind_ball_kicking_towards_negative_x_negative_y
     Ball ball({-1, -4}, robot.position(), Timestamp::fromSeconds(0));
     KickAction action = KickAction();
 
-    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball, ball.position(),
+    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball,
                                                          Angle::ofDegrees(255), 3.0);
 
     // Check an intent was returned (the pointer is not null)
@@ -211,7 +211,7 @@ TEST(KickActionTest, robot_not_behind_ball_kicking_towards_positive_x_negative_y
     Ball ball({0, 0}, robot.position(), Timestamp::fromSeconds(0));
     KickAction action = KickAction();
 
-    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball, ball.position(),
+    auto intent_ptr = action.updateStateAndGetNextIntent(robot, ball,
                                                          Angle::ofDegrees(306), 5.0);
 
     // Check an intent was returned (the pointer is not null)
