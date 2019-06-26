@@ -11,7 +11,7 @@
 #include "util/time/timestamp.h"
 #include "ai/passing/evaluation.h"
 
-namespace AI::Passing
+namespace Passing
 {
     /**
      * This class is responsible for generating passes for us to perform
@@ -133,7 +133,7 @@ namespace AI::Passing
         // in each respective dimension for a single iteration. They are tuned to
         // ensure passes converge as fast as possible, but are also as stable as
         // possible
-        static constexpr double PASS_SPACE_WEIGHT                          = 0.01;
+        static constexpr double PASS_SPACE_WEIGHT                          = 0.1;
         static constexpr double PASS_TIME_WEIGHT                           = 0.1;
         static constexpr double PASS_SPEED_WEIGHT                          = 0.01;
         std::array<double, NUM_PARAMS_TO_OPTIMIZE> optimizer_param_weights = {
@@ -319,4 +319,4 @@ namespace AI::Passing
     };
 
 
-}  // namespace AI::Passing
+}  // namespace Passing

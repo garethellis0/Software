@@ -12,7 +12,7 @@
 #include "ai/world/world.h"
 #include "util/math_functions.h"
 
-namespace AI::Passing
+namespace Passing
 {
     // The types of passes we can perform
     enum PassType {
@@ -41,7 +41,7 @@ namespace AI::Passing
      * @return A value in [0,1] representing the quality of the pass, with 1 being an
      *         ideal pass, and 0 being the worst pass possible
      */
-    double ratePass(const World& world, const AI::Passing::Pass& pass,
+    double ratePass(const World& world, const Passing::Pass& pass,
                     const std::optional<Rectangle>& target_region,
                     std::optional<unsigned int> passer_robot_id, PassType pass_type);
 
@@ -57,7 +57,7 @@ namespace AI::Passing
      *         the pass
      */
     double ratePassShootScore(const Field& field, const Team& enemy_team,
-                              const AI::Passing::Pass& pass);
+                              const Passing::Pass& pass);
 
     /**
      * Calculates the risk of an enemy robot interfering with a given pass
@@ -131,4 +131,4 @@ namespace AI::Passing
      */
     double getStaticPositionQuality(const Field& field, const Point& position);
 
-}  // namespace AI::Passing
+}  // namespace Passing

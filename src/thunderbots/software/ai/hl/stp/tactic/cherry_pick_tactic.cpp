@@ -36,7 +36,7 @@ double CherryPickTactic::calculateRobotCost(const Robot& robot, const World& wor
 
 void CherryPickTactic::calculateNextIntent(IntentCoroutine::push_type& yield)
 {
-    MoveAction move_action   = MoveAction();
+    MoveAction move_action = MoveAction(MoveAction::ROBOT_CLOSE_TO_DEST_THRESHOLD, true);
     auto best_pass_and_score = pass_generator.getBestPassSoFar();
     do
     {
@@ -46,5 +46,5 @@ void CherryPickTactic::calculateNextIntent(IntentCoroutine::push_type& yield)
         auto [pass, score] = pass_generator.getBestPassSoFar();
         yield(move_action.updateStateAndGetNextIntent(*robot, pass.receiverPoint(),
                                                       pass.receiverOrientation(), 0));
-    } while (!move_action.done());
+    } while (true);
 }
