@@ -58,7 +58,23 @@ class KickAction : public Action
                                 double kick_speed_meters_per_second);
 
    private:
+
+    // The minimum speed a ball must be travelling for us to consider it moving
+    static constexpr double MIN_MOVING_BALL_SPEED = 0.2;
+
     void calculateNextIntent(IntentCoroutine::push_type &yield) override;
+
+    /**
+     * Calculate the next intent to run assuming the ball *is not* moving
+     * @param yield
+     */
+    void calculateNextIntentBallNotMoving(IntentCoroutine::push_type &yield);
+
+    /**
+     * Calculate the next intent to run assuming the ball *is* moving
+     * @param yield
+     */
+    void calculateNextIntentBallMoving(IntentCoroutine::push_type &yield);
 
     // Action parameters
     Ball ball;
