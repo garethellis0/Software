@@ -75,8 +75,8 @@ void FreeKickTactic::calculateNextIntent(IntentCoroutine::push_type& yield)
         if (best_shot && (std::get<1>(*best_shot) > MIN_SHOT_ANGLE))
         {
             target = std::get<0>(*best_shot);
-            yield(kick_action.updateStateAndGetNextIntent(
-                *robot, world.ball(), world.ball().position(), target, KICK_SPEED));
+//            yield(kick_action.updateStateAndGetNextIntent(
+//                *robot, world.ball(), world.ball().position(), target, KICK_SPEED));
         }
         else if (chip_and_chase_shot)
         {
@@ -94,8 +94,8 @@ void FreeKickTactic::calculateNextIntent(IntentCoroutine::push_type& yield)
             // No shot found, shoot at enemy and get deflection towards goal (hopefully)
             // note: this case rarely gets hit
             target = Evaluation::deflect_off_enemy_target(world);
-            yield(kick_action.updateStateAndGetNextIntent(
-                *robot, world.ball(), world.ball().position(), target, KICK_SPEED));
+//            yield(kick_action.updateStateAndGetNextIntent(
+//                *robot, world.ball(), world.ball().position(), target, KICK_SPEED));
         }
     } while (world.ball().velocity().len() < MAX_BALL_VELOCITY);
 }

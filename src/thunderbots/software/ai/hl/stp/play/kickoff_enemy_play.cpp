@@ -17,8 +17,9 @@ std::string KickoffEnemyPlay::getName() const
 
 bool KickoffEnemyPlay::isApplicable(const World &world) const
 {
-    return (world.gameState().isReadyState() || world.gameState().isSetupState()) &&
-           world.gameState().isTheirKickoff();
+    return false;
+//    return (world.gameState().isReadyState() || world.gameState().isSetupState()) &&
+//           world.gameState().isTheirKickoff();
 }
 
 bool KickoffEnemyPlay::invariantHolds(const World &world) const
