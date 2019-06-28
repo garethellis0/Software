@@ -207,4 +207,33 @@ KickAction:
       Determines how far ahead of the ball to move to intercept the ball with the
       following formula:
       offset = velocity_to_offset_ratio * ball_velocity * robot_dist_from_ball
+DefenderCreaseTactic:
+  max_defender_seperation_deg:
+    min: 0.0
+    max: 50
+    default: 13.0
+    type: "double"
+    description: The maximum angle the crease defenders will seperate by, in degrees.
+  min_defender_seperation_deg:
+    min: 0.0
+    max: 50
+    default: 3.0
+    type: "double"
+    description: The minimum angle the crease defenders will seperate by, in degrees.
+  ball_dist_for_max_defender_seperation:
+    min: 0.0
+    max: 5
+    default: 3
+    type: "double"
+    description: >-
+      The distance between the ball and the defenders at which they will have their
+      maximum seperation.
+  ball_dist_for_min_defender_seperation:
+    min: 0.0
+    max: 5
+    default: 1
+    type: "double"
+    description: >-
+      The distance between the ball and the defenders at which they will have their
+      minimum seperation.
 
