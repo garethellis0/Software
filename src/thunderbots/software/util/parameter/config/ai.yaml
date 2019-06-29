@@ -200,11 +200,21 @@ Evaluation:
 KickAction:
   velocity_to_offset_ratio:
     min: 0.0
-    max: 100.0
-    default: 1
+    max: 10.0
+    default: 0.2
     type: "double"
     description: >-
       Determines how far ahead of the ball to move to intercept the ball with the
       following formula:
       offset = velocity_to_offset_ratio * ball_velocity * robot_dist_from_ball
+  dist_scaling_pow:
+    min: 0.0
+    max: 5.0
+    default: 1.3
+    type: "double"
+    description: >-
+      Determines how far ahead of the ball to move to intercept the ball with the
+      following formula:
+      offset = velocity_to_offset_ratio * ball_velocity * robot_dist_from_ball
+
 

@@ -120,7 +120,9 @@ void KickAction::calculateNextIntentBallMoving(IntentCoroutine::push_type &yield
     // intercept it
     double velocity_to_offset_ratio =
             Util::DynamicParameters::KickAction::velocity_to_offset_ratio.value();
-    double intercept_offset_dist = velocity_to_offset_ratio * ball.velocity().len() * robot_to_ball_dist;
+    double dist_scaling_pow = 
+            Util::DynamicParameters::KickAction::dist_scaling_pow.value();
+    double intercept_offset_dist = velocity_to_offset_ratio * std::pow(ball.velocity().len() + robot_to_ball_dist, dist_scaling_pow);
 
     // Calculate what position the ball will be at
     Point ball_intercept_position = ball.position() + ball.velocity().norm(intercept_offset_dist);
