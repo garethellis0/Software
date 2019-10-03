@@ -1,17 +1,10 @@
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
-    name = "STM32H7xx_HAL_Driver_Srcs",
-    srcs = glob([
-        "Src/*.c",
-    ]),
-)
-
-filegroup(
-    name = "STM32H7xx_HAL_Driver_Hdrs",
-    srcs = glob([
-        "Inc/*.h",
-    ]),
+    name = "STM32H7xx_HAL_Driver",
+    srcs = [
+        "STM32H7xx_HAL_Driver",
+    ],
 )
 
 #cc_library(

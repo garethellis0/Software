@@ -6,5 +6,6 @@ cc_stm32_h7_binary(
         "*.c",
         "*.h",
     ]),
-    hal_config_files = glob(["*.h"]),
+    free_rtos_config_hdrs = ["FreeRTOSConfig.h"],
+    hal_config_hdrs = ["stm32h7xx_hal_conf.h"],
 )

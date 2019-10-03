@@ -10,26 +10,71 @@ MyCCompileInfo = provider(doc = "", fields = ["object"])
 #    cc_toolchain = find_cpp_toolchain(ctx)
 def cc_stm32_h7_binary(**kwargs):
     name = kwargs.pop("name")
-    hal_config_files = kwargs.pop("hal_config_files")
+    hal_config_hdrs = kwargs.pop("hal_config_hdrs")
+    free_rtos_config_hdrs = kwargs.pop("free_rtos_config_hdrs")
     srcs = kwargs.pop("srcs")
     deps = kwargs.pop("deps", [])
 
-    # First build a HAL library configured specifically for this executable. We do this
+    # Build a HAL library configured specifically for this executable. We do this
     # because each project has it's own "_hal_conf" files that result in compile-time
     # changes to the library
+    hal_conf_library_name = "{}_hal_conf".format(name)
+    native.cc_library(
+        name = hal_conf_library_name,
+        hdrs = hal_config_hdrs,
+    )
+
     hal_library_name = "{}_hal".format(name)
+
+    # TODO: comment on why we do this move (stops bazel complaining)
+    native.genrule(
+        name = "hal_library_files",
+        srcs = ["//firmware_new/Drivers:STM32H7xx_HAL_Driver"],
+        outs = ["STM32H7xx_HAL_Driver"],
+        cmd = "cp -r $(SRCS) $(OUTS)",
+    )
     native.cc_library(
         name = hal_library_name,
-        srcs = ["//firmware_new/Drivers/STM32H7xx_HAL_Driver:STM32H7xx_HAL_Driver_Srcs"],
-        hdrs = ["//firmware_new/Drivers/STM32H7xx_HAL_Driver:STM32H7xx_HAL_Driver_Hdrs"] + hal_config_files,
-        includes = ["../../Drivers/STM32H7xx_HAL_Driver/Inc", "./"],
+        srcs = native.glob(["STM32H7xx_HAL_Driver/Src/*.c"]),
+        hdrs = native.glob(["STM32H7xx_HAL_Driver/Inc/*.h"]),
+        includes = ["STM32H7xx_HAL_Driver/Inc"],
+        strip_include_prefix = "STM32H7xx_HAL_Driver/Inc",
+        deps = [hal_conf_library_name],
+    )
+
+    # Build a FreeRTOS library configured specifically for this executable. We do this
+    # because each project has it's own "FreeRTOSConfig" files that result in compile-time
+    # changes to the library
+    free_rtos_conf_library_name = "{}_free_rtos_conf".format(name)
+    native.cc_library(
+        name = free_rtos_conf_library_name,
+        hdrs = free_rtos_config_hdrs,
+    )
+    free_rtos_library_name = "{}_free_rtos".format(name)
+
+    #    # TODO: comment on why we do this move (stops bazel complaining)
+    #    native.genrule(
+    #        name = "free_rtos_library_files",
+    #        srcs = ["//firmware_new/Middlewares/Third_Party/FreeRTOS"],
+    #        outs = ["FreeRTOS"],
+    #        cmd = "cp -r $(SRCS) $(OUTS)",
+    #    )
+    native.cc_library(
+        name = free_rtos_library_name,
+        srcs = native.glob([
+            "Middlewares/Third_Party/FreeRTOS/Source/**/*.c",
+        ]),
+        hdrs = ["Middlewares/Third_Party/FreeRTOS/Source/**/*.c"],
+        includes = ["FreeRTOS/include"],
+        strip_include_prefix = "FreeRTOS/include",
+        deps = [free_rtos_conf_library_name],
     )
 
     # Build the `.elf` file
     native.cc_binary(
         name = "{}.elf".format(name),
         srcs = srcs,
-        deps = [hal_library_name] + deps,
+        deps = [hal_library_name, free_rtos_library_name] + deps,
         **kwargs
     )
 
