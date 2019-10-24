@@ -105,3 +105,10 @@ new_git_repository(
     remote = "https://github.com/UBC-Thunderbots/Box2D",
     shallow_since = "1571445859 -0700",
 )
+
+new_git_repository(
+    name = "protobuf_c",
+    build_file = "@//external:protobuf_c.BUILD",
+    commit = "1390409f4ee4e26d0635310995b516eb702c3f9e",
+    remote = "https://github.com/protobuf-c/protobuf-c.git",
+)
