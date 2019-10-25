@@ -76,9 +76,16 @@ TEST_F(STPTest, test_calculate_new_play_when_multiple_plays_valid)
     }
 
     std::vector<std::string> expected_play_names = {
-        HaltTestPlay::name, MoveTestPlay::name, MoveTestPlay::name, HaltTestPlay::name,
-        MoveTestPlay::name, MoveTestPlay::name, MoveTestPlay::name, MoveTestPlay::name,
-        MoveTestPlay::name, MoveTestPlay::name,
+        MoveTestPlay::name,
+        MoveTestPlay::name,
+        MoveTestPlay::name,
+        MoveTestPlay::name,
+        MoveTestPlay::name,
+        MoveTestPlay::name,
+        MoveTestPlay::name,
+        MoveTestPlay::name,
+        HaltTestPlay::name,
+        MoveTestPlay::name,
     };
 
     EXPECT_EQ(expected_play_names, actual_play_names);
