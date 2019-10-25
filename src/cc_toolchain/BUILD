@@ -1,6 +1,9 @@
 package(default_visibility = ["//visibility:public"])
 
-load(":cc_toolchain_config.bzl", "cc_toolchain_config", "cc_toolchain_config_stm32")
+load(":cc_toolchain_config.bzl", "cc_toolchain_config_stm32")
+
+#load(":cc_toolchain_config.bzl", "cc_toolchain_config")
+load("@bazel_toolchains//configs/ubuntu16_04_clang/9.0.0/bazel_1.0.0/cc:cc_toolchain_config.bzl", "cc_toolchain_config")
 
 # Create environments for each CPU this toolchain supports
 environment(name = "k8")
@@ -28,8 +31,8 @@ cc_toolchain_suite(
     name = "toolchain",
     toolchains = {
         # k8 is any x86 system
-        "k8": "cc_toolchain_linux",
-        "k8|compiler": "cc_toolchain_linux",
+        "k8": ":cc-compiler-k8",
+        "k8|clang": ":cc-compiler-k8",
         # stm32f4 MCU
         "stm32f4": "cc_toolchain_stm32f4",
         "stm32f4|compiler": "cc_toolchain_stm32f4",
@@ -68,41 +71,104 @@ filegroup(
     ],
 )
 
-cc_toolchain_config(
-    name = "clang-k8",
-    builtin_include_directories = [
-        "external/llvm_clang/include/c++/v1/",
-        "llvm_clang/lib/clang/9.0.0/include/",
-        "/usr/include/",
-        "/usr/local/include/",
-    ],
-    cpu = "k8",
-    host_compiler_path = "wrapper/clang-clang",
-    host_compiler_prefix = "wrapper",
-    target_cpu = "k8",
-    target_system_name = "k8",
-    toolchain_identifier = "clang-k8",
-)
+#filegroup(
+#    name = "compiler_deps",
+#    srcs = glob(
+#        ["extra_tools/**"],
+#        allow_empty = True,
+#    ),  #+ [":builtin_include_directory_paths"],
+#)
 
 cc_toolchain(
-    name = "cc_toolchain_linux",
+    name = "cc-compiler-k8",
     all_files = ":clang_all",
     ar_files = ":clang_all",
     as_files = ":clang_all",
     compiler_files = ":clang_all",
-    dwp_files = ":clang_all",
-    dynamic_runtime_lib = "@llvm_clang//:runtime_libs",
+    dwp_files = ":empty",
     linker_files = ":clang_all",
-    objcopy_files = ":clang_all",
-    static_runtime_lib = "@llvm_clang//:static_libs",
-    strip_files = ":clang_all",
-    supports_param_files = True,
+    objcopy_files = ":empty",
+    strip_files = ":empty",
+    supports_param_files = 1,
     # We add this tag to circumvent a bug in the CLion bazel plugin. It should be removed
     # when possible
     # https://github.com/bazelbuild/intellij/issues/486
     tags = ["no-ide"],
-    toolchain_config = ":clang-k8",
-    toolchain_identifier = "clang-x86_64",
+    toolchain_config = ":linux_gnu_x86",
+    toolchain_identifier = "linux_gnu_x86",
+)
+
+cc_toolchain_config(
+    name = "linux_gnu_x86",
+    abi_libc_version = "glibc_2.19",
+    abi_version = "clang",
+    compile_flags = [
+        "-U_FORTIFY_SOURCE",
+        "-fstack-protector",
+        "-Wall",
+        "-Wthread-safety",
+        "-Wself-assign",
+        "-fcolor-diagnostics",
+        "-fno-omit-frame-pointer",
+    ],
+    compiler = "clang",
+    coverage_compile_flags = ["--coverage"],
+    coverage_link_flags = ["--coverage"],
+    cpu = "k8",
+    cxx_builtin_include_directories = [
+        "/usr/local/include",
+        "/usr/include/x86_64-linux-gnu",
+        "/usr/include",
+        "/usr/include/c++/5.4.0",
+        "/usr/include/x86_64-linux-gnu/c++/5.4.0",
+        "/usr/include/c++/5.4.0/backward",
+        "external/llvm_clang/include/c++/v1/",
+        "llvm_clang/lib/clang/9.0.0/include/",
+    ],
+    cxx_flags = ["-std=c++17"],
+    dbg_compile_flags = ["-g"],
+    host_system_name = "i686-unknown-linux-gnu",
+    link_flags = [
+        "-fuse-ld=/usr/bin/ld.gold",
+        "-Wl,-no-as-needed",
+        "-Wl,-z,relro,-z,now",
+        "-B/usr/local/bin",
+        "-lstdc++",
+        "-lm",
+    ],
+    link_libs = [],
+    opt_compile_flags = [
+        "-g0",
+        "-O2",
+        "-D_FORTIFY_SOURCE=1",
+        "-DNDEBUG",
+        "-ffunction-sections",
+        "-fdata-sections",
+    ],
+    opt_link_flags = ["-Wl,--gc-sections"],
+    supports_start_end_lib = True,
+    target_libc = "glibc_2.19",
+    target_system_name = "x86_64-unknown-linux-gnu",
+    tool_paths = {
+        "ar": "wrapper/clang-ar",
+        "cpp": "wrapper/clang-cpp",
+        "dwp": "wrapper/clang-dwp",
+        "gcc": "wrapper/clang-clang",
+        "gcov": "/dev/null",
+        "ld": "wrapper/clang-lld",
+        "nm": "wrapper/clang-nm",
+        "objcopy": "wrapper/clang-objcopy",
+        "objdump": "wrapper/clang-objdump",
+        "strip": "wrapper/clang-strip",
+    },
+    toolchain_identifier = "linux_gnu_x86",
+    unfiltered_compile_flags = [
+        "-no-canonical-prefixes",
+        "-Wno-builtin-macro-redefined",
+        "-D__DATE__=\"redacted\"",
+        "-D__TIMESTAMP__=\"redacted\"",
+        "-D__TIME__=\"redacted\"",
+    ],
 )
 
 cc_toolchain_config_stm32(

@@ -105,3 +105,9 @@ new_git_repository(
     remote = "https://github.com/UBC-Thunderbots/Box2D",
     shallow_since = "1571445859 -0700",
 )
+
+git_repository(
+    name = "bazel_toolchains",
+    commit = "e83694b",
+    remote = "https://github.com/bazelbuild/bazel-toolchains.git",
+)
