@@ -344,25 +344,26 @@ def _make_common_features(ctx):
         ],
     )
 
-    result["no-rtti"] = feature(
-        name = "no-rtti",
-        flag_sets = [
-            flag_set(
-                actions = ALL_CPP_ACTIONS,
-                flag_groups = [flag_group(flags = ["-fno-rtti"])],
-            ),
-        ],
-    )
+    #    result["no-rtti"] = feature(
+    #        name = "no-rtti",
+    #        flag_sets = [
+    #            flag_set(
+    #                actions = ALL_CPP_ACTIONS,
+    #                #flag_groups = [flag_group(flags = ["-fno-rtti"])],
+    #                flag_groups = [flag_group(flags = [])],
+    #            ),
+    #        ],
+    #    )
 
-    result["no-exceptions"] = feature(
-        name = "no-exceptions",
-        flag_sets = [
-            flag_set(
-                actions = ALL_CPP_ACTIONS,
-                flag_groups = [flag_group(flags = ["-fno-exceptions"])],
-            ),
-        ],
-    )
+    #    result["no-exceptions"] = feature(
+    #        name = "no-exceptions",
+    #        flag_sets = [
+    #            flag_set(
+    #                actions = ALL_CPP_ACTIONS,
+    #                flag_groups = [flag_group(flags = ["-fno-exceptions"])],
+    #            ),
+    #        ],
+    #    )
 
     result["no-unused-command-line-argument"] = feature(
         name = "no-unused-command-line-argument",
@@ -502,14 +503,14 @@ def _clang_impl(ctx):
                 actions = ALL_COMPILE_ACTIONS,
                 flag_groups = [
                     flag_group(
-                        # We're using clang's built-in coverage here instead 
+                        # We're using clang's built-in coverage here instead
                         # of `gcov` here because
                         # 1) It's faster
                         # 2) We couldn't get gcov to play nice with `bazel coverage`
                         # Please see:
                         #   Clang docs: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
                         #   Ticket tracking an issue that could solve this: https://github.com/bazelbuild/bazel/issues/9406
-                        # To switch to `gcov` just remove these flags and add 
+                        # To switch to `gcov` just remove these flags and add
                         # `--coverage`, similairly for the linker flags below
                         flags = ["-fprofile-instr-generate", "-fcoverage-mapping"],
                     ),
@@ -519,8 +520,8 @@ def _clang_impl(ctx):
                 actions = ALL_LINK_ACTIONS,
                 flag_groups = [
                     flag_group(
-                        flags = ["-fprofile-instr-generate"]
-                    )
+                        flags = ["-fprofile-instr-generate"],
+                    ),
                 ],
             ),
         ],
@@ -649,14 +650,14 @@ def _stm32_impl(ctx):
             flag_set(
                 actions = ALL_LINK_ACTIONS,
                 flag_groups = [flag_group(flags = [
-                    "-Wl,--start-group",
-                    "-lstdc++",
-                    "-lsupc++",
-                    "-lm",
+                    #"-Wl,--start-group",
+                    #"-lstdc++",
+                    #"-lsupc++",
+                    #"-lm",
                     "-lc",
-                    "-lgcc",
+                    #"-lgcc",
                     "-lnosys",
-                    "-Wl,--end-group",
+                    #"-Wl,--end-group",
                 ])],
             ),
         ],
@@ -697,14 +698,14 @@ def _stm32_impl(ctx):
                 actions = ALL_COMPILE_ACTIONS + ALL_LINK_ACTIONS,
                 flag_groups = [flag_group(flags = [
                     "-mthumb",
-                    "-mfloat-abi=softfp",
+                    "-mfloat-abi=hard",
                 ])],
             ),
         ],
         implies = [
             "no-canonical-system-headers",
-            "no-rtti",
-            "no-exceptions",
+            #"no-rtti",
+            #"no-exceptions",
         ],
     )
 
@@ -740,7 +741,7 @@ def _stm32_impl(ctx):
         name = "common",
         implies = [
             "stdlib",
-            "c++17",
+            #"c++17",
             "determinism",
             "warnings",
             "no-canonical-prefixes",

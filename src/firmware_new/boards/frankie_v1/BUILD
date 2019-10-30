@@ -6,15 +6,20 @@ cc_binary(
     name = "frankie_v1_main",
     srcs = ["main.c"],
     copts = [
-        "-DUSE_HAL_DRIVER",
-        "-DSTM32H743xx",
+        "-fdata-sections",
+        "-ffunction-sections",
+    ],
+    defines = [
+        "USE_HAL_DRIVER",
+        "STM32H743xx",
     ],
     linkopts = [
         "-T$(location //firmware_new/boards/frankie_v1:STM32H743ZITx_FLASH.ld)",
         "-specs=nano.specs",
         "-lc",
         "-lm",
-        "-lnosys",
+        "-Wl,--gc-sections",
+        "-Wl,-Map=frankie_v1.map,--cref",
     ],
     restricted_to = ["//cc_toolchain:stm32h7"],
     deps = [
@@ -34,10 +39,17 @@ cc_library(
     ),
     hdrs = glob(["*.h"]),
     copts = [
-        "-DSTM32H743xx",
+        "-fdata-sections",
+        "-ffunction-sections",
+    ],
+    defines = [
+        "USE_HAL_DRIVER",
+        "STM32H743xx",
     ],
     restricted_to = ["//cc_toolchain:stm32h7"],
-    deps = [":hal_library"],
+    deps = [
+        ":hal_library",
+    ],
 )
 
 stm32h7_hal_library_files_genrule("hal_library_files")
@@ -156,7 +168,12 @@ cc_library(
         "usbd_conf.h",
     ],
     copts = [
-        "-DSTM32H743xx",
+        "-fdata-sections",
+        "-ffunction-sections",
+    ],
+    defines = [
+        "USE_HAL_DRIVER",
+        "STM32H743xx",
     ],
     includes = [
         "./",
