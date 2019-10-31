@@ -22,6 +22,7 @@
 #include "main.h"
 #include "string.h"
 #include "usb_device.h"
+#include "stm32h7xx_it.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -97,6 +98,7 @@ static void MX_USART3_UART_Init(void);
   */
 int main(void)
 {
+//    SysTick_Handler();
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */

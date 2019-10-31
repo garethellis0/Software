@@ -116,7 +116,7 @@ echo "Starting openocd with config $OPENOCD_CFG_FILE"
 OPENOCD_RUN_CMD="openocd -f $OPENOCD_CFG_FILE"
 eval "$OPENOCD_RUN_CMD > /dev/null 2>&1 &"
 
-# Check that openocd is still running after a second. If it's not, that
+# Check that openocd is still running after a few seconds. If it's not, that
 # probably means there was an issue starting it, so we exit
 sleep 1
 pgrep openocd
