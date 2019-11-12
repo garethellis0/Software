@@ -3,14 +3,6 @@
 #include <string>
 #include <vector>
 
-// We forward-declare the PrimitiveVisitor interface (pure virtual class) because we need
-// to know about the existence of this class in order to accept visitors with the
-// accept() function. We cannot use an #include statement because this creates a cyclic
-// dependency
-//
-// This class can be found in ai/primitive/primitive_visitor.h
-class PrimitiveVisitor;
-
 /**
  * Defines a Robot Primitive, which is the most basic action / unit of work a robot can
  * do. For example, moving straight to a point, pivoting around a point,
@@ -38,13 +30,6 @@ class Primitive
      * @return The ID of the robot this Primitive is controlling
      */
     virtual unsigned int getRobotId() const = 0;
-
-    /**
-     * Accepts a Primitive Visitor and calls the visit function
-     *
-     * @param visitor A Primitive Visitor
-     */
-    virtual void accept(PrimitiveVisitor& visitor) const = 0;
 
     virtual ~Primitive() = default;
 };

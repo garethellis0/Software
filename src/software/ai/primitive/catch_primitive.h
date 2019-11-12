@@ -3,6 +3,8 @@
 #include "software/ai/primitive/primitive.h"
 #include "software/new_geom/angle.h"
 
+#include "software/util/design_patterns/visitor.h"
+
 class CatchPrimitive : public Primitive
 {
    public:
@@ -35,7 +37,7 @@ class CatchPrimitive : public Primitive
 
     double getMargin() const;
 
-    void accept(PrimitiveVisitor& visitor) const override;
+    void accept(Visitor<const CatchPrimitive>& visitor) const;
 
     /**
      * Compares CatchPrimitives for equality. CatchPrimitives are considered equal if all

@@ -3,8 +3,6 @@
 #include <cstdint>
 #include <g3log/g3log.hpp>
 
-#include "software/ai/primitive/primitive_visitor.h"
-
 const std::string DirectWheelsPrimitive::PRIMITIVE_NAME = "Direct Wheels Primitive";
 
 DirectWheelsPrimitive::DirectWheelsPrimitive(
@@ -78,7 +76,7 @@ double DirectWheelsPrimitive::getDribblerRPM() const
     return dribbler_rpm;
 }
 
-void DirectWheelsPrimitive::accept(PrimitiveVisitor &visitor) const
+void DirectWheelsPrimitive::accept(Visitor<const DirectWheelsPrimitive> &visitor) const
 {
     visitor.visit(*this);
 }

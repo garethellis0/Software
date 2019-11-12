@@ -2,6 +2,8 @@
 
 #include "software/ai/primitive/primitive.h"
 
+#include "software/util/design_patterns/visitor.h"
+
 class StopPrimitive : public Primitive
 {
    public:
@@ -28,7 +30,7 @@ class StopPrimitive : public Primitive
      */
     bool robotShouldCoast() const;
 
-    void accept(PrimitiveVisitor& visitor) const override;
+    void accept(Visitor<const StopPrimitive>& visitor) const;
 
     /**
      * Compares StopPrimitives for equality. StopPrimitives are considered equal if all

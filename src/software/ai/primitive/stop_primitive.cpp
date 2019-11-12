@@ -1,7 +1,5 @@
 #include "software/ai/primitive/stop_primitive.h"
 
-#include "software/ai/primitive/primitive_visitor.h"
-
 const std::string StopPrimitive::PRIMITIVE_NAME = "Stop Primitive";
 
 StopPrimitive::StopPrimitive(unsigned int robot_id, bool coast)
@@ -25,7 +23,7 @@ bool StopPrimitive::robotShouldCoast() const
     return coast;
 }
 
-void StopPrimitive::accept(PrimitiveVisitor &visitor) const
+void StopPrimitive::accept(Visitor<const StopPrimitive> &visitor) const
 {
     visitor.visit(*this);
 }

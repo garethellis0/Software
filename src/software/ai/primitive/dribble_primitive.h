@@ -9,6 +9,8 @@
 #include "software/new_geom/angle.h"
 #include "software/new_geom/point.h"
 
+#include "software/util/design_patterns/visitor.h"
+
 class DribblePrimitive : public Primitive
 {
    public:
@@ -81,7 +83,7 @@ class DribblePrimitive : public Primitive
      */
     bool isSmallKickAllowed() const;
 
-    void accept(PrimitiveVisitor &visitor) const override;
+    void accept(Visitor<const DribblePrimitive> &visitor) const;
 
     /**
      * Compares DribblePrimitives for equality. DribblePrimitives are considered equal if

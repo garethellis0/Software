@@ -9,6 +9,8 @@
 #include "software/new_geom/angle.h"
 #include "software/new_geom/point.h"
 
+#include "software/util/design_patterns/visitor.h"
+
 class ChipPrimitive : public Primitive
 {
    public:
@@ -52,7 +54,7 @@ class ChipPrimitive : public Primitive
      */
     double getChipDistance() const;
 
-    void accept(PrimitiveVisitor &visitor) const override;
+    void accept(Visitor<const ChipPrimitive> &visitor) const;
 
     /**
      * Compares ChipPrimitives for equality. ChipPrimitives are considered equal if all

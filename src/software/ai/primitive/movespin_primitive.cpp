@@ -1,7 +1,5 @@
 #include "software/ai/primitive/movespin_primitive.h"
 
-#include "software/ai/primitive/primitive_visitor.h"
-
 const std::string MoveSpinPrimitive::PRIMITIVE_NAME = "MoveSpin Primitive";
 
 MoveSpinPrimitive::MoveSpinPrimitive(unsigned int robot_id, const Point &dest,
@@ -36,7 +34,7 @@ double MoveSpinPrimitive::getFinalSpeed() const
     return final_speed;
 }
 
-void MoveSpinPrimitive::accept(PrimitiveVisitor &visitor) const
+void MoveSpinPrimitive::accept(Visitor<const MoveSpinPrimitive> &visitor) const
 {
     visitor.visit(*this);
 }

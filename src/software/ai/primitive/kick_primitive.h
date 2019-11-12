@@ -9,6 +9,8 @@
 #include "software/new_geom/angle.h"
 #include "software/new_geom/point.h"
 
+#include "software/util/design_patterns/visitor.h"
+
 class KickPrimitive : public Primitive
 {
    public:
@@ -51,7 +53,7 @@ class KickPrimitive : public Primitive
      */
     double getKickSpeed() const;
 
-    void accept(PrimitiveVisitor &visitor) const override;
+    void accept(Visitor<const KickPrimitive> &visitor) const;
 
     /**
      * Compares KickPrimitives for equality. KickPrimitives are considered equal if all

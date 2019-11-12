@@ -5,6 +5,7 @@
 #include "software/ai/primitive/primitive.h"
 #include "software/new_geom/angle.h"
 #include "software/new_geom/point.h"
+#include "software/util/design_patterns/visitor.h"
 
 class DirectWheelsPrimitive : public Primitive
 {
@@ -70,7 +71,7 @@ class DirectWheelsPrimitive : public Primitive
      */
     double getDribblerRPM() const;
 
-    void accept(PrimitiveVisitor& visitor) const override;
+    void accept(Visitor<const DirectWheelsPrimitive>& visitor) const;
 
     /**
      * Compares DirectWheelsPrimitives for equality. DirectWheelsPrimitives are considered

@@ -6,8 +6,8 @@ cc_library(
     hdrs = ["catch_primitive.h"],
     deps = [
         ":primitive",
-        ":primitive_visitor",
         "//software/geom",
+        "//software/util/design_patterns:visitor",
     ],
 )
 
@@ -26,8 +26,8 @@ cc_library(
     hdrs = ["chip_primitive.h"],
     deps = [
         ":primitive",
-        ":primitive_visitor",
         "//software/geom",
+        "//software/util/design_patterns:visitor",
     ],
 )
 
@@ -46,8 +46,8 @@ cc_library(
     hdrs = ["direct_velocity_primitive.h"],
     deps = [
         ":primitive",
-        ":primitive_visitor",
         "//software/geom",
+        "//software/util/design_patterns:visitor",
     ],
 )
 
@@ -66,8 +66,8 @@ cc_library(
     hdrs = ["direct_wheels_primitive.h"],
     deps = [
         ":primitive",
-        ":primitive_visitor",
         "//software/geom",
+        "//software/util/design_patterns:visitor",
     ],
 )
 
@@ -86,8 +86,8 @@ cc_library(
     hdrs = ["dribble_primitive.h"],
     deps = [
         ":primitive",
-        ":primitive_visitor",
         "//software/geom",
+        "//software/util/design_patterns:visitor",
     ],
 )
 
@@ -106,8 +106,8 @@ cc_library(
     hdrs = ["kick_primitive.h"],
     deps = [
         ":primitive",
-        ":primitive_visitor",
         "//software/geom",
+        "//software/util/design_patterns:visitor",
     ],
 )
 
@@ -126,8 +126,8 @@ cc_library(
     hdrs = ["move_primitive.h"],
     deps = [
         ":primitive",
-        ":primitive_visitor",
         "//software/geom",
+        "//software/util/design_patterns:visitor",
     ],
 )
 
@@ -146,8 +146,8 @@ cc_library(
     hdrs = ["movespin_primitive.h"],
     deps = [
         ":primitive",
-        ":primitive_visitor",
         "//software/geom",
+        "//software/util/design_patterns:visitor",
     ],
 )
 
@@ -166,9 +166,9 @@ cc_library(
     hdrs = ["pivot_primitive.h"],
     deps = [
         ":primitive",
-        ":primitive_visitor",
         "//shared:constants",
         "//software/geom",
+        "//software/util/design_patterns:visitor",
     ],
 )
 
@@ -187,8 +187,8 @@ cc_library(
     hdrs = ["stop_primitive.h"],
     deps = [
         ":primitive",
-        ":primitive_visitor",
         "//software/geom",
+        "//software/util/design_patterns:visitor",
     ],
 )
 
@@ -216,12 +216,6 @@ cc_library(
         ":pivot_primitive",
         ":stop_primitive",
     ],
-)
-
-cc_library(
-    name = "primitive_visitor",
-    hdrs = ["primitive_visitor.h"],
-    deps = [],
 )
 
 cc_library(

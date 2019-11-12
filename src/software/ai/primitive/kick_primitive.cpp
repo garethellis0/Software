@@ -1,7 +1,5 @@
 #include "software/ai/primitive/kick_primitive.h"
 
-#include "software/ai/primitive/primitive_visitor.h"
-
 const std::string KickPrimitive::PRIMITIVE_NAME = "Kick Primitive";
 
 KickPrimitive::KickPrimitive(unsigned int robot_id, const Point &kick_origin,
@@ -39,7 +37,7 @@ double KickPrimitive::getKickSpeed() const
     return kick_speed_meters_per_second;
 }
 
-void KickPrimitive::accept(PrimitiveVisitor &visitor) const
+void KickPrimitive::accept(Visitor<const KickPrimitive> &visitor) const
 {
     visitor.visit(*this);
 }

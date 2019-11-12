@@ -1,7 +1,5 @@
 #include "software/ai/primitive/dribble_primitive.h"
 
-#include "software/ai/primitive/primitive_visitor.h"
-
 const std::string DribblePrimitive::PRIMITIVE_NAME = "Dribble Primitive";
 
 DribblePrimitive::DribblePrimitive(unsigned int robot_id, const Point &dest,
@@ -46,7 +44,7 @@ bool DribblePrimitive::isSmallKickAllowed() const
     return small_kick_allowed;
 }
 
-void DribblePrimitive::accept(PrimitiveVisitor &visitor) const
+void DribblePrimitive::accept(Visitor<const DribblePrimitive> &visitor) const
 {
     visitor.visit(*this);
 }

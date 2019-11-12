@@ -5,6 +5,8 @@
 #include "software/new_geom/angular_velocity.h"
 #include "software/new_geom/point.h"
 
+#include "software/util/design_patterns/visitor.h"
+
 class MoveSpinPrimitive : public Primitive
 {
    public:
@@ -46,7 +48,7 @@ class MoveSpinPrimitive : public Primitive
      */
     double getFinalSpeed() const;
 
-    void accept(PrimitiveVisitor &visitor) const override;
+    void accept(Visitor<const MoveSpinPrimitive> &visitor) const;
 
     /**
      * Compares MoveSpinPrimitives for equality. MoveSpinPrimitives are considered equal

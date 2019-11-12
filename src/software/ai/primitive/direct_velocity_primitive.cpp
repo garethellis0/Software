@@ -1,7 +1,5 @@
 #include "software/ai/primitive/direct_velocity_primitive.h"
 
-#include "software/ai/primitive/primitive_visitor.h"
-
 const std::string DirectVelocityPrimitive::PRIMITIVE_NAME = "Direct Velocity Primitive";
 
 DirectVelocityPrimitive::DirectVelocityPrimitive(unsigned int robot_id, double x_velocity,
@@ -46,7 +44,7 @@ double DirectVelocityPrimitive::getDribblerRpm() const
     return dribbler_rpm;
 }
 
-void DirectVelocityPrimitive::accept(PrimitiveVisitor &visitor) const
+void DirectVelocityPrimitive::accept(Visitor<const DirectVelocityPrimitive> &visitor) const
 {
     visitor.visit(*this);
 }

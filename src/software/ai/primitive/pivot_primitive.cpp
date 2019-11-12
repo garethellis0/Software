@@ -1,7 +1,6 @@
 #include "software/ai/primitive/pivot_primitive.h"
 
 #include "shared/constants.h"
-#include "software/ai/primitive/primitive_visitor.h"
 
 const std::string PivotPrimitive::PRIMITIVE_NAME = "Pivot Primitive";
 
@@ -51,7 +50,7 @@ bool PivotPrimitive::isDribblerEnabled() const
     return enable_dribbler;
 }
 
-void PivotPrimitive::accept(PrimitiveVisitor &visitor) const
+void PivotPrimitive::accept(Visitor<const PivotPrimitive> &visitor) const
 {
     visitor.visit(*this);
 }

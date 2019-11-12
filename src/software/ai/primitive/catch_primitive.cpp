@@ -1,7 +1,5 @@
 #include "software/ai/primitive/catch_primitive.h"
 
-#include "software/ai/primitive/primitive_visitor.h"
-
 const std::string CatchPrimitive::PRIMITIVE_NAME = "Catch Primitive";
 
 CatchPrimitive::CatchPrimitive(unsigned int robot_id, double velocity,
@@ -38,7 +36,7 @@ double CatchPrimitive::getMargin() const
     return margin;
 }
 
-void CatchPrimitive::accept(PrimitiveVisitor &visitor) const
+void CatchPrimitive::accept(Visitor<const CatchPrimitive> &visitor) const
 {
     visitor.visit(*this);
 }

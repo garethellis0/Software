@@ -2,6 +2,8 @@
 
 #include "software/ai/primitive/primitive.h"
 
+#include "software/util/design_patterns/visitor.h"
+
 /**
  * This Primitive is extended from Primitive class for the control of linear velocity,
  * angular velocity and dribbler speed
@@ -38,7 +40,7 @@ class DirectVelocityPrimitive : public Primitive
 
     double getDribblerRpm() const;
 
-    void accept(PrimitiveVisitor& visitor) const override;
+    void accept(Visitor<const DirectVelocityPrimitive>& visitor) const;
 
     /**
      * Compares DirectVelocityPrimitives for equality. DirectVelocityPrimitives are

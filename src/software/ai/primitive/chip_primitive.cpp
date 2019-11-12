@@ -1,7 +1,5 @@
 #include "software/ai/primitive/chip_primitive.h"
 
-#include "software/ai/primitive/primitive_visitor.h"
-
 const std::string ChipPrimitive::PRIMITIVE_NAME = "Chip Primitive";
 
 ChipPrimitive::ChipPrimitive(unsigned int robot_id, const Point &chip_origin,
@@ -38,7 +36,7 @@ double ChipPrimitive::getChipDistance() const
     return chip_distance_meters;
 }
 
-void ChipPrimitive::accept(PrimitiveVisitor &visitor) const
+void ChipPrimitive::accept(Visitor<const ChipPrimitive> &visitor) const
 {
     visitor.visit(*this);
 }

@@ -9,6 +9,8 @@
 #include "software/new_geom/angle.h"
 #include "software/new_geom/point.h"
 
+#include "software/util/design_patterns/visitor.h"
+
 enum AutokickType
 {
     NONE,
@@ -109,7 +111,7 @@ class MovePrimitive : public Primitive
      */
     MoveType getMoveType() const;
 
-    void accept(PrimitiveVisitor &visitor) const override;
+    void accept(Visitor<const MovePrimitive> &visitor) const;
 
     /**
      * Compares MovePrimitives for equality. MovePrimitives are considered equal if all

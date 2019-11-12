@@ -1,7 +1,5 @@
 #include "software/ai/primitive/move_primitive.h"
 
-#include "software/ai/primitive/primitive_visitor.h"
-
 const std::string MovePrimitive::PRIMITIVE_NAME = "Move Primitive";
 
 MovePrimitive::MovePrimitive(unsigned int robot_id, const Point &dest,
@@ -58,7 +56,7 @@ MoveType MovePrimitive::getMoveType() const
     return move_type;
 }
 
-void MovePrimitive::accept(PrimitiveVisitor &visitor) const
+void MovePrimitive::accept(Visitor<const MovePrimitive> &visitor) const
 {
     visitor.visit(*this);
 }

@@ -8,7 +8,6 @@ cc_library(
         ":motion_controller",
         "//shared:constants",
         "//software/ai/primitive:all_primitives",
-        "//software/ai/primitive:primitive_visitor",
         "//software/world:ball",
         "//software/world:robot",
     ],
