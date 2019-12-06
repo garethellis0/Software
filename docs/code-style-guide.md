@@ -10,6 +10,7 @@
 * [Tests](#tests)
 * [Getter And Setter Functions](#getter-and-setter-functions)
 * [Spelling](#spelling)
+* [Firmware Specific](#firmware-specific)
 * [Miscellaneous](#miscellaneous)
 
 
@@ -191,6 +192,17 @@ Some general guidelines when writing tests are:
     * Exceptions:
       * Use "defense" in lieu of "defence" as it is more similar to the word "defensive".
       * Use "offense" in lieu of "offence".
+
+### Firmware Specific 
+When writing firmware (C code), all applicable conventions from elsewhere in this document apply. In addition, there are several specific conventions.
+
+* all functions should be named like `{app|hw}_file_name_functionName(Arg1 a, Arg2 b)`
+    * `app` stands for application, ie. any higher level logic, `hw` stands for hardware, really this is anything lower then `app`
+    * some examples
+        * `float app_robot_getCurrentPositionX()`
+        * `int hw_encoder_getCurrentNumberOfTicks(Encoder* encoder)`
+* all convenience struct typedefs should be declared as `TypeName_t`
+    * ex. `struct Chicker` would be typedef'd as `Chicker_t`
 
 
 ### Miscellaneous
