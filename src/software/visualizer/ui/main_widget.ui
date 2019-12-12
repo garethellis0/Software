@@ -179,8 +179,8 @@ p, li { white-space: pre-wrap; }
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>98</width>
-              <height>28</height>
+              <width>230</width>
+              <height>643</height>
              </rect>
             </property>
            </widget>
@@ -204,7 +204,38 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </widget>
-     <widget class="RobotStatusTable" name="robot_status_table_widget"/>
+     <widget class="QTabWidget" name="tabWidget">
+      <widget class="QWidget" name="robot_status_tab">
+       <attribute name="title">
+        <string>Tab 1</string>
+       </attribute>
+       <widget class="RobotStatusTable" name="robot_status_table_widget">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>1255</width>
+          <height>153</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="refresh_rates_plot_tab">
+       <attribute name="title">
+        <string>Tab 2</string>
+       </attribute>
+       <widget class="QCustomPlot" name="refresh_rates_plot" native="true">
+        <property name="geometry">
+         <rect>
+          <x>250</x>
+          <y>30</y>
+          <width>120</width>
+          <height>80</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+     </widget>
     </widget>
    </item>
   </layout>
@@ -219,6 +250,12 @@ p, li { white-space: pre-wrap; }
    <class>ZoomableQGraphicsView</class>
    <extends>QGraphicsView</extends>
    <header>software/visualizer/widgets/zoomable_qgraphics_view.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header>qcustomplot.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -72,8 +72,10 @@ git_repository(
 # Qt bazel rules from https://github.com/justbuchanan/bazel_rules_qt
 git_repository(
     name = "bazel_rules_qt",
-    commit = "3f949bf4b5dcae2941ba3b71b3ddeb5d39637907",
-    remote = "https://github.com/justbuchanan/bazel_rules_qt.git",
+    #    commit = "3f949bf4b5dcae2941ba3b71b3ddeb5d39637907",
+    #    remote = "https://github.com/justbuchanan/bazel_rules_qt.git",
+    commit = "1765f00",
+    remote = "https://github.com/garethellis0/bazel_rules_qt.git",
 )
 
 # Right now qt5 is installed on the system using the setup_software.sh script
@@ -82,6 +84,17 @@ new_local_repository(
     name = "qt",
     build_file = "@bazel_rules_qt//:qt.BUILD",
     path = "external/qt",  # This directory is symlinked in the setup script
+)
+
+# 3rd-party plotting for qt
+http_archive(
+    name = "qcustom_plot",
+    build_file = "@//external:qcustom_plot.BUILD",
+    sha256 = "574cee47def3251d080168a23428859214277cb9b6876bcdb9ce9d00b2403fe4",
+    strip_prefix = "qcustomplot-source",
+    urls = [
+        "https://www.qcustomplot.com/release/2.0.1/QCustomPlot-source.tar.gz",
+    ],
 )
 
 http_archive(

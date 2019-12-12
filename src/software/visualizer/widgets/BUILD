@@ -16,6 +16,7 @@ qt_cc_library(
         "//software/visualizer/drawing:draw_functions",
         "//software/visualizer/ui:main_widget",
         "@g3log",
+        "@qcustom_plot",
         "@qt//:qt_widgets",
     ],
 )

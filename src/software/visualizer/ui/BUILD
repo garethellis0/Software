@@ -5,5 +5,8 @@ package(default_visibility = ["//software/visualizer:__subpackages__"])
 qt_ui_library(
     name = "main_widget",
     ui = "main_widget.ui",
-    deps = ["@qt//:qt_widgets"],
+    deps = [
+        "@qcustom_plot",
+        "@qt//:qt_widgets",
+    ],
 )
