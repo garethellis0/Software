@@ -41,6 +41,27 @@ cc_test(
 )
 
 cc_library(
+    name = "ball_interception",
+    srcs = ["ball_interception.cpp"],
+    hdrs = ["ball_interception.h"],
+    deps = [
+        "//software/new_geom:point",
+        "//software/world:ball",
+        "//software/world:robot",
+    ],
+)
+
+cc_test(
+    name = "ball_interception_test",
+    srcs = ["ball_interception_test.cpp"],
+    deps = [
+        ":ball_interception",
+        "//shared:constants",
+        "@gtest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "calc_best_shot",
     srcs = ["calc_best_shot.cpp"],
     hdrs = ["calc_best_shot.h"],

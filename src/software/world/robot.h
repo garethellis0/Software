@@ -21,7 +21,7 @@ class Robot
     /**
      * Creates a new robot given robot data
      *
-     * @param id The id of the robot to create
+     * @param id The id of the robot to creat
      * @param position the new position of the robot. Coordinates are in metres.
      * @param velocity the new velocity of the robot, in metres / second.
      * @param orientation the new orientation of the robot, in Radians.
