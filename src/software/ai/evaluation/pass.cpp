@@ -1,5 +1,7 @@
 #include "software/ai/evaluation/pass.h"
 
+// TODO: these are no longer pass specific, move out to "robot.h" or something else
+
 Duration AI::Evaluation::getTimeToOrientationForRobot(const Robot& robot,
                                                       const Angle& desired_orientation,
                                                       const double& max_velocity,

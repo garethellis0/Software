@@ -1,10 +1,10 @@
 #include "software/ai/evaluation/ball_interception.h"
 
 #include <gtest/gtest.h>
-
 #include <tuple>
 
 #include "shared/constants.h"
+#include "software/test_util/test_util.h"
 
 /**
  * (Test Name, Ball Speed, Robot Position, Robot Position Offset At Best Intercept,
@@ -46,9 +46,10 @@ TEST_P(BallInterceptionTest, test_intercept_positions)
     Ball ball({0, 0}, {ball_speed, 0}, Timestamp::fromSeconds(0));
     Robot robot(0, robot_position, {0, 0}, Angle::fromDegrees(0),
                 AngularVelocity::fromDegrees(0), Timestamp::fromSeconds(0));
+    Field field = ::Test::TestUtil::createSSLDivBField();
 
     std::optional<RobotState> robot_state_at_best_intercept_found =
-        findBestBallInterception(robot, ball);
+        findBestBallInterception(robot, ball, field);
 
     if (robot_offset_at_expected_intercept.has_value())
     {
@@ -99,9 +100,6 @@ TEST_P(BallInterceptionTest, test_intercept_positions)
 INSTANTIATE_TEST_CASE_P(
     All, BallInterceptionTest,
     ::testing::Values(
-        // TODO: delete "just_testing" tests
-        std::make_tuple("just_testing", 0.0, Point(0, 0), std::nullopt, 0.0),
-        std::make_tuple("just_testing_2", 0.0, Point(0, 0), std::nullopt, 0.0),
         std::make_tuple("robot_directly_in_ball_path_and_close_to_ball", 1.0,
                         Point(DIST_TO_FRONT_OF_ROBOT_METERS / 2 + 0.01, 0),
                         DIST_TO_FRONT_OF_ROBOT_METERS / 2 + 0.01, 0.01),
@@ -109,20 +107,14 @@ INSTANTIATE_TEST_CASE_P(
                         Point(1.0, 0), 0.7, 0.3),
         std::make_tuple("robot_just_off_ball_path_and_close_to_ball", 1.0,
                         Point(DIST_TO_FRONT_OF_ROBOT_METERS / 2 + 0.1, 0.1), 0.05, 0.05),
-        std::make_tuple("robot_just_off_ball_path_and_far_from_ball", 1.0, Point(1.0, 0),
-                        0.7, 0.3) ),
+        std::make_tuple("robot_just_off_ball_path_and_far_from_ball", 1.0, Point(1.0, 0.1),
+                        0.7, 0.3),
+        std::make_tuple("robot_to_one_side_of_ball", 1.0, Point(0.0, 0.2),
+                        0.8, 0.5),
+        std::make_tuple("ball_moving_too_fast_to_intercept", 8.0, Point(0.0, 0.2),
+                        std::nullopt, 0.0)
+                        ),
     [](const ::testing::TestParamInfo<BallInterceptionTest::ParamType>& test_params) {
         return std::get<0>(test_params.param);
     });
 
-// TODO: delete
-// TEST(BallInterceptionTest, robot_directly_in_ball_path_and_close_to_ball) {}
-//
-// TEST(BallInterceptionTest, robot_directly_in_ball_path_and_far_from_ball) {}
-//
-// TEST(BallInterceptionTest, robot_just_off__ball_path_and_close_to_ball) {}
-//
-// TEST(BallInterceptionTest, robot_just_off__ball_path_and_far_from_ball) {}
-
-// TODO: test where robot timestamp is less then ball timestamp
-// TODO: test where ball timestamp is less then robot timestamp

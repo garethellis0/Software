@@ -47,6 +47,7 @@ cc_library(
     deps = [
         "//software/new_geom:point",
         "//software/world:ball",
+        "//software/world:field",
         "//software/world:robot",
     ],
 )
@@ -57,6 +58,7 @@ cc_test(
     deps = [
         ":ball_interception",
         "//shared:constants",
+        "//software/test_util",
         "@gtest//:gtest_main",
     ],
 )
