@@ -2,6 +2,10 @@
 
 #include <algorithm>
 
+#include "shared/constants.h"
+#include "software/ai/evaluation/pass.h"
+#include "software/util/optimization/gradient_descent_optimizer.h"
+
 std::optional<RobotState> findBestBallInterception(const Robot& robot, const Ball& ball,
                                                    const Field& field)
 {
@@ -40,7 +44,24 @@ std::optional<RobotState> findBestBallInterception(const Robot& robot, const Bal
 
         const Point ball_position =
             ball.estimatePositionAtFutureTime(ball_time_to_position);
-        const Duration robot_time_to_position = TODO + safety_margin;
+        const Point estimated_ball_position =
+            ball.estimatePositionAtFutureTime(ball_time_to_position);
+        const Vector estimated_ball_velocity =
+            ball.estimateVelocityAtFutureTime(ball_time_to_position);
+
+        // TODO: should use `getTimeToOrientationToRobot` to check that the robot can
+        //       turn in time as well, take the max of those
+
+        // The robot needs to be offset from the ball so that the ball is in front of it
+        const Point required_robot_position =
+            estimated_ball_position +
+            estimated_ball_velocity.normalize(DIST_TO_FRONT_OF_ROBOT_METERS);
+        const Duration robot_time_to_position =
+            AI::Evaluation::getTimeToPositionForRobot(
+                robot, required_robot_position, ROBOT_MAX_SPEED_METERS_PER_SECOND,
+                ROBOT_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED) +
+            safety_margin;
+
         const Duration time_diff_at_interception_point =
             ball_time_to_position - robot_time_to_position;
 
@@ -54,11 +75,42 @@ std::optional<RobotState> findBestBallInterception(const Robot& robot, const Bal
     };
 
     // Find the best time offset of all those sampled
-    auto best_initial_t_offset_and_cost =
-        std::make_pair<const Duration, double>(Duration::fromSeconds(100), std::numeric_limits<double>::max);
+    auto best_initial_t_offset_and_cost = std::make_pair<const Duration, double>(
+        Duration::fromSeconds(100), std::numeric_limits<double>::max());
+    for (Duration t_offset : initial_time_offsets_to_test)
+    {
+        double cost = cost_function(t_offset);
+        if (cost < best_initial_t_offset_and_cost.second)
+        {
+            best_initial_t_offset_and_cost.first = t_offset;
+            best_initial_t_offset_and_cost.second = cost;
+        }
+    }
 
     // Assuming the best time offset is in the same valley containing the global minima,
     // use gradient descent to refine the offset
+    Util::GradientDescentOptimizer<1> optimizer;
+    optimizer.minimize(
+        [&cost_function](std::array<double, 1> params) {
+            return cost_function(Duration::fromSeconds(std::get<0>(params)));
+        },
+        {best_initial_t_offset_and_cost.first.getSeconds()}, 100);
 
-    // Build the expected robot state at the interception
+    const Duration best_time_offset = best_initial_t_offset_and_cost.first;
+
+    const Point estimated_ball_position =
+        ball.estimatePositionAtFutureTime(best_time_offset);
+    const Vector estimated_ball_velocity =
+        ball.estimateVelocityAtFutureTime(best_time_offset);
+
+    // The center of the robot lie on the path of the ball, and should be offset by
+    // distance from the center to the front of the robot
+    const Point robot_position =
+        estimated_ball_position +
+        estimated_ball_velocity.normalize(DIST_TO_FRONT_OF_ROBOT_METERS);
+    const Angle robot_orientation =
+        (robot_position - estimated_ball_position).orientation();
+    const Timestamp robot_timestamp = robot.lastUpdateTimestamp() + best_time_offset;
+    return RobotState(robot_position, Vector(0, 0), robot_orientation,
+                      AngularVelocity::zero(), robot_timestamp);
 }

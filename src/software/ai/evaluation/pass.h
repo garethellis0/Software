@@ -10,6 +10,10 @@
 
 namespace AI::Evaluation
 {
+
+    // TODO: move these functions out of here since we're using them for more then just
+    //       passing now!!
+
     /**
      * Calculate how long it would take the given robot to turn to the given orientation
      *
@@ -33,7 +37,7 @@ namespace AI::Evaluation
      *
      * @param robot The robot to calculate the time for
      * @param dest The destination that the robot is going to
-     * @param max_velocity The maximum linear velocity the robot can travel at (m/s)
+     * @param max_speed The maximum speed the robot can travel at (m/s)
      * @param max_acceleration The maximum acceleration of the robot (m/s^2)
      * @param tolerance_meters The radius around the target at which we will be considered
      *                         "at" the target.
@@ -42,7 +46,7 @@ namespace AI::Evaluation
      * point
      */
     Duration getTimeToPositionForRobot(const Robot& robot, const Point& dest,
-                                       const double& max_velocity,
+                                       const double& max_speed,
                                        const double& max_acceleration,
                                        const double& tolerance_meters = 0);
 

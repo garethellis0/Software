@@ -45,7 +45,10 @@ cc_library(
     srcs = ["ball_interception.cpp"],
     hdrs = ["ball_interception.h"],
     deps = [
+        ":pass",
+        "//shared:constants",
         "//software/new_geom:point",
+        "//software/util/optimization:gradient_descent",
         "//software/world:ball",
         "//software/world:field",
         "//software/world:robot",
@@ -57,7 +60,6 @@ cc_test(
     srcs = ["ball_interception_test.cpp"],
     deps = [
         ":ball_interception",
-        "//shared:constants",
         "//software/test_util",
         "@gtest//:gtest_main",
     ],

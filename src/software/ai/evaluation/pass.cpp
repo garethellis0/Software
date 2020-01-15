@@ -45,7 +45,7 @@ Duration AI::Evaluation::getTimeToOrientationForRobot(const Robot& robot,
 }
 
 Duration AI::Evaluation::getTimeToPositionForRobot(const Robot& robot, const Point& dest,
-                                                   const double& max_velocity,
+                                                   const double& max_speed,
                                                    const double& max_acceleration,
                                                    const double& tolerance_meters)
 {
@@ -67,7 +67,7 @@ Duration AI::Evaluation::getTimeToPositionForRobot(const Robot& robot, const Poi
     // Calculate the distance required to reach max possible velocity of the robot
     // using (5)
     double dist_to_max_possible_vel =
-        std::pow(max_velocity / max_acceleration, 2) * max_acceleration / 2;
+        std::pow(max_speed / max_acceleration, 2) * max_acceleration / 2;
 
     // Calculate how long we'll accelerate for using (3), taking into account that we
     // might not actually reach the max velocity if it will take too much distance
@@ -76,7 +76,7 @@ Duration AI::Evaluation::getTimeToPositionForRobot(const Robot& robot, const Poi
 
     // Calculate how long we'll be at the max possible velocity (if any time at all)
     double time_at_max_velocity =
-        std::max(0.0, dist - 2 * dist_to_max_possible_vel) / max_velocity;
+        std::max(0.0, dist - 2 * dist_to_max_possible_vel) / max_speed;
 
     // The time taken to get to the receiver point is:
     // time to accelerate + time at the max velocity + time to de-accelerate
