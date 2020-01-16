@@ -74,6 +74,56 @@ std::optional<RobotState> findBestBallInterception(const Robot& robot, const Bal
         return abs(time_diff_at_interception_point.getSeconds());
     };
 
+    // TODO: could actually just use the robot trajectory and compare the max speed in
+    //       the robot trajectory to the ball speed to filter between the 0-cost offsets
+
+    // We could potentially find two locations with a cost of zero:
+    // 1) The robot is already "ahead" of the ball and just needs to move onto the
+    //    the ball path (if it's not already on it) to intercept
+    // 2) The robot speeds up to catch the ball
+
+    // TODO: type for pair of t-offset and cost?
+
+    // TODO: optimizations so we're not computing costs so much
+
+    // TODO: better comment here
+    // Find all the local minima, as represented by the sampled point near
+    // each inflection point
+    std::vector<Duration> local_minima;
+    for (long i = 1; i < initial_time_offsets_to_test.size() - 1; i++)
+    {
+        const double prev_cost   = cost_function(initial_time_offsets_to_test[i - 1]);
+        const double curr_cost   = cost_function(initial_time_offsets_to_test[i]);
+        const double next_cost   = cost_function(initial_time_offsets_to_test[i + 1]);
+        bool at_inflection_point = prev_cost > curr_cost && next_cost > curr_cost;
+        if (at_inflection_point)
+        {
+            local_minima.emplace_back(initial_time_offsets_to_test[i]);
+        }
+    }
+
+
+    // Find the two best local minima (or less if there are fewer then two in total),
+    // refining them using gradient descent
+    std::sort(local_minima.begin(), local_minima.end(),
+              [](auto pair1, auto pair2) { return pair1.second < pair2.second; });
+    std::vector<Duration> best_two_minima(
+        local_minima.begin(), local_minima.begin() + std::min(2, local_minima.size()));
+    Util::GradientDescentOptimizer<1> optimizer;
+    for (Duration& minima : best_two_minima)
+    {
+        double refined_minima_seconds = optimizer.minimize(
+            [&cost_function](std::array<double, 1> params) {
+                return cost_function(Duration::fromSeconds(std::get<0>(params)));
+            },
+            {minima.getSeconds()}, 100);
+        minima = Duration::fromSeconds(refined_minima_seconds);
+    }
+
+    // Check if either local minima is near zero. If they both are, we take the
+    // one closer to the ball's current position
+
+
     // Find the best time offset of all those sampled
     auto best_initial_t_offset_and_cost = std::make_pair<const Duration, double>(
         Duration::fromSeconds(100), std::numeric_limits<double>::max());
@@ -82,7 +132,7 @@ std::optional<RobotState> findBestBallInterception(const Robot& robot, const Bal
         double cost = cost_function(t_offset);
         if (cost < best_initial_t_offset_and_cost.second)
         {
-            best_initial_t_offset_and_cost.first = t_offset;
+            best_initial_t_offset_and_cost.first  = t_offset;
             best_initial_t_offset_and_cost.second = cost;
         }
     }
@@ -109,7 +159,7 @@ std::optional<RobotState> findBestBallInterception(const Robot& robot, const Bal
         estimated_ball_position +
         estimated_ball_velocity.normalize(DIST_TO_FRONT_OF_ROBOT_METERS);
     const Angle robot_orientation =
-        (robot_position - estimated_ball_position).orientation();
+        (estimated_ball_position - robot_position).orientation();
     const Timestamp robot_timestamp = robot.lastUpdateTimestamp() + best_time_offset;
     return RobotState(robot_position, Vector(0, 0), robot_orientation,
                       AngularVelocity::zero(), robot_timestamp);
