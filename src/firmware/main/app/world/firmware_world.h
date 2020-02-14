@@ -41,3 +41,12 @@ FirmwareRobot_t* app_firmware_world_getRobot(FirmwareWorld_t* world);
  * @return The ball from the given world
  */
 FirmwareBall_t* app_firmware_world_getBall(FirmwareWorld_t* world);
+
+/**
+ * Get the time, in seconds, since the given world was started
+ *
+ * @param world The world to get the current time for
+ * @return The time, in seconds, since the given world started
+ */
+ // TODO: implement me!!
+float app_firmware_world_getCurrentTimeInSeconds(FirmwareWorld_t* world);

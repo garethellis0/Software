@@ -1,64 +1,45 @@
 #include "firmware/main/app/primitives/spin_primitive.h"
 
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 
 #include "firmware/main/app/control/bangbang.h"
 #include "firmware/main/app/control/control.h"
+#include "firmware/main/app/control/physbot.h"
+#include "firmware/main/math/polynomial_2d.h"
+#include "firmware/main/math/tbots_math.h"
+#include "firmware/main/math/vector_2d.h"
 #include "firmware/main/shared/physics.h"
 
-#define TIME_HORIZON 0.5f
+// The maximum number of points we might want to track
+#define MAX_NUM_TRACKING_POINTS 100
 
 typedef struct SpinPrimitiveState
 {
-    float x_final;
-    float y_final;
-    float avel_final;
-    float end_speed;
-    bool slow;
+    // TODO: create a timestamp struct
+    Vector2d_t points_to_track[MAX_NUM_TRACKING_POINTS];
+    float timestamps_for_points_to_track[MAX_NUM_TRACKING_POINTS];
 
-    float major_vec[2];
-    float minor_vec[2];
-    float major_angle;
+    size_t num_points_to_track;
 } SpinPrimitiveState_t;
 DEFINE_PRIMITIVE_STATE_CREATE_AND_DESTROY_FUNCTIONS(SpinPrimitiveState_t)
 
 static void spin_start(const primitive_params_t *p, void *void_state_ptr,
                        FirmwareWorld_t *world)
 {
+    // Ignore all parameters, we're hijacking this primitive for trajectory
+    // planner testing
     SpinPrimitiveState_t *state = (SpinPrimitiveState_t *)void_state_ptr;
 
-    // Parameters:  param[0]: g_destination_x   [mm]
-    //              param[1]: g_destination_y   [mm]
-    //              param[2]: g_angular_v_final [centi-rad/s]
-    //              param[3]: g_end_speed       [millimeter/s]
+    Polynomial2dOrder2_t poly = {.x = {.coefficients = {0, 1, 0}},
+                                 .y = {.coefficients = {1, 0, 0}}};
 
-    // Parse the parameters with the standard units
-    state->x_final    = (float)p->params[0] / 1000.0f;
-    state->y_final    = (float)p->params[1] / 1000.0f;
-    state->avel_final = (float)p->params[2] / 100.0f;
-    state->end_speed  = (float)p->params[3] / 1000.0f;
-    state->slow       = p->slow;
+    state->num_points_to_track = app_control_generateTrackingPointsForPoly(
+        world, poly, state->points_to_track, state->timestamps_for_points_to_track,
+        MAX_NUM_TRACKING_POINTS);
 
-    const FirmwareRobot_t *robot = app_firmware_world_getRobot(world);
-
-    // Construct major and minor axis for the path
-    // get maginutude
-    float distance = norm2(state->x_final - app_firmware_robot_getPositionX(robot),
-                           state->y_final - app_firmware_robot_getPositionY(robot));
-
-    // major vector - unit vector from start to destination
-    state->major_vec[0] =
-        (state->x_final - app_firmware_robot_getPositionX(robot)) / distance;
-    state->major_vec[1] =
-        (state->y_final - app_firmware_robot_getPositionY(robot)) / distance;
-
-    // minor vector - orthogonal to major vector
-    state->minor_vec[0] = -state->major_vec[1];
-    state->minor_vec[1] = state->major_vec[0];
-
-    // major angle - angle relative to global x
-    state->major_angle = atan2f(state->major_vec[1], state->major_vec[0]);
+    assert(state->num_points_to_track <= MAX_NUM_TRACKING_POINTS);
 }
 
 static void spin_end(void *void_state_ptr, FirmwareWorld_t *world) {}
@@ -67,73 +48,72 @@ static void spin_tick(void *void_state_ptr, FirmwareWorld_t *world)
 {
     const FirmwareRobot_t *robot      = app_firmware_world_getRobot(world);
     const SpinPrimitiveState_t *state = (SpinPrimitiveState_t *)void_state_ptr;
+    const float current_time_seconds  = app_firmware_world_getCurrentTimeInSeconds(world);
 
-    // Trajectories
-    BBProfile major;
-    BBProfile minor;
-
-    // current to destination vector
-    float x_disp = state->x_final - app_firmware_robot_getPositionX(robot);
-    float y_disp = state->y_final - app_firmware_robot_getPositionY(robot);
-
-    // project current to destination vector to major/minor axis
-    float major_disp = x_disp * state->major_vec[0] + y_disp * state->major_vec[1];
-    float minor_disp = x_disp * state->minor_vec[0] + y_disp * state->minor_vec[1];
-
-    // project velocity vector to major/minor axis
-    const float curr_vx = app_firmware_robot_getVelocityX(robot);
-    const float curr_vy = app_firmware_robot_getVelocityY(robot);
-    float major_vel     = curr_vx * state->major_vec[0] + curr_vy * state->major_vec[1];
-    float minor_vel     = curr_vx * state->minor_vec[0] + curr_vy * state->minor_vec[1];
-
-    // Prepare trajectory
-    app_bangbang_prepareTrajectoryMaxV(&major, major_disp, major_vel, state->end_speed,
-                                       MAX_X_A, MAX_X_V);
-    app_bangbang_prepareTrajectoryMaxV(&minor, minor_disp, minor_vel, 0, MAX_Y_A,
-                                       MAX_Y_V);
-
-    // Plan
-    app_bangbang_planTrajectory(&major);
-    app_bangbang_planTrajectory(&minor);
-
-    // Compute acceleration
-    float major_accel = app_bangbang_computeAccel(&major, TIME_HORIZON);
-    float minor_accel = app_bangbang_computeAccel(&minor, TIME_HORIZON);
-    float a_accel =
-        (state->avel_final - app_firmware_robot_getVelocityAngular(robot)) / 0.05f;
-
-    // Clamp acceleration
-    if (a_accel > MAX_T_A)
+    // Check if this trajectory is in the past. If it is then we have nothing reasonable
+    // to do
+    const float last_tracking_point_timestamp_seconds =
+        state->timestamps_for_points_to_track[state->num_points_to_track - 1];
+    if (current_time_seconds >= last_tracking_point_timestamp_seconds)
     {
-        a_accel = MAX_T_A;
-    }
-    if (a_accel < -MAX_T_A)
-    {
-        a_accel = -MAX_T_A;
+        app_wheel_coast(app_firmware_robot_getFrontLeftWheel(robot));
+        app_wheel_coast(app_firmware_robot_getFrontRightWheel(robot));
+        app_wheel_coast(app_firmware_robot_getBackLeftWheel(robot));
+        app_wheel_coast(app_firmware_robot_getBackRightWheel(robot));
+        return;
     }
 
-    // Local cartesian represented as global cartesian
-    const float curr_orientation = app_firmware_robot_getOrientation(robot);
-    float local_x_vec[2]         = {cosf(curr_orientation), sinf(curr_orientation)};
-    float local_y_vec[2]         = {-sinf(curr_orientation), cosf(curr_orientation)};
+    // Figure out what point we should be tracking. We should really do this via
+    // a binary search, or better yet, save the last point we tracked, but this
+    // is a hacky prototype, so we don't care for now.
+    size_t curr_tracking_point_index = 1;
+    while (curr_tracking_point_index < state->num_points_to_track &&
+           state->timestamps_for_points_to_track[curr_tracking_point_index - 1] >=
+               current_time_seconds)
+    {
+        curr_tracking_point_index++;
+    }
 
-    // Get local x acceleration
-    float major_dot_x = dot_product(local_x_vec, state->major_vec, 2);
-    float minor_dot_x = dot_product(local_x_vec, state->minor_vec, 2);
-    float x_accel     = major_accel * major_dot_x + minor_accel * minor_dot_x;
+    // TODO: we should never have to do these vector operations manually
+    Vector2d_t point_to_track = state->points_to_track[curr_tracking_point_index];
+    const float dx            = point_to_track.x - app_firmware_robot_getPositionX(robot);
+    const float dy            = point_to_track.y - app_firmware_robot_getPositionY(robot);
+    const float total_disp    = sqrtf(dx * dx + dy * dy);
+    float major_vec[2];
+    float minor_vec[2];
+    major_vec[0] = dx / total_disp;
+    major_vec[1] = dy / total_disp;
+    minor_vec[0] = major_vec[0];
+    minor_vec[1] = major_vec[1];
+    rotate(minor_vec, P_PI / 2);
 
-    // Get local y acceleration
-    float major_dot_y = dot_product(local_y_vec, state->major_vec, 2);
-    float minor_dot_y = dot_product(local_y_vec, state->minor_vec, 2);
-    float y_accel     = major_accel * major_dot_y + minor_accel * minor_dot_y;
+    float point_to_track_array[2];
+    point_to_track_array[0] = point_to_track.x;
+    point_to_track_array[1] = point_to_track.y;
 
-    // Apply acceleration in robot's coordinates
-    float linear_acc[2] = {
-        x_accel,
-        y_accel,
-    };
+    PhysBot pb = app_physbot_create(robot, point_to_track_array, major_vec, minor_vec);
 
-    app_control_applyAccel(robot, linear_acc[0], linear_acc[1], a_accel);
+    float max_major_a     = 3.5;
+    float max_major_v     = 3.0;
+    float major_params[3] = {0, max_major_a, max_major_v};
+    app_physbot_planMove(&pb.maj, major_params);
+
+    // plan minor axis movement
+    float max_minor_a     = 1.5;
+    float max_minor_v     = 1.5;
+    float minor_params[3] = {0, max_minor_a, max_minor_v};
+    app_physbot_planMove(&pb.min, minor_params);
+
+    // plan rotation movement
+    plan_move_rotation(&pb, app_firmware_robot_getVelocityAngular(robot));
+
+    float accel[3] = {0, 0, pb.rot.accel};
+
+    // rotate the accel and apply it
+    app_physbot_computeAccelInLocalCoordinates(
+        accel, pb, app_firmware_robot_getOrientation(robot), major_vec, minor_vec);
+
+    app_control_applyAccel(robot, accel[0], accel[1], accel[2]);
 }
 
 /**
