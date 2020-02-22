@@ -1,4 +1,5 @@
 # -*- python -*-
+# Adapted for linux gcc
 
 # Copyright 2018-2019 Josh Pieper, jjp@pobox.com.
 #
@@ -19,52 +20,42 @@ package(default_visibility = ["//visibility:public"])
 filegroup(
     name = "binaries",
     srcs = [
-        "bin/clang",
-        "bin/clang++",
-        "bin/ld.lld",
-        "bin/llvm-ar",
-        "bin/llvm-cov",
-        "bin/llvm-dwp",
-        "bin/llvm-nm",
-        "bin/llvm-objcopy",
-        "bin/llvm-objdump",
-        "bin/llvm-profdata",
+        "usr/bin/x86_64-linux-gnu-dwp",
+        "usr/bin/x86_64-linux-gnu-g++",
+        "usr/bin/x86_64-linux-gnu-gcc",
+        "usr/bin/x86_64-linux-gnu-gcc-ar",
+        "usr/bin/x86_64-linux-gnu-gcc-nm",
+        "usr/bin/x86_64-linux-gnu-gcov",
+        "usr/bin/x86_64-linux-gnu-gprof",
+        "usr/bin/x86_64-linux-gnu-ld",
+        "usr/bin/x86_64-linux-gnu-objcopy",
+        "usr/bin/x86_64-linux-gnu-objdump",
     ],
 )
 
 filegroup(
-    name = "clang_libs",
-    srcs = glob(["lib/clang/9.0.0/lib/linux/*.a"]),
+    name = "libs",
+    srcs = glob(["usr/lib/gcc/x86_64-linux-gnu/7.4.0/*.a"]),
 )
 
 filegroup(
     name = "includes",
     srcs = glob([
-        "include/c++/**",
-        "lib/clang/9.0.0/include/**",
-        "lib/clang/9.0.0/include",
+        "usr/lib/gcc/x86_64-linux-gnu/7.4.0/include/**",
+        "usr/lib/gcc/x86_64-linux-gnu/7.4.0/include",
     ]),
 )
 
 filegroup(
     name = "runtime_libs",
     srcs = [
-        "lib/libc++.so.1",
-        "lib/libc++abi.so.1",
-        "lib/libunwind.so.1",
+        "usr/lib/gcc/x86_64-linux-gnu/7.4.0/libstdc++.so",
     ],
 )
 
 filegroup(
     name = "static_libs",
     srcs = [
-        "lib/libc++.a",
-        "lib/libc++abi.a",
-        "lib/libunwind.a",
+        "usr/lib/gcc/x86_64-linux-gnu/7.4.0/libstdc++.a",
     ],
-)
-
-sh_binary(
-    name = "clang-format",
-    srcs = ["bin/clang-format"],
 )

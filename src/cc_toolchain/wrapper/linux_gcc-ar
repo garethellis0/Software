@@ -14,4 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-exec external/llvm_clang/bin/clang-cpp "$@"
+if [[ "$@" == "@"* ]]; then
+    # need to parse location following @
+    INPUT=$@
+    exec /usr/bin/x86_64-linux-gnu-gcc-ar $(cat ${INPUT:1})
+else
+    exec /usr/bin/x86_64-linux-gnu-gcc-ar "$@"
+fi
