@@ -57,29 +57,6 @@ bool intersects(const Segment &first, const Segment &second);
 bool intersects(const Ray &first, const Segment &second);
 bool intersects(const Segment &first, const Ray &second);
 
-/*
- * The family of `dist` functions calculates the unsigned distance
- * between one object and another.
- */
-
-double dist(const Point &first, const Point &second);
-double dist(const Segment &first, const Segment &second);
-
-double dist(const Point &first, const Segment &second);
-double dist(const Segment &first, const Point &second);
-
-double dist(const Point &first, const Polygon &second);
-
-/**
- * NOTE: the distance from a point to a rectangle is the closest distance from the point
- * to the edge of the rectangle, or 0 if the point is within the rectangle
- */
-double dist(const Point &first, const Rectangle &second);
-
-double distsq(const Point &first, const Segment &second);
-double distsq(const Segment &first, const Point &second);
-double distsq(const Point &first, const Point &second);
-
 bool isDegenerate(const Segment &segment);
 bool isDegenerate(const Ray &segment);
 
@@ -387,11 +364,6 @@ double offsetAlongLine(Point x0, Point x1, Point p);
  * returns nearest point on segment a0-a1 to line b0-b1
  */
 Point segmentNearLine(Point a0, Point a1, Point b0, Point b1);
-
-/**
- * intersection of two segments?
- */
-Point intersection(Point a1, Point a2, Point b1, Point b2);
 
 /**
  * Calculates the acute angle formed by the two given vectors
