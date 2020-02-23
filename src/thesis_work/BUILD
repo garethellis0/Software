@@ -4,5 +4,7 @@ cc_binary(
     deps = [
         "//software/backend",
         "//software/backend:radio_backend",
+        "@boost//:interprocess",
+        "@g3log",
     ],
 )

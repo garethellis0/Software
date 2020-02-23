@@ -1,6 +1,7 @@
 #include <iostream>
-
 #include <boost/interprocess/ipc/message_queue.hpp>
+#include <g3log/g3log.hpp>
+
 #include "software/backend/backend.h"
 #include "software/backend/radio_backend.h"
 
@@ -34,18 +35,18 @@ class RobotInterface : public ThreadedObserver<World>
       robot_state_message_queue_name(robot_state_ipc_queue_name),
       robot_wheel_commands_message_queue_name(robot_wheel_commands_ipc_queue_name),
       robot_state_message_queue(boost::interprocess::open_or_create, 
-          robot_state_ipc_queue_name, 
+          robot_state_ipc_queue_name.c_str(), 
           MAX_QUEUE_SIZE, MAX_MSG_SIZE_BYTES),
       robot_wheel_commands_message_queue(boost::interprocess::open_or_create, 
-          robot_wheel_commands_ipc_queue_name, 
+          robot_wheel_commands_ipc_queue_name.c_str(), 
           MAX_QUEUE_SIZE, MAX_MSG_SIZE_BYTES)
     {
     }
 
     ~RobotInterface(){
       // Close message queues
-      boost::interprocess::message_queue::remove(robot_state_message_queue_name);
-      boost::interprocess::message_queue::remove(robot_wheel_commands_message_queue_name);
+      boost::interprocess::message_queue::remove(robot_state_message_queue_name.c_str());
+      boost::interprocess::message_queue::remove(robot_wheel_commands_message_queue_name.c_str());
     }
 
    private:
@@ -62,7 +63,7 @@ class RobotInterface : public ThreadedObserver<World>
       auto friendly_team = world.friendlyTeam();
       auto robots = friendly_team.getAllRobots();
       if (robots.size() < 1){
-        LOG(WARN) << "No robots visible!";
+        LOG(WARNING) << "No robots visible!";
         return;
       }
       
@@ -97,9 +98,8 @@ class RobotInterface : public ThreadedObserver<World>
 int main(int argc, char** argv)
 {
 
-    auto world_observer = std::make_shared<RobotInterface>(node_handle, "robot_state",
-                                                          "robot_wheel_commands");
-
+    auto world_observer = std::make_shared<RobotInterface>(
+        "robot_state", "robot_wheel_commands");
 
     std::unique_ptr<Backend> backend = std::make_unique<RadioBackend>();
 
