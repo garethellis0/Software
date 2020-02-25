@@ -1,7 +1,7 @@
 #include <boost/interprocess/ipc/message_queue.hpp>
+#include <chrono>
 #include <g3log/g3log.hpp>
 #include <iostream>
-#include <chrono>
 #include <ostream>
 
 #include "software/backend/backend.h"
@@ -11,49 +11,70 @@
 
 // These structs MUST be kept exactly in sync with the ones
 // in the autorally code, or extremely nasty things will happen.
+// Do *NOT* using floating point values in these, as
+// boost::interprocess:message_queue seems to serialize/deserilize these
+// differently between different versions
 // TODO: put this in a shared header somewhere
 struct RobotStateMsgQueueEntry
 {
-    double x_pos_m;
-    double y_pos_m;
-    double yaw_rad;
+    int32_t x_pos_mm;
+    int32_t y_pos_mm;
+    int32_t yaw_milli_rad;
 
-    double x_vel_m_per_s;
-    double y_vel_m_per_s;
-    double angular_vel_rad_per_s;
+    int32_t x_vel_mm_per_s;
+    int32_t y_vel_mm_per_s;
+    int32_t angular_vel_milli_rad_per_s;
 
-    double timestamp_secs_since_epoch;
+    // We represent the timestamp in two parts, with the final timestamp
+    // being the sum of the two
+    int32_t timestamp_secs;
+    int32_t timestamp_nano_secs_correction;
+
+    /**
+     * Set the timestamp variables from a time given in seconds
+     */
+    void setTimestampFromSecs(double t_secs)
+    {
+        timestamp_secs                 = std::floor(t_secs);
+        timestamp_nano_secs_correction = std::floor((t_secs - timestamp_secs) * 1e9);
+    }
 };
-std::ostream& operator<<(std::ostream& o, const RobotStateMsgQueueEntry& state)
+inline std::ostream& operator<<(std::ostream& o, const RobotStateMsgQueueEntry& state)
 {
     // clang-format off
-    o << "x_pos_m: " << state.x_pos_m 
-      << ", y_pos_m: " << state.y_pos_m 
-      << ", yaw_rad: " << state.yaw_rad 
-      << ", x_vel_m_per_s: " << state.x_vel_m_per_s 
-      << ", y_vel_m_per_s: " << state.y_vel_m_per_s
-      << ", angular_vel_rad_per_s: " << state.angular_vel_rad_per_s
-      << ", timestamp_secs_since_epoch: " << state.timestamp_secs_since_epoch; 
+    o << "x_pos_mm: " << state.x_pos_mm 
+      << ", y_pos_mm: " << state.y_pos_mm 
+      << ", yaw_milli_rad: " << state.yaw_milli_rad 
+      << ", x_vel_mm_per_s: " << state.x_vel_mm_per_s 
+      << ", y_vel_mm_per_s: " << state.y_vel_mm_per_s
+      << ", angular_vel_milli_rad_per_s: " << state.angular_vel_milli_rad_per_s
+      << ", timestamp_secs: " << state.timestamp_secs
+      << ", timestamp_nano_secs_correction: " << state.timestamp_nano_secs_correction;
     // clang-format on
     return o;
 }
 struct RobotWheelCommandsMsgQueueEntry
 {
-    double front_right_rad_per_s;
-    double front_left_rad_per_s;
-    double back_right_rad_per_s;
-    double back_left_rad_per_s;
+    int32_t front_right_milli_rad_per_s;
+    int32_t front_left_milli_rad_per_s;
+    int32_t back_right_milli_rad_per_s;
+    int32_t back_left_milli_rad_per_s;
 
-    double timestamp_secs_since_epoch;
+    // We represent the timestamp in two parts, with the final timestamp
+    // being the sum of the two
+    int32_t timestamp_secs;
+    int32_t timestamp_nano_secs_correction;
 };
-std::ostream& operator<<(std::ostream& o, const RobotWheelCommandsMsgQueueEntry& cmds)
+inline std::ostream& operator<<(std::ostream& o,
+                                const RobotWheelCommandsMsgQueueEntry& cmds)
 {
     // clang-format off
-    o << "Front Right: "  << cmds.front_right_rad_per_s 
-      << ", Front Left: " << cmds.front_left_rad_per_s
-      << ", Back Right: " << cmds.back_right_rad_per_s 
-      << ", Back Left: "  << cmds.back_left_rad_per_s
-      << ", timestamp_secs_since_epoch: " << cmds.timestamp_secs_since_epoch; 
+    o << "Front Right: "                      << cmds.front_right_milli_rad_per_s 
+      << ", Front Left: "                     << cmds.front_left_milli_rad_per_s
+      << ", Back Right: "                     << cmds.back_right_milli_rad_per_s 
+      << ", Back Left: "                      << cmds.back_left_milli_rad_per_s
+      << ", timestamp_secs: "                 << cmds.timestamp_secs
+      << ", timestamp_nano_secs_correction: " << cmds.timestamp_nano_secs_correction;
     // clang-format on
     return o;
 }
@@ -86,12 +107,12 @@ class RobotInterface : public ThreadedObserver<World>
                                     sizeof(RobotStateMsgQueueEntry)),
           robot_wheel_commands_message_queue(boost::interprocess::open_or_create,
                                              robot_wheel_commands_ipc_queue_name.c_str(),
-                                             MAX_QUEUE_SIZE, 
+                                             MAX_QUEUE_SIZE,
                                              sizeof(RobotWheelCommandsMsgQueueEntry)),
           _in_destructor(false)
     {
         receive_wheel_speeds_thread =
-            std::thread([this]() { return receiveWheelSpeedsLoop(); });
+           std::thread([this]() { return receiveWheelSpeedsLoop(); });
     }
 
     ~RobotInterface()
@@ -109,15 +130,15 @@ class RobotInterface : public ThreadedObserver<World>
     }
 
    private:
-    static const int MAX_QUEUE_SIZE     = 50;
+    static const int MAX_QUEUE_SIZE = 2;
 
-    const int RECEIVE_WHEEL_SPEEDS_TIMEOUT_MS = 100;
+    const int IPC_QUEUE_TIMEOUT_MS = 100;
 
     /**
      * This function will be called with new worlds when they are received
      * @param world
      */
-    void onValueReceived(World world)
+    void onValueReceived(World world) override
     {
         auto friendly_team = world.friendlyTeam();
         auto robots        = friendly_team.getAllRobots();
@@ -127,25 +148,38 @@ class RobotInterface : public ThreadedObserver<World>
             return;
         }
 
-        unsigned long current_time_since_epoch_ns =
-            std::chrono::duration_cast<std::chrono::nanoseconds>(
-                std::chrono::system_clock::now().time_since_epoch())
-                .count();
-        double current_time_since_epoch_secs = 
-          static_cast<double>(current_time_since_epoch_ns) * (10e-9);
-
         auto robot = robots[0];
+
         RobotStateMsgQueueEntry queue_elem{
-            .x_pos_m               = robot.position().x(),
-            .y_pos_m               = robot.position().y(),
-            .yaw_rad               = robot.orientation().toRadians(),
-            .x_vel_m_per_s         = robot.velocity().x(),
-            .y_vel_m_per_s         = robot.velocity().y(),
-            .angular_vel_rad_per_s = robot.angularVelocity().toRadians(),
-            .timestamp_secs_since_epoch = current_time_since_epoch_secs
+            .x_pos_mm       = std::round(robot.position().x() * 1000),
+            .y_pos_mm       = std::round(robot.position().y() * 1000),
+            .yaw_milli_rad  = std::round(robot.orientation().toRadians() * 1000),
+            .x_vel_mm_per_s = std::round(robot.velocity().x() * 1000),
+            .y_vel_mm_per_s = std::round(robot.velocity().y() * 1000),
+            .angular_vel_milli_rad_per_s =
+                std::round(robot.angularVelocity().toRadians() * 1000),
         };
 
-        robot_state_message_queue.send(&queue_elem, sizeof(queue_elem), 0);
+        // Because of how the the MPC controller works, we use the system 
+        // time now instead of the timestamp on the received data. 
+        // TODO: redesign MPC stuff to properly use relative timestamps,
+        //       or somehow offset this timestamp from the start time
+        double curr_time_since_epoch_seconds = 
+          std::chrono::duration_cast<std::chrono::nanoseconds>(
+              std::chrono::system_clock::now().time_since_epoch()).count()*1e-9;
+        queue_elem.setTimestampFromSecs(curr_time_since_epoch_seconds);
+
+        LOG(INFO) << "Transmitting State: " << queue_elem << std::endl;
+
+        const boost::posix_time::ptime t_timeout =
+            boost::posix_time::microsec_clock::universal_time() +
+            boost::posix_time::milliseconds(IPC_QUEUE_TIMEOUT_MS);
+        bool send_succeeded = robot_state_message_queue.timed_send(
+            &queue_elem, sizeof(queue_elem), 0, t_timeout);
+        if (!send_succeeded)
+        {
+            LOG(WARNING) << "Failed to send robot state, queue probably full!";
+        }
     }
 
     /**
@@ -160,18 +194,17 @@ class RobotInterface : public ThreadedObserver<World>
             // if so
             const boost::posix_time::ptime t_timeout =
                 boost::posix_time::microsec_clock::universal_time() +
-                boost::posix_time::milliseconds(RECEIVE_WHEEL_SPEEDS_TIMEOUT_MS);
+                boost::posix_time::milliseconds(IPC_QUEUE_TIMEOUT_MS);
             RobotWheelCommandsMsgQueueEntry wheel_commands;
             size_t received_size  = 0;
             unsigned int priority = 0;
 
             // TODO
             // For some reason boost will only allow a minimum max message
-            // size of 100, even though the queue is configured to have a 
-            // max message size equal to the struct size. 
+            // size of 100, even though the queue is configured to have a
+            // max message size equal to the struct size.
             const bool data_available = robot_wheel_commands_message_queue.timed_receive(
-                &wheel_commands, 100, received_size, priority,
-                t_timeout);
+                &wheel_commands, 100, received_size, priority, t_timeout);
 
             if (data_available && received_size == sizeof(wheel_commands))
             {
@@ -202,7 +235,6 @@ class RobotInterface : public ThreadedObserver<World>
 
 int main(int argc, char** argv)
 {
-
     Util::Logger::LoggerSingleton::initializeLogger();
 
     auto world_observer =
