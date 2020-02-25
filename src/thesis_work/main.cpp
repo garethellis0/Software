@@ -11,6 +11,13 @@ struct RobotStateQueueStruct {
     double yaw;
 };
 
+struct RobotWheelCommands {
+  double front_right_rpm;
+  double front_left_rpm;
+  double front_right_rpm;
+  double front_left_rpm;
+}
+
 // TODO: put this in another file (.c and .h)
 // TODO: better name for this class
 class RobotInterface : public ThreadedObserver<World>
@@ -41,9 +48,17 @@ class RobotInterface : public ThreadedObserver<World>
           robot_wheel_commands_ipc_queue_name.c_str(), 
           MAX_QUEUE_SIZE, MAX_MSG_SIZE_BYTES)
     {
+      receive_wheel_speeds_thread = std::thread(
+          [this]() { return receiveWheelSpeedsLoop(); });
     }
 
     ~RobotInterface(){
+
+      // Stop the thread that's constantly pulling robot wheel_commands
+      _in_destructor = true;
+      receive_wheel_speeds_thread.join();
+
+
       // Close message queues
       boost::interprocess::message_queue::remove(robot_state_message_queue_name.c_str());
       boost::interprocess::message_queue::remove(robot_wheel_commands_message_queue_name.c_str());
@@ -53,6 +68,8 @@ class RobotInterface : public ThreadedObserver<World>
 
     static const int MAX_QUEUE_SIZE = 100;
     static const int MAX_MSG_SIZE_BYTES = 100;
+
+    static const double RECEIVE_WHEEL_SPEEDS_TIMEOUT_MS = 100;
 
     /**
      * This function will be called with new worlds when they are received
@@ -77,6 +94,29 @@ class RobotInterface : public ThreadedObserver<World>
       robot_state_message_queue.send(&queue_elem, sizeof(queue_elem), 0);
     }
 
+    /**
+     * An infinite loop that receives wheel speeds and pushes them to the robot
+     */
+    void receiveWheelSpeedsLoop(){
+      while(!_in_destructor){
+
+        // We use the version of receive with a timeout so that we can
+        // regularly check if this class was destructed, and stop the loop
+        // if so
+        ptime t_timeout = boost::microsec_clock::universal_time() + 
+          boost::milliseconds(RECEIVE_WHEEL_SPEEDS_TIMEOUT_MS);
+        RobotWheelCommands wheel_commands;
+        size_t received_size = 0;
+
+        if (robot_wheel_commands_message_queue.timed_received(
+              &wheel_commands, sizeof(wheel_commands), 
+              received_size, 0, t_timeout)){
+          std::cout << wheel_commands << std::endl;
+          // TODO: actually send these to the robot
+        }
+      }
+    }
+
     ///**
     // * This function handles new wheel commands when they are received
     // * @param wheel_commands The wheel commands to execute on the robot
@@ -93,6 +133,10 @@ class RobotInterface : public ThreadedObserver<World>
     // The message queue to read wheel commands from, and it's name
     boost::interprocess::message_queue robot_wheel_commands_message_queue;
     std::string robot_wheel_commands_message_queue_name;
+
+    std::atomic<bool> _in_destructor;
+
+    std::thread receive_wheel_speeds_thread; 
 };
 
 int main(int argc, char** argv)
@@ -104,6 +148,9 @@ int main(int argc, char** argv)
     std::unique_ptr<Backend> backend = std::make_unique<RadioBackend>();
 
     backend->Subject<World>::registerObserver(world_observer);
+
+    // This blocks forever without using the CPU
+    std::promise<void>().get_future().wait();
 
     return 0;
 }
