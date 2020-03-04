@@ -4,6 +4,7 @@
 #include <iostream>
 #include <ostream>
 
+#include "software/ai/primitive/direct_wheels_primitive.h"
 #include "software/backend/backend.h"
 #include "software/backend/grsim_backend.h"
 #include "software/backend/radio_backend.h"
@@ -55,10 +56,10 @@ inline std::ostream& operator<<(std::ostream& o, const RobotStateMsgQueueEntry& 
 }
 struct RobotWheelCommandsMsgQueueEntry
 {
-    int32_t front_right_milli_rad_per_s;
-    int32_t front_left_milli_rad_per_s;
-    int32_t back_right_milli_rad_per_s;
-    int32_t back_left_milli_rad_per_s;
+    int32_t front_right_milli_newton;
+    int32_t front_left_milli_newton;
+    int32_t back_right_milli_newton;
+    int32_t back_left_milli_newton;
 
     // We represent the timestamp in two parts, with the final timestamp
     // being the sum of the two
@@ -69,10 +70,10 @@ inline std::ostream& operator<<(std::ostream& o,
                                 const RobotWheelCommandsMsgQueueEntry& cmds)
 {
     // clang-format off
-    o << "Front Right: "                      << cmds.front_right_milli_rad_per_s 
-      << ", Front Left: "                     << cmds.front_left_milli_rad_per_s
-      << ", Back Right: "                     << cmds.back_right_milli_rad_per_s 
-      << ", Back Left: "                      << cmds.back_left_milli_rad_per_s
+    o << "Front Right: "                      << cmds.front_right_milli_newton 
+      << ", Front Left: "                     << cmds.front_left_milli_newton
+      << ", Back Right: "                     << cmds.back_right_milli_newton 
+      << ", Back Left: "                      << cmds.back_left_milli_newton
       << ", timestamp_secs: "                 << cmds.timestamp_secs
       << ", timestamp_nano_secs_correction: " << cmds.timestamp_nano_secs_correction;
     // clang-format on
@@ -96,10 +97,12 @@ class RobotInterface : public ThreadedObserver<World>
      *                                            interprocess queue that we
      *                                            should get wheel commands to
      *                                            send to the robot from
+     * @param robot_id The ID of the robot to control
      *
      */
     RobotInterface(std::string robot_state_ipc_queue_name,
-                   std::string robot_wheel_commands_ipc_queue_name)
+                   std::string robot_wheel_commands_ipc_queue_name, unsigned int robot_id,
+                   float max_wheel_force_centi_newtons)
         : robot_state_message_queue_name(robot_state_ipc_queue_name),
           robot_wheel_commands_message_queue_name(robot_wheel_commands_ipc_queue_name),
           robot_state_message_queue(boost::interprocess::open_or_create,
@@ -109,17 +112,20 @@ class RobotInterface : public ThreadedObserver<World>
                                              robot_wheel_commands_ipc_queue_name.c_str(),
                                              MAX_QUEUE_SIZE,
                                              sizeof(RobotWheelCommandsMsgQueueEntry)),
+          _radio_output(0, [](RobotStatus status) {}),
+          _robot_id(robot_id),
+          _max_abs_wheel_force_centi_newtons(abs(max_wheel_force_centi_newtons)),
           _in_destructor(false)
     {
-        receive_wheel_speeds_thread =
-           std::thread([this]() { return receiveWheelSpeedsLoop(); });
+        receive_wheel_forces_thread =
+            std::thread([this]() { return receiveWheelforcesLoop(); });
     }
 
     ~RobotInterface()
     {
         // Stop the thread that's constantly pulling robot wheel_commands
         _in_destructor = true;
-        receive_wheel_speeds_thread.join();
+        receive_wheel_forces_thread.join();
 
 
         // Close message queues
@@ -141,32 +147,38 @@ class RobotInterface : public ThreadedObserver<World>
     void onValueReceived(World world) override
     {
         auto friendly_team = world.friendlyTeam();
-        auto robots        = friendly_team.getAllRobots();
-        if (robots.size() < 1)
+        auto robot_opt     = friendly_team.getRobotById(_robot_id);
+        if (!robot_opt)
         {
-            LOG(WARNING) << "No robots visible!";
+            LOG(WARNING) << "Robot with id " << _robot_id << " not visible.";
             return;
         }
+        auto robot = *robot_opt;
 
-        auto robot = robots[0];
-
+        // TODO: use actual robot position
         RobotStateMsgQueueEntry queue_elem{
-            .x_pos_mm       = std::round(robot.position().x() * 1000),
-            .y_pos_mm       = std::round(robot.position().y() * 1000),
-            .yaw_milli_rad  = std::round(robot.orientation().toRadians() * 1000),
-            .x_vel_mm_per_s = std::round(robot.velocity().x() * 1000),
-            .y_vel_mm_per_s = std::round(robot.velocity().y() * 1000),
+            //.x_pos_mm       = std::round(robot.position().x() * 1000),
+            .x_pos_mm = (int32_t)std::round(-1 * 1000),
+            //.y_pos_mm       = std::round(robot.position().y() * 1000),
+            .y_pos_mm = (int32_t)std::round(-95 * 1000),
+            //.yaw_milli_rad  = (int32_t)std::round(robot.orientation().toRadians() *
+            // 1000),
+            .yaw_milli_rad  = (int32_t)std::round(M_PI / 2 * 1000),
+            .x_vel_mm_per_s = (int32_t)std::round(robot.velocity().x() * 1000),
+            .y_vel_mm_per_s = (int32_t)std::round(robot.velocity().y() * 1000),
             .angular_vel_milli_rad_per_s =
-                std::round(robot.angularVelocity().toRadians() * 1000),
+                (int32_t)std::round(robot.angularVelocity().toRadians() * 1000),
         };
 
-        // Because of how the the MPC controller works, we use the system 
-        // time now instead of the timestamp on the received data. 
+        // Because of how the the MPC controller works, we use the system
+        // time now instead of the timestamp on the received data.
         // TODO: redesign MPC stuff to properly use relative timestamps,
         //       or somehow offset this timestamp from the start time
-        double curr_time_since_epoch_seconds = 
-          std::chrono::duration_cast<std::chrono::nanoseconds>(
-              std::chrono::system_clock::now().time_since_epoch()).count()*1e-9;
+        double curr_time_since_epoch_seconds =
+            std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::system_clock::now().time_since_epoch())
+                .count() *
+            1e-9;
         queue_elem.setTimestampFromSecs(curr_time_since_epoch_seconds);
 
         LOG(INFO) << "Transmitting State: " << queue_elem << std::endl;
@@ -183,9 +195,9 @@ class RobotInterface : public ThreadedObserver<World>
     }
 
     /**
-     * An infinite loop that receives wheel speeds and pushes them to the robot
+     * An infinite loop that receives wheel forces and pushes them to the robot
      */
-    void receiveWheelSpeedsLoop()
+    void receiveWheelforcesLoop()
     {
         while (!_in_destructor)
         {
@@ -209,7 +221,39 @@ class RobotInterface : public ThreadedObserver<World>
             if (data_available && received_size == sizeof(wheel_commands))
             {
                 std::cout << "Received Commands: (" << wheel_commands << ")" << std::endl;
-                // TODO: actually send these to the robot
+
+                auto convert_wheel_force = [this](
+                                               int32_t milli_newton) -> int16_t {
+                    float force_centi_newtons = ((float)milli_newton) / 10.0;
+                    float clamped_force_centi_newtons =
+                        std::min(std::max(force_centi_newtons,
+                                          -_max_abs_wheel_force_centi_newtons),
+                                 _max_abs_wheel_force_centi_newtons);
+
+                    return static_cast<int16_t>(clamped_force_centi_newtons);
+                };
+
+                // TODO: sanity checks to prevent aggressive wheel speeds
+
+                // The direct wheels primitive forces are values in [-255, 255]
+                // that are divided by 100 on the robots to get the force
+                // to apply to each wheel, so we send centi-newtons to the
+                // robot
+                auto direct_wheels_primitive = std::make_unique<DirectWheelsPrimitive>(
+                    _robot_id,
+                    convert_wheel_force(
+                       wheel_commands.front_left_milli_newton),
+                    convert_wheel_force(
+                       wheel_commands.back_left_milli_newton),
+                    convert_wheel_force(
+                       wheel_commands.front_right_milli_newton),
+                    convert_wheel_force(
+                       wheel_commands.back_right_milli_newton),
+                    0);
+
+                std::vector<std::unique_ptr<Primitive>> primitives;
+                primitives.emplace_back(std::move(direct_wheels_primitive));
+                _radio_output.sendPrimitives(primitives);
             }
             else if (data_available && received_size != sizeof(wheel_commands))
             {
@@ -230,7 +274,18 @@ class RobotInterface : public ThreadedObserver<World>
 
     std::atomic<bool> _in_destructor;
 
-    std::thread receive_wheel_speeds_thread;
+    // The thread on which to run the infinite loop the receives the wheel
+    // forces to run
+    std::thread receive_wheel_forces_thread;
+
+    // The interface that lets us send primitives to the robots over radio
+    RadioOutput _radio_output;
+
+    // The id of the robot we're controlling
+    unsigned int _robot_id;
+
+    // The max wheel force to apply (per-wheel)
+    float _max_abs_wheel_force_centi_newtons;
 };
 
 int main(int argc, char** argv)
@@ -238,7 +293,7 @@ int main(int argc, char** argv)
     Util::Logger::LoggerSingleton::initializeLogger();
 
     auto world_observer =
-        std::make_shared<RobotInterface>("robot_state", "robot_wheel_commands");
+        std::make_shared<RobotInterface>("robot_state", "robot_wheel_commands", 3, 10);
 
     std::unique_ptr<Backend> backend = std::make_unique<GrSimBackend>();
 

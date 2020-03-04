@@ -5,6 +5,7 @@ cc_binary(
         "//software/backend",
         "//software/backend:radio_backend",
         "//software/backend:grsim_backend",
+        "//software/ai/primitive:direct_wheels_primitive",
         "@boost//:interprocess",
         "//software/logger",
         "@g3log",
