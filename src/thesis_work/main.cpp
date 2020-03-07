@@ -82,7 +82,8 @@ inline std::ostream& operator<<(std::ostream& o,
 
 // TODO: put this in another file (.c and .h)
 // TODO: better name for this class
-class RobotInterface : public ThreadedObserver<World>
+class RobotInterface : public ThreadedObserver<World>,
+                       public Subject<ConstPrimitiveVectorPtr>
 {
    public:
     RobotInterface() = delete;
@@ -112,19 +113,10 @@ class RobotInterface : public ThreadedObserver<World>
                                              robot_wheel_commands_ipc_queue_name.c_str(),
                                              MAX_QUEUE_SIZE,
                                              sizeof(RobotWheelCommandsMsgQueueEntry)),
-          _radio_output(NULL),
           _robot_id(robot_id),
           _max_abs_wheel_force_centi_newtons(abs(max_wheel_force_centi_newtons)),
           _in_destructor(false)
     {
-        try
-        {
-            _radio_output = new RadioOutput(0, [](RobotStatus status) {});
-        }
-        catch (std::runtime_error)
-        {
-            LOG(WARNING) << "NO RADIO ATTACHED, proceeding without it";
-        }
         receive_wheel_forces_thread =
             std::thread([this]() { return receiveWheelforcesLoop(); });
     }
@@ -254,21 +246,18 @@ class RobotInterface : public ThreadedObserver<World>
                     convert_wheel_force(wheel_commands.back_right_milli_newton), 0);
 
                 LOG(INFO) << "Sending Values Over Radio ( "
-                  << direct_wheels_primitive->getWheel0Power() << ", "
-                  << direct_wheels_primitive->getWheel1Power() << ", "
-                  << direct_wheels_primitive->getWheel2Power() << ", "
-                  << direct_wheels_primitive->getWheel3Power()
-                  << " )";
+                          << direct_wheels_primitive->getWheel0Power() << ", "
+                          << direct_wheels_primitive->getWheel1Power() << ", "
+                          << direct_wheels_primitive->getWheel2Power() << ", "
+                          << direct_wheels_primitive->getWheel3Power() << " )";
+
                 std::vector<std::unique_ptr<Primitive>> primitives;
                 primitives.emplace_back(std::move(direct_wheels_primitive));
-                if (_radio_output)
-                {
-                    _radio_output->sendPrimitives(primitives);
-                }
-                else
-                {
-                    LOG(WARNING) << "No radio connected, could not send commands";
-                }
+
+                auto primitives_ptr =
+                    std::make_shared<const std::vector<std::unique_ptr<Primitive>>>(
+                        std::move(primitives));
+                Subject<ConstPrimitiveVectorPtr>::sendValueToObservers(primitives_ptr);
             }
             else if (data_available && received_size != sizeof(wheel_commands))
             {
@@ -293,9 +282,6 @@ class RobotInterface : public ThreadedObserver<World>
     // forces to run
     std::thread receive_wheel_forces_thread;
 
-    // The interface that lets us send primitives to the robots over radio
-    RadioOutput* _radio_output;
-
     // The id of the robot we're controlling
     unsigned int _robot_id;
 
@@ -310,9 +296,10 @@ int main(int argc, char** argv)
     auto world_observer =
         std::make_shared<RobotInterface>("robot_state", "robot_wheel_commands", 3, 10);
 
-    std::unique_ptr<Backend> backend = std::make_unique<GrSimBackend>();
+    std::shared_ptr<Backend> backend = std::make_unique<RadioBackend>();
 
     backend->Subject<World>::registerObserver(world_observer);
+    world_observer->Subject<ConstPrimitiveVectorPtr>::registerObserver(backend);
 
     // This blocks forever without using the CPU
     std::promise<void>().get_future().wait();
