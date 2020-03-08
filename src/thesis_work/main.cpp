@@ -155,15 +155,16 @@ class RobotInterface : public ThreadedObserver<World>,
         }
         auto robot = *robot_opt;
 
-        // TODO: use actual robot position
+        // We do some transforms on the robot state to get it into the 
+        // reference frame the MPC software expects
         RobotStateMsgQueueEntry queue_elem{
-            //.x_pos_mm       = std::round(robot.position().x() * 1000),
-            .x_pos_mm = (int32_t)std::round(-1 * 1000),
-            //.y_pos_mm       = std::round(robot.position().y() * 1000),
-            .y_pos_mm = (int32_t)std::round(-9.5 * 1000),
-            //.yaw_milli_rad  = (int32_t)std::round(robot.orientation().toRadians() *
-            // 1000),
-            .yaw_milli_rad  = (int32_t)std::round(M_PI / 2 * 1000),
+            .x_pos_mm       = std::round(robot.position().x() * 1000),
+            //.x_pos_mm = (int32_t)std::round(-1 * 1000),
+            .y_pos_mm       = std::round(robot.position().y() * 1000),
+            //.y_pos_mm = (int32_t)std::round(-9.5 * 1000),
+            .yaw_milli_rad  = (int32_t)std::round(robot.orientation().toRadians() *
+             1000),
+            //.yaw_milli_rad  = (int32_t)std::round(M_PI / 2 * 1000),
             .x_vel_mm_per_s = (int32_t)std::round(robot.velocity().x() * 1000),
             .y_vel_mm_per_s = (int32_t)std::round(robot.velocity().y() * 1000),
             .angular_vel_milli_rad_per_s =
@@ -294,7 +295,7 @@ int main(int argc, char** argv)
     Util::Logger::LoggerSingleton::initializeLogger();
 
     auto world_observer =
-        std::make_shared<RobotInterface>("robot_state", "robot_wheel_commands", 3, 10);
+        std::make_shared<RobotInterface>("robot_state", "robot_wheel_commands", 3, 140);
 
     std::shared_ptr<Backend> backend = std::make_unique<RadioBackend>();
 
