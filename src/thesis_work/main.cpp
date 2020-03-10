@@ -5,6 +5,7 @@
 #include <ostream>
 
 #include "software/ai/primitive/direct_wheels_primitive.h"
+#include "software/ai/primitive/move_primitive.h"
 #include "software/backend/backend.h"
 #include "software/backend/grsim_backend.h"
 #include "software/backend/radio_backend.h"
@@ -99,11 +100,19 @@ class RobotInterface : public ThreadedObserver<World>,
      *                                            should get wheel commands to
      *                                            send to the robot from
      * @param robot_id The ID of the robot to control
-     *
+     * @param max_wheel_force_centi_newtons The maximum force to every apply
+     *                                      to any individual wheel, in
+     *                                      centi-newtons
+     * @param reset_position The position to reset the robot to when this class
+     *                       is started
+     * @param reset_position_tolerance_meters The tolerance for considering
+     *                                        the robot at the reset position,
+     *                                        in meters
      */
     RobotInterface(std::string robot_state_ipc_queue_name,
                    std::string robot_wheel_commands_ipc_queue_name, unsigned int robot_id,
-                   float max_wheel_force_centi_newtons)
+                   float max_wheel_force_centi_newtons, Point reset_position,
+                   double reset_position_tolerance_meters)
         : robot_state_message_queue_name(robot_state_ipc_queue_name),
           robot_wheel_commands_message_queue_name(robot_wheel_commands_ipc_queue_name),
           robot_state_message_queue(boost::interprocess::open_or_create,
@@ -113,9 +122,13 @@ class RobotInterface : public ThreadedObserver<World>,
                                              robot_wheel_commands_ipc_queue_name.c_str(),
                                              MAX_QUEUE_SIZE,
                                              sizeof(RobotWheelCommandsMsgQueueEntry)),
+
           _robot_id(robot_id),
           _max_abs_wheel_force_centi_newtons(abs(max_wheel_force_centi_newtons)),
-          _in_destructor(false)
+          _in_destructor(false),
+          _in_reset_state(true),
+          _reset_position(reset_position),
+          _reset_position_tolerance_meters(reset_position_tolerance_meters)
     {
         receive_wheel_forces_thread =
             std::thread([this]() { return receiveWheelforcesLoop(); });
@@ -155,43 +168,77 @@ class RobotInterface : public ThreadedObserver<World>,
         }
         auto robot = *robot_opt;
 
-        // We do some transforms on the robot state to get it into the 
-        // reference frame the MPC software expects
-        RobotStateMsgQueueEntry queue_elem{
-            .x_pos_mm       = std::round(robot.position().x() * 1000),
-            //.x_pos_mm = (int32_t)std::round(-1 * 1000),
-            .y_pos_mm       = std::round(robot.position().y() * 1000),
-            //.y_pos_mm = (int32_t)std::round(-9.5 * 1000),
-            .yaw_milli_rad  = (int32_t)std::round(robot.orientation().toRadians() *
-             1000),
-            //.yaw_milli_rad  = (int32_t)std::round(M_PI / 2 * 1000),
-            .x_vel_mm_per_s = (int32_t)std::round(robot.velocity().x() * 1000),
-            .y_vel_mm_per_s = (int32_t)std::round(robot.velocity().y() * 1000),
-            .angular_vel_milli_rad_per_s =
-                (int32_t)std::round(robot.angularVelocity().toRadians() * 1000),
-        };
-
-        // Because of how the the MPC controller works, we use the system
-        // time now instead of the timestamp on the received data.
-        // TODO: redesign MPC stuff to properly use relative timestamps,
-        //       or somehow offset this timestamp from the start time
-        double curr_time_since_epoch_seconds =
-            std::chrono::duration_cast<std::chrono::nanoseconds>(
-                std::chrono::system_clock::now().time_since_epoch())
-                .count() *
-            1e-9;
-        queue_elem.setTimestampFromSecs(curr_time_since_epoch_seconds);
-
-        LOG(INFO) << "Transmitting State: " << queue_elem << std::endl;
-
-        const boost::posix_time::ptime t_timeout =
-            boost::posix_time::microsec_clock::universal_time() +
-            boost::posix_time::milliseconds(IPC_QUEUE_TIMEOUT_MS);
-        bool send_succeeded = robot_state_message_queue.timed_send(
-            &queue_elem, sizeof(queue_elem), 0, t_timeout);
-        if (!send_succeeded)
+        // TODO: this should be it's own function
+        if (_in_reset_state)
         {
-            LOG(WARNING) << "Failed to send robot state, queue probably full!";
+            if ((robot.position() - _reset_position).length() <
+                _reset_position_tolerance_meters)
+            {
+                // Finished resetting
+                _in_reset_state = false;
+                LOG(INFO) << "Finished resetting robot position!";
+                return;
+            }
+            else
+            {
+                LOG(INFO) << "Reseting robot position to " << _reset_position
+                          << " with tolerance " << _reset_position_tolerance_meters;
+                // TODO: create a funciton to send a single primitive, DRY
+                auto move_primitive = std::make_unique<MovePrimitive>(
+                    _robot_id, _reset_position, Angle::zero(), 0.0, DribblerEnable::OFF,
+                    MoveType::NORMAL, AutokickType::NONE);
+                std::vector<std::unique_ptr<Primitive>> primitives;
+                primitives.emplace_back(std::move(move_primitive));
+
+                auto primitives_ptr =
+                    std::make_shared<const std::vector<std::unique_ptr<Primitive>>>(
+                        std::move(primitives));
+                Subject<ConstPrimitiveVectorPtr>::sendValueToObservers(primitives_ptr);
+            }
+        }
+        else
+        {
+            // We do some transforms on the robot state to get it into the
+            // reference frame the MPC software expects
+            RobotStateMsgQueueEntry queue_elem{
+                .x_pos_mm = std::round(robot.position().x() * 1000),
+                //.x_pos_mm = (int32_t)std::round(-1 * 1000),738, 0.116944, -0.188594 |
+                //-1.92251, -0.109627, 1.62587, -0.110507, 0.116888, -0.186553 | -1.93356,
+                //-0.0979386, 1.60722, -0.110486, 0.116662, -0.183936 | -1.94461,
+                //-0.0862724, 1.58882, -0.110698, 0.11677, -0.1835
+                .y_pos_mm = std::round(robot.position().y() * 1000),
+                //.y_pos_mm = (int32_t)std::round(-9.5 * 1000),
+                .yaw_milli_rad =
+                    (int32_t)std::round(robot.orientation().toRadians() * 1000),
+                //.yaw_milli_rad  = (int32_t)std::round(M_PI / 2 * 1000),
+                .x_vel_mm_per_s = (int32_t)std::round(robot.velocity().x() * 1000),
+                .y_vel_mm_per_s = (int32_t)std::round(robot.velocity().y() * 1000),
+                .angular_vel_milli_rad_per_s =
+                    (int32_t)std::round(robot.angularVelocity().toRadians() * 1000),
+            };
+
+            // Because of how the the MPC controller works, we use the system
+            // time now instead of the timestamp on the received data.
+            // TODO: redesign MPC stuff to properly use relative timestamps,
+            //       or somehow offset this timestamp from the start time
+            double curr_time_since_epoch_seconds =
+                std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::system_clock::now().time_since_epoch())
+                    .count() *
+                1e-9;
+            queue_elem.setTimestampFromSecs(curr_time_since_epoch_seconds);
+
+            LOG(INFO) << "Transmitting State: " << queue_elem << std::endl;
+
+            const boost::posix_time::ptime t_timeout =
+                boost::posix_time::microsec_clock::universal_time() +
+                boost::posix_time::milliseconds(IPC_QUEUE_TIMEOUT_MS);
+            bool send_succeeded = robot_state_message_queue.timed_send(
+                &queue_elem, sizeof(queue_elem), 0, t_timeout);
+            if (!send_succeeded)
+            {
+                LOG(WARNING) << "Failed to send robot state, queue probably full!";
+            }
         }
     }
 
@@ -202,6 +249,12 @@ class RobotInterface : public ThreadedObserver<World>,
     {
         while (!_in_destructor)
         {
+            // Ignore wheel forces while we're resetting the position
+            if (_in_reset_state)
+            {
+                continue;
+            }
+
             // We use the version of receive with a timeout so that we can
             // regularly check if this class was destructed, and stop the loop
             // if so
@@ -288,14 +341,23 @@ class RobotInterface : public ThreadedObserver<World>,
 
     // The max wheel force to apply (per-wheel)
     float _max_abs_wheel_force_centi_newtons;
+
+    // If we're currently resetting the robot position
+    bool _in_reset_state;
+
+    // The reset position
+    Point _reset_position;
+
+    // The tolerance for considering the robot at the reset position
+    double _reset_position_tolerance_meters;
 };
 
 int main(int argc, char** argv)
 {
     Util::Logger::LoggerSingleton::initializeLogger();
 
-    auto world_observer =
-        std::make_shared<RobotInterface>("robot_state", "robot_wheel_commands", 3, 140);
+    auto world_observer = std::make_shared<RobotInterface>(
+        "robot_state", "robot_wheel_commands", 3, 140, Point(-1.3, -0.5), 0.1);
 
     std::shared_ptr<Backend> backend = std::make_unique<RadioBackend>();
 
