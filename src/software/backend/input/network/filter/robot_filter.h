@@ -59,4 +59,6 @@ class RobotFilter
    private:
     Robot current_robot_state;
     Duration expiry_buffer_duration;
+
+    boost::circular_buffer<std::pair<Angle,Timestamp>> orientation_history;
 };

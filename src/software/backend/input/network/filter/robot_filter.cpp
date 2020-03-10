@@ -2,7 +2,8 @@
 
 RobotFilter::RobotFilter(Robot current_robot_state, Duration expiry_buffer_duration)
     : current_robot_state(current_robot_state),
-      expiry_buffer_duration(expiry_buffer_duration)
+      expiry_buffer_duration(expiry_buffer_duration),
+      orientation_history(6)
 {
 }
 
@@ -11,7 +12,9 @@ RobotFilter::RobotFilter(RobotDetection current_robot_state,
     : current_robot_state(current_robot_state.id, current_robot_state.position,
                           Vector(0, 0), current_robot_state.orientation,
                           AngularVelocity::zero(), current_robot_state.timestamp),
-      expiry_buffer_duration(expiry_buffer_duration)
+      expiry_buffer_duration(expiry_buffer_duration),
+      // TODO: pass this size into the constructor?
+      orientation_history(6)
 {
 }
 
@@ -39,6 +42,9 @@ std::optional<Robot> RobotFilter::getFilteredData(
                 filtered_data.position + robot_data.position.toVector();
             filtered_data.orientation =
                 filtered_data.orientation + robot_data.orientation;
+
+            orientation_history.push_front(std::pair<Angle, Timestamp>(
+                robot_data.orientation, robot_data.timestamp));
 
             filtered_data.timestamp = filtered_data.timestamp.fromMilliseconds(
                 filtered_data.timestamp.getMilliseconds() +
@@ -85,10 +91,40 @@ std::optional<Robot> RobotFilter::getFilteredData(
              current_robot_state.lastUpdateTimestamp().getSeconds());
 
         // angular_velocity = orientation difference / time difference
+        // filtered_data.angular_velocity =
+        //    (filtered_data.orientation - current_robot_state.orientation()) /
+        //    (filtered_data.timestamp.getSeconds() -
+        //     current_robot_state.lastUpdateTimestamp().getSeconds());
+
+        // TODO: better naming
+        double group_1_orientation_sum = 0;
+        double group_2_orientation_sum = 0;
+        double group_1_timestamp_sum   = 0;
+        double group_2_timestamp_sum   = 0;
+        size_t group_1_size            = std::round(orientation_history.size() / 2.0);
+        size_t group_2_size            = orientation_history.size() - group_1_size;
+        for (size_t i = 0; i < orientation_history.size(); i++)
+        {
+            if (i < group_1_size)
+            {
+                group_1_orientation_sum += orientation_history[i].first.toRadians();
+                group_1_timestamp_sum += orientation_history[i].second.getSeconds();
+            }
+            else
+            {
+                group_2_orientation_sum += orientation_history[i].first.toRadians();
+                group_2_timestamp_sum += orientation_history[i].second.getSeconds();
+            }
+        }
+
+        double group_1_avg_orientation = group_1_orientation_sum / group_1_size;
+        double group_1_avg_timestamp   = group_1_timestamp_sum / group_1_size;
+        double group_2_avg_orientation = group_2_orientation_sum / group_2_size;
+        double group_2_avg_timestamp   = group_2_timestamp_sum / group_2_size;
+
         filtered_data.angular_velocity =
-            (filtered_data.orientation - current_robot_state.orientation()) /
-            (filtered_data.timestamp.getSeconds() -
-             current_robot_state.lastUpdateTimestamp().getSeconds());
+            Angle::fromRadians((group_2_avg_orientation - group_1_avg_orientation) /
+                               (group_2_avg_timestamp - group_1_avg_timestamp));
 
         // update current_robot_state
         this->current_robot_state =

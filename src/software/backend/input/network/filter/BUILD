@@ -33,6 +33,7 @@ cc_library(
         "//software/geom",
         "//software/sensor_fusion:vision_detection",
         "//software/world:robot",
+        "@boost//:circular_buffer"
     ],
 )
 
