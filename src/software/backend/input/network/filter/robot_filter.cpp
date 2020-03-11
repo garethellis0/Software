@@ -3,7 +3,7 @@
 RobotFilter::RobotFilter(Robot current_robot_state, Duration expiry_buffer_duration)
     : current_robot_state(current_robot_state),
       expiry_buffer_duration(expiry_buffer_duration),
-      orientation_history(6)
+      orientation_history(10)
 {
 }
 
@@ -14,7 +14,7 @@ RobotFilter::RobotFilter(RobotDetection current_robot_state,
                           AngularVelocity::zero(), current_robot_state.timestamp),
       expiry_buffer_duration(expiry_buffer_duration),
       // TODO: pass this size into the constructor?
-      orientation_history(6)
+      orientation_history(10)
 {
 }
 
