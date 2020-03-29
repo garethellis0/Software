@@ -11,13 +11,13 @@ static void direct_wheels_start(const primitive_params_t* params, void* void_sta
     const FirmwareRobot_t* robot = app_firmware_world_getRobot(world);
 
     app_wheel_applyForce(app_firmware_robot_getFrontLeftWheel(robot),
-                         params->params[0] / 100);
+                         params->params[0] / 100.0);
     app_wheel_applyForce(app_firmware_robot_getBackLeftWheel(robot),
-                         params->params[1] / 100);
+                         params->params[1] / 100.0);
     app_wheel_applyForce(app_firmware_robot_getBackRightWheel(robot),
-                         params->params[2] / 100);
+                         params->params[2] / 100.0);
     app_wheel_applyForce(app_firmware_robot_getFrontRightWheel(robot),
-                         params->params[3] / 100);
+                         params->params[3] / 100.0);
 
     Dribbler_t* dribbler =
         app_firmware_robot_getDribbler(app_firmware_world_getRobot(world));
