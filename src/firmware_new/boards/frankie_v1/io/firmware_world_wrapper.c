@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #include "firmware/shared/physics.h"
 #include "firmware_new/boards/frankie_v1/io/drivetrain.h"
@@ -70,7 +71,7 @@ void io_firmware_world_wrapper_init(void)
         .jerk_limit        = JERK_LIMIT,
     };
 
-    ControllerState_t *controller_state;
+    ControllerState_t *controller_state = (ControllerState_t*)malloc(sizeof(ControllerState_t));
     controller_state->last_applied_acceleration_angular = 0;
     controller_state->last_applied_acceleration_x       = 0;
     controller_state->last_applied_acceleration_y       = 0;

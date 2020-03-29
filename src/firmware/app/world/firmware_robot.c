@@ -32,6 +32,8 @@ FirmwareRobot_t* app_firmware_robot_create(
     Wheel_t* back_left_wheel, ControllerState_t* controller_state,
     RobotConstants_t robot_constants)
 {
+    // TODO: check for NULLPTR here and _everywhere_ in the `app` layer
+
     FirmwareRobot_t* new_robot = malloc(sizeof(FirmwareRobot_t));
 
     new_robot->chicker                    = chicker;
