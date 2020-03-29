@@ -47,6 +47,12 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef hadc2;
+ADC_HandleTypeDef hadc3;
+DMA_HandleTypeDef hdma_adc1;
+DMA_HandleTypeDef hdma_adc2;
+DMA_HandleTypeDef hdma_adc3;
 
 CRC_HandleTypeDef hcrc;
 
@@ -56,7 +62,7 @@ UART_HandleTypeDef huart3;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
-osThreadId_t defaultTaskHandle;
+osThreadId_t PrimitiveTickTaskHandle;
 /* USER CODE BEGIN PV */
 
 static AllegroA3931MotorDriver_t *motor_0;
@@ -71,7 +77,12 @@ static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_CRC_Init(void);
 static void MX_TIM4_Init(void);
-void StartDefaultTask(void *argument);
+static void MX_BDMA_Init(void);
+static void MX_DMA_Init(void);
+static void MX_ADC1_Init(void);
+static void MX_ADC2_Init(void);
+static void MX_ADC3_Init(void);
+void StartPrimitiveTickTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -148,6 +159,11 @@ int main(void)
     MX_USB_OTG_FS_PCD_Init();
     MX_CRC_Init();
     MX_TIM4_Init();
+    MX_BDMA_Init();
+    MX_DMA_Init();
+    MX_ADC1_Init();
+    MX_ADC2_Init();
+    MX_ADC3_Init();
     /* USER CODE BEGIN 2 */
 
     initWheelMotors();
@@ -173,12 +189,13 @@ int main(void)
     /* USER CODE END RTOS_QUEUES */
 
     /* Create the thread(s) */
-    /* definition and creation of defaultTask */
-    const osThreadAttr_t defaultTask_attributes = {
-        .name       = "defaultTask",
+    /* definition and creation of PrimitiveTickTask */
+    const osThreadAttr_t PrimitiveTickTask_attributes = {
+        .name       = "PrimitiveTickTask",
         .priority   = (osPriority_t)osPriorityNormal,
-        .stack_size = 1024};
-    defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+        .stack_size = 2048};
+    PrimitiveTickTaskHandle =
+        osThreadNew(StartPrimitiveTickTask, NULL, &PrimitiveTickTask_attributes);
 
     /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
@@ -224,6 +241,9 @@ void SystemClock_Config(void)
     while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY))
     {
     }
+    /** Macro to configure the PLL clock source
+     */
+    __HAL_RCC_PLL_PLLSOURCE_CONFIG(RCC_PLLSOURCE_HSE);
     /** Initializes the CPU, AHB and APB busses clocks
      */
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
@@ -259,9 +279,19 @@ void SystemClock_Config(void)
     {
         Error_Handler();
     }
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3 | RCC_PERIPHCLK_USB;
+    PeriphClkInitStruct.PeriphClockSelection =
+        RCC_PERIPHCLK_USART3 | RCC_PERIPHCLK_ADC | RCC_PERIPHCLK_USB;
+    PeriphClkInitStruct.PLL2.PLL2M                = 1;
+    PeriphClkInitStruct.PLL2.PLL2N                = 19;
+    PeriphClkInitStruct.PLL2.PLL2P                = 3;
+    PeriphClkInitStruct.PLL2.PLL2Q                = 2;
+    PeriphClkInitStruct.PLL2.PLL2R                = 2;
+    PeriphClkInitStruct.PLL2.PLL2RGE              = RCC_PLL2VCIRANGE_3;
+    PeriphClkInitStruct.PLL2.PLL2VCOSEL           = RCC_PLL2VCOMEDIUM;
+    PeriphClkInitStruct.PLL2.PLL2FRACN            = 0;
     PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
     PeriphClkInitStruct.UsbClockSelection         = RCC_USBCLKSOURCE_PLL;
+    PeriphClkInitStruct.AdcClockSelection         = RCC_ADCCLKSOURCE_PLL2;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
         Error_Handler();
@@ -269,6 +299,176 @@ void SystemClock_Config(void)
     /** Enable USB Voltage detector
      */
     HAL_PWREx_EnableUSBVoltageDetector();
+}
+
+/**
+ * @brief ADC1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_ADC1_Init(void)
+{
+    /* USER CODE BEGIN ADC1_Init 0 */
+
+    /* USER CODE END ADC1_Init 0 */
+
+    ADC_MultiModeTypeDef multimode = {0};
+    ADC_ChannelConfTypeDef sConfig = {0};
+
+    /* USER CODE BEGIN ADC1_Init 1 */
+
+    /* USER CODE END ADC1_Init 1 */
+    /** Common config
+     */
+    hadc1.Instance                      = ADC1;
+    hadc1.Init.ClockPrescaler           = ADC_CLOCK_ASYNC_DIV2;
+    hadc1.Init.Resolution               = ADC_RESOLUTION_16B;
+    hadc1.Init.ScanConvMode             = ADC_SCAN_DISABLE;
+    hadc1.Init.EOCSelection             = ADC_EOC_SINGLE_CONV;
+    hadc1.Init.LowPowerAutoWait         = DISABLE;
+    hadc1.Init.ContinuousConvMode       = DISABLE;
+    hadc1.Init.NbrOfConversion          = 1;
+    hadc1.Init.DiscontinuousConvMode    = DISABLE;
+    hadc1.Init.ExternalTrigConv         = ADC_SOFTWARE_START;
+    hadc1.Init.ExternalTrigConvEdge     = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    hadc1.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DR;
+    hadc1.Init.Overrun                  = ADC_OVR_DATA_PRESERVED;
+    hadc1.Init.LeftBitShift             = ADC_LEFTBITSHIFT_NONE;
+    hadc1.Init.OversamplingMode         = DISABLE;
+    if (HAL_ADC_Init(&hadc1) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /** Configure the ADC multi-mode
+     */
+    multimode.Mode = ADC_MODE_INDEPENDENT;
+    if (HAL_ADCEx_MultiModeConfigChannel(&hadc1, &multimode) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /** Configure Regular Channel
+     */
+    sConfig.Channel      = ADC_CHANNEL_2;
+    sConfig.Rank         = ADC_REGULAR_RANK_1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+    sConfig.SingleDiff   = ADC_SINGLE_ENDED;
+    sConfig.OffsetNumber = ADC_OFFSET_NONE;
+    sConfig.Offset       = 0;
+    if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /* USER CODE BEGIN ADC1_Init 2 */
+
+    /* USER CODE END ADC1_Init 2 */
+}
+
+/**
+ * @brief ADC2 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_ADC2_Init(void)
+{
+    /* USER CODE BEGIN ADC2_Init 0 */
+
+    /* USER CODE END ADC2_Init 0 */
+
+    ADC_ChannelConfTypeDef sConfig = {0};
+
+    /* USER CODE BEGIN ADC2_Init 1 */
+
+    /* USER CODE END ADC2_Init 1 */
+    /** Common config
+     */
+    hadc2.Instance                      = ADC2;
+    hadc2.Init.ClockPrescaler           = ADC_CLOCK_ASYNC_DIV2;
+    hadc2.Init.Resolution               = ADC_RESOLUTION_16B;
+    hadc2.Init.ScanConvMode             = ADC_SCAN_DISABLE;
+    hadc2.Init.EOCSelection             = ADC_EOC_SINGLE_CONV;
+    hadc2.Init.LowPowerAutoWait         = DISABLE;
+    hadc2.Init.ContinuousConvMode       = DISABLE;
+    hadc2.Init.NbrOfConversion          = 1;
+    hadc2.Init.DiscontinuousConvMode    = DISABLE;
+    hadc2.Init.ExternalTrigConv         = ADC_SOFTWARE_START;
+    hadc2.Init.ExternalTrigConvEdge     = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    hadc2.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DR;
+    hadc2.Init.Overrun                  = ADC_OVR_DATA_PRESERVED;
+    hadc2.Init.LeftBitShift             = ADC_LEFTBITSHIFT_NONE;
+    hadc2.Init.OversamplingMode         = DISABLE;
+    if (HAL_ADC_Init(&hadc2) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /** Configure Regular Channel
+     */
+    sConfig.Channel      = ADC_CHANNEL_6;
+    sConfig.Rank         = ADC_REGULAR_RANK_1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+    sConfig.SingleDiff   = ADC_SINGLE_ENDED;
+    sConfig.OffsetNumber = ADC_OFFSET_NONE;
+    sConfig.Offset       = 0;
+    if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /* USER CODE BEGIN ADC2_Init 2 */
+
+    /* USER CODE END ADC2_Init 2 */
+}
+
+/**
+ * @brief ADC3 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_ADC3_Init(void)
+{
+    /* USER CODE BEGIN ADC3_Init 0 */
+
+    /* USER CODE END ADC3_Init 0 */
+
+    ADC_ChannelConfTypeDef sConfig = {0};
+
+    /* USER CODE BEGIN ADC3_Init 1 */
+
+    /* USER CODE END ADC3_Init 1 */
+    /** Common config
+     */
+    hadc3.Instance                      = ADC3;
+    hadc3.Init.ClockPrescaler           = ADC_CLOCK_ASYNC_DIV2;
+    hadc3.Init.Resolution               = ADC_RESOLUTION_16B;
+    hadc3.Init.ScanConvMode             = ADC_SCAN_DISABLE;
+    hadc3.Init.EOCSelection             = ADC_EOC_SINGLE_CONV;
+    hadc3.Init.LowPowerAutoWait         = DISABLE;
+    hadc3.Init.ContinuousConvMode       = ENABLE;
+    hadc3.Init.NbrOfConversion          = 1;
+    hadc3.Init.DiscontinuousConvMode    = DISABLE;
+    hadc3.Init.ExternalTrigConv         = ADC_SOFTWARE_START;
+    hadc3.Init.ExternalTrigConvEdge     = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    hadc3.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DR;
+    hadc3.Init.Overrun                  = ADC_OVR_DATA_PRESERVED;
+    hadc3.Init.LeftBitShift             = ADC_LEFTBITSHIFT_NONE;
+    hadc3.Init.OversamplingMode         = DISABLE;
+    if (HAL_ADC_Init(&hadc3) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /** Configure Regular Channel
+     */
+    sConfig.Channel      = ADC_CHANNEL_1;
+    sConfig.Rank         = ADC_REGULAR_RANK_1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+    sConfig.SingleDiff   = ADC_SINGLE_ENDED;
+    sConfig.OffsetNumber = ADC_OFFSET_NONE;
+    sConfig.Offset       = 0;
+    if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /* USER CODE BEGIN ADC3_Init 2 */
+
+    /* USER CODE END ADC3_Init 2 */
 }
 
 /**
@@ -338,6 +538,18 @@ static void MX_TIM4_Init(void)
     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
     if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
     {
         Error_Handler();
     }
@@ -428,6 +640,37 @@ static void MX_USB_OTG_FS_PCD_Init(void)
 }
 
 /**
+ * Enable DMA controller clock
+ */
+static void MX_BDMA_Init(void)
+{
+    /* DMA controller clock enable */
+    __HAL_RCC_BDMA_CLK_ENABLE();
+
+    /* DMA interrupt init */
+    /* BDMA_Channel0_IRQn interrupt configuration */
+    HAL_NVIC_SetPriority(BDMA_Channel0_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(BDMA_Channel0_IRQn);
+}
+
+/**
+ * Enable DMA controller clock
+ */
+static void MX_DMA_Init(void)
+{
+    /* DMA controller clock enable */
+    __HAL_RCC_DMA1_CLK_ENABLE();
+
+    /* DMA interrupt init */
+    /* DMA1_Stream0_IRQn interrupt configuration */
+    HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
+    /* DMA1_Stream1_IRQn interrupt configuration */
+    HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
+}
+
+/**
  * @brief GPIO Initialization Function
  * @param None
  * @retval None
@@ -438,6 +681,7 @@ static void MX_GPIO_Init(void)
 
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOF_CLK_ENABLE();
     __HAL_RCC_GPIOH_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -445,14 +689,43 @@ static void MX_GPIO_Init(void)
     __HAL_RCC_GPIOG_CLK_ENABLE();
 
     /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOB,
-                      motor_0_esf_Pin | LD3_Pin | motor_0_reset_Pin | motor_0_coast_Pin |
-                          motor_0_mode_Pin | LD2_Pin | motor_0_direction_Pin |
-                          motor_0_brake_Pin,
+    HAL_GPIO_WritePin(
+        GPIOF,
+        wheel_motor_back_right_esf_Pin | wheel_motor_front_right_reset_Pin |
+            wheel_motor_front_right_coast_Pin | wheel_motor_front_right_mode_Pin |
+            wheel_motor_front_right_direction_Pin | wheel_motor_front_right_brake_Pin |
+            wheel_motor_front_right_esf_Pin,
+        GPIO_PIN_RESET);
+
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(
+        GPIOC, wheel_motor_back_right_coast_Pin | wheel_motor_back_left_direction_Pin,
+        GPIO_PIN_RESET);
+
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(GPIOA,
+                      wheel_motor_back_right_brake_Pin |
+                          wheel_motor_back_right_reset_Pin |
+                          wheel_motor_back_right_direction_Pin,
                       GPIO_PIN_RESET);
 
     /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(
+        GPIOB,
+        wheel_motor_back_left_brake_Pin | wheel_motor_back_left_esf_Pin |
+            wheel_motor_front_left_esf_Pin | wheel_motor_back_left_reset_Pin |
+            wheel_motor_back_left_coast_Pin | LD3_Pin | wheel_motor_back_left_mode_Pin |
+            wheel_motor_front_left_reset_Pin | wheel_motor_front_left_coast_Pin |
+            wheel_motor_front_left_mode_Pin | LD2_Pin |
+            wheel_motor_front_left_direction_Pin | wheel_motor_front_left_brake_Pin,
+        GPIO_PIN_RESET);
+
+    /*Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
+
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(wheel_motor_back_right_mode_GPIO_Port,
+                      wheel_motor_back_right_mode_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pin : USER_Btn_Pin */
     GPIO_InitStruct.Pin  = USER_Btn_Pin;
@@ -460,12 +733,53 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pins : motor_0_esf_Pin LD3_Pin motor_0_reset_Pin motor_0_coast_Pin
-                             motor_0_mode_Pin LD2_Pin motor_0_direction_Pin
-       motor_0_brake_Pin */
-    GPIO_InitStruct.Pin = motor_0_esf_Pin | LD3_Pin | motor_0_reset_Pin |
-                          motor_0_coast_Pin | motor_0_mode_Pin | LD2_Pin |
-                          motor_0_direction_Pin | motor_0_brake_Pin;
+    /*Configure GPIO pins : wheel_motor_back_right_esf_Pin
+       wheel_motor_front_right_reset_Pin wheel_motor_front_right_coast_Pin
+       wheel_motor_front_right_mode_Pin wheel_motor_front_right_direction_Pin
+       wheel_motor_front_right_brake_Pin wheel_motor_front_right_esf_Pin */
+    GPIO_InitStruct.Pin =
+        wheel_motor_back_right_esf_Pin | wheel_motor_front_right_reset_Pin |
+        wheel_motor_front_right_coast_Pin | wheel_motor_front_right_mode_Pin |
+        wheel_motor_front_right_direction_Pin | wheel_motor_front_right_brake_Pin |
+        wheel_motor_front_right_esf_Pin;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+    /*Configure GPIO pins : wheel_motor_back_right_coast_Pin
+     * wheel_motor_back_left_direction_Pin */
+    GPIO_InitStruct.Pin =
+        wheel_motor_back_right_coast_Pin | wheel_motor_back_left_direction_Pin;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+    /*Configure GPIO pins : wheel_motor_back_right_brake_Pin
+     * wheel_motor_back_right_reset_Pin wheel_motor_back_right_direction_Pin */
+    GPIO_InitStruct.Pin = wheel_motor_back_right_brake_Pin |
+                          wheel_motor_back_right_reset_Pin |
+                          wheel_motor_back_right_direction_Pin;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    /*Configure GPIO pins : wheel_motor_back_left_brake_Pin wheel_motor_back_left_esf_Pin
+       wheel_motor_front_left_esf_Pin wheel_motor_back_left_reset_Pin
+                             wheel_motor_back_left_coast_Pin LD3_Pin
+       wheel_motor_back_left_mode_Pin wheel_motor_front_left_reset_Pin
+                             wheel_motor_front_left_coast_Pin
+       wheel_motor_front_left_mode_Pin LD2_Pin wheel_motor_front_left_direction_Pin
+                             wheel_motor_front_left_brake_Pin */
+    GPIO_InitStruct.Pin =
+        wheel_motor_back_left_brake_Pin | wheel_motor_back_left_esf_Pin |
+        wheel_motor_front_left_esf_Pin | wheel_motor_back_left_reset_Pin |
+        wheel_motor_back_left_coast_Pin | LD3_Pin | wheel_motor_back_left_mode_Pin |
+        wheel_motor_front_left_reset_Pin | wheel_motor_front_left_coast_Pin |
+        wheel_motor_front_left_mode_Pin | LD2_Pin | wheel_motor_front_left_direction_Pin |
+        wheel_motor_front_left_brake_Pin;
     GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull  = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -483,20 +797,27 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : wheel_motor_back_right_mode_Pin */
+    GPIO_InitStruct.Pin   = wheel_motor_back_right_mode_Pin;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(wheel_motor_back_right_mode_GPIO_Port, &GPIO_InitStruct);
 }
 
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_StartDefaultTask */
+/* USER CODE BEGIN Header_StartPrimitiveTickTask */
 /**
- * @brief  Function implementing the defaultTask thread.
+ * @brief  Function implementing the PrimitiveTickTask thread.
  * @param  argument: Not used
  * @retval None
  */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
+/* USER CODE END Header_StartPrimitiveTickTask */
+void StartPrimitiveTickTask(void *argument)
 {
     /* init code for LWIP */
     MX_LWIP_Init();

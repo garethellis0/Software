@@ -30,3 +30,19 @@ cc_library(
         ":pwm_pin",
     ],
 )
+
+cc_library(
+    name = "adc",
+    srcs = ["io_adc.c"],
+    hdrs = ["io_adc.h"],
+    deps = [],
+)
+
+cc_library(
+    name = "adc_manager",
+    srcs = ["io_adc_manager.c"],
+    hdrs = ["io_adc_manager.h"],
+    deps = [
+        ":adc",
+    ],
+)

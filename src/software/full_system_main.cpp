@@ -114,7 +114,8 @@ commandLineArgs parseCommandLineArgs(int argc, char **argv)
  */
 void connectObservers(bool headless)
 {
-    backend->Subject<World>::registerObserver(ai);
+    backend->Subject<World>::registerObserver(sensor_fusion);
+    sensor_fusion->Subject<FilteredWorld>::registerObserver(ai);
     ai->Subject<ConstPrimitiveVectorPtr>::registerObserver(backend);
     if (!headless)
     {
