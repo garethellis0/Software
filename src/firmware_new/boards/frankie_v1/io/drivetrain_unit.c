@@ -23,7 +23,7 @@ void io_drivetrain_unit_applyForce(DriveTrainUnit_t* drive_train_unit,
 {
     // TODO: proper implementation for this
 
-    float pwm_percentage = fmin(1.0f, fabs(force_newtons) / 255.0f);
+    float pwm_percentage = fmin(1.0f, fabs(force_newtons));
 
     if (force_newtons > 0)
     {
