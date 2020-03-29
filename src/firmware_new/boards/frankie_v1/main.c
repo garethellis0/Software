@@ -635,6 +635,7 @@ void StartPrimitiveTickTask(void *argument)
     for (;;)
     {
         app_primitive_manager_runCurrentPrimitive(primitive_manager, world);
+        osDelay(1);
     }
     /* USER CODE END 5 */
 }
