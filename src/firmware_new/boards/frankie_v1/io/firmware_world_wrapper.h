@@ -9,4 +9,3 @@ void io_firmware_world_wrapper_init(void);
 
 // TODO: jdoc here
 FirmwareWorld_t* io_firmware_world_wrapper_getFirmwareWorld(void);
-

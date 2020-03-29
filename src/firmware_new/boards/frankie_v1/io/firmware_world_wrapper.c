@@ -1,10 +1,10 @@
 #include "firmware_new/boards/frankie_v1/io/firmware_world_wrapper.h"
 
-#include "firmware/shared/physics.h"
-#include "firmware_new/boards/frankie_v1/io/drivetrain.h"
-
 #include <assert.h>
 #include <stdbool.h>
+
+#include "firmware/shared/physics.h"
+#include "firmware_new/boards/frankie_v1/io/drivetrain.h"
 
 static FirmwareWorld_t *firmware_world;
 
