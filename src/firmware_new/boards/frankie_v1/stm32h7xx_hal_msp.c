@@ -112,10 +112,10 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
         /**ADC1 GPIO Configuration
         PF11     ------> ADC1_INP2
         */
-        GPIO_InitStruct.Pin  = wheel_encoder_front_left_adc_0_Pin;
+        GPIO_InitStruct.Pin  = wheel_encoder_front_left_adc_sine_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(wheel_encoder_front_left_adc_0_GPIO_Port, &GPIO_InitStruct);
+        HAL_GPIO_Init(wheel_encoder_front_left_adc_sine_GPIO_Port, &GPIO_InitStruct);
 
         /* ADC1 DMA Init */
         /* ADC1 Init */
@@ -161,15 +161,15 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
         PB0     ------> ADC2_INP9
         PF14     ------> ADC2_INP6
         */
-        GPIO_InitStruct.Pin  = wheel_encoder_back_right_adc_1_Pin;
+        GPIO_InitStruct.Pin  = wheel_encoder_back_right_adc_cosine_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(wheel_encoder_back_right_adc_1_GPIO_Port, &GPIO_InitStruct);
+        HAL_GPIO_Init(wheel_encoder_back_right_adc_cosine_GPIO_Port, &GPIO_InitStruct);
 
-        GPIO_InitStruct.Pin  = wheel_encoder_front_left_adc_1_Pin;
+        GPIO_InitStruct.Pin  = wheel_encoder_front_left_adc_cosine_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(wheel_encoder_front_left_adc_1_GPIO_Port, &GPIO_InitStruct);
+        HAL_GPIO_Init(wheel_encoder_front_left_adc_cosine_GPIO_Port, &GPIO_InitStruct);
 
         /* ADC2 DMA Init */
         /* ADC2 Init */
@@ -214,9 +214,9 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
         PC2_C     ------> ADC3_INP0
         PC3_C     ------> ADC3_INP1
         */
-        GPIO_InitStruct.Pin = wheel_encoder_back_right_adc_0_Pin |
-                              wheel_encoder_back_left_adc_1_Pin |
-                              wheel_encoder_back_left_adc_0_Pin;
+        GPIO_InitStruct.Pin = wheel_encoder_back_right_adc_sine_Pin |
+                              wheel_encoder_back_left_adc_cosine_Pin |
+                              wheel_encoder_back_left_adc_sine_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
@@ -275,8 +275,8 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
         /**ADC1 GPIO Configuration
         PF11     ------> ADC1_INP2
         */
-        HAL_GPIO_DeInit(wheel_encoder_front_left_adc_0_GPIO_Port,
-                        wheel_encoder_front_left_adc_0_Pin);
+        HAL_GPIO_DeInit(wheel_encoder_front_left_adc_sine_GPIO_Port,
+                        wheel_encoder_front_left_adc_sine_Pin);
 
         /* ADC1 DMA DeInit */
         HAL_DMA_DeInit(hadc->DMA_Handle);
@@ -310,11 +310,11 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
         PB0     ------> ADC2_INP9
         PF14     ------> ADC2_INP6
         */
-        HAL_GPIO_DeInit(wheel_encoder_back_right_adc_1_GPIO_Port,
-                        wheel_encoder_back_right_adc_1_Pin);
+        HAL_GPIO_DeInit(wheel_encoder_back_right_adc_cosine_GPIO_Port,
+                        wheel_encoder_back_right_adc_cosine_Pin);
 
-        HAL_GPIO_DeInit(wheel_encoder_front_left_adc_1_GPIO_Port,
-                        wheel_encoder_front_left_adc_1_Pin);
+        HAL_GPIO_DeInit(wheel_encoder_front_left_adc_cosine_GPIO_Port,
+                        wheel_encoder_front_left_adc_cosine_Pin);
 
         /* ADC2 DMA DeInit */
         HAL_DMA_DeInit(hadc->DMA_Handle);
@@ -347,9 +347,9 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
         PC2_C     ------> ADC3_INP0
         PC3_C     ------> ADC3_INP1
         */
-        HAL_GPIO_DeInit(GPIOF, wheel_encoder_back_right_adc_0_Pin |
-                                   wheel_encoder_back_left_adc_1_Pin |
-                                   wheel_encoder_back_left_adc_0_Pin);
+        HAL_GPIO_DeInit(GPIOF, wheel_encoder_back_right_adc_sine_Pin |
+                                   wheel_encoder_back_left_adc_cosine_Pin |
+                                   wheel_encoder_back_left_adc_sine_Pin);
 
         /* ADC3 DMA DeInit */
         HAL_DMA_DeInit(hadc->DMA_Handle);

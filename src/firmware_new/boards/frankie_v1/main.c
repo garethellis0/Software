@@ -438,14 +438,14 @@ static void MX_ADC3_Init(void)
     hadc3.Instance                      = ADC3;
     hadc3.Init.ClockPrescaler           = ADC_CLOCK_ASYNC_DIV2;
     hadc3.Init.Resolution               = ADC_RESOLUTION_16B;
-    hadc3.Init.ScanConvMode             = ADC_SCAN_DISABLE;
+    hadc3.Init.ScanConvMode             = ADC_SCAN_ENABLE;
     hadc3.Init.EOCSelection             = ADC_EOC_SINGLE_CONV;
     hadc3.Init.LowPowerAutoWait         = DISABLE;
     hadc3.Init.ContinuousConvMode       = ENABLE;
-    hadc3.Init.NbrOfConversion          = 1;
+    hadc3.Init.NbrOfConversion          = 6;
     hadc3.Init.DiscontinuousConvMode    = DISABLE;
-    hadc3.Init.ExternalTrigConv         = ADC_SOFTWARE_START;
-    hadc3.Init.ExternalTrigConvEdge     = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    hadc3.Init.ExternalTrigConv         = ADC_EXTERNALTRIG_EXT_IT11;
+    hadc3.Init.ExternalTrigConvEdge     = ADC_EXTERNALTRIGCONVEDGE_RISING;
     hadc3.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DR;
     hadc3.Init.Overrun                  = ADC_OVR_DATA_PRESERVED;
     hadc3.Init.LeftBitShift             = ADC_LEFTBITSHIFT_NONE;
@@ -456,12 +456,52 @@ static void MX_ADC3_Init(void)
     }
     /** Configure Regular Channel
      */
-    sConfig.Channel      = ADC_CHANNEL_1;
+    sConfig.Channel      = ADC_CHANNEL_0;
     sConfig.Rank         = ADC_REGULAR_RANK_1;
     sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
     sConfig.SingleDiff   = ADC_SINGLE_ENDED;
     sConfig.OffsetNumber = ADC_OFFSET_NONE;
     sConfig.Offset       = 0;
+    if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /** Configure Regular Channel
+     */
+    sConfig.Channel = ADC_CHANNEL_1;
+    sConfig.Rank    = ADC_REGULAR_RANK_2;
+    if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /** Configure Regular Channel
+     */
+    sConfig.Channel = ADC_CHANNEL_2;
+    sConfig.Rank    = ADC_REGULAR_RANK_3;
+    if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /** Configure Regular Channel
+     */
+    sConfig.Channel = ADC_CHANNEL_3;
+    sConfig.Rank    = ADC_REGULAR_RANK_4;
+    if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /** Configure Regular Channel
+     */
+    sConfig.Channel = ADC_CHANNEL_7;
+    sConfig.Rank    = ADC_REGULAR_RANK_5;
+    if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /** Configure Regular Channel
+     */
+    sConfig.Channel = ADC_CHANNEL_VREFINT;
+    sConfig.Rank    = ADC_REGULAR_RANK_6;
     if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
     {
         Error_Handler();
@@ -685,6 +725,7 @@ static void MX_GPIO_Init(void)
     __HAL_RCC_GPIOH_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOE_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
     __HAL_RCC_GPIOG_CLK_ENABLE();
 
@@ -784,6 +825,12 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Pull  = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : PE11 */
+    GPIO_InitStruct.Pin  = GPIO_PIN_11;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
     /*Configure GPIO pin : USB_PowerSwitchOn_Pin */
     GPIO_InitStruct.Pin   = USB_PowerSwitchOn_Pin;
