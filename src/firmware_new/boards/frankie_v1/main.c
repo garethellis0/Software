@@ -209,7 +209,7 @@ int main(void)
     const osThreadAttr_t PrimitiveTickTask_attributes = {
         .name       = "PrimitiveTickTask",
         .priority   = (osPriority_t)osPriorityNormal,
-        .stack_size = 2048};
+        .stack_size = 8192};
     PrimitiveTickTaskHandle =
         osThreadNew(StartPrimitiveTickTask, NULL, &PrimitiveTickTask_attributes);
 
