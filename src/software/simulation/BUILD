@@ -14,6 +14,25 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "simulator_robot_driveunit",
+    srcs = ["simulator_robot_driveunit.cpp"],
+    hdrs = ["simulator_robot_driveunit.h"],
+    deps = [
+        "//software/new_geom:angular_velocity",
+        "//software/new_geom:vector",
+    ],
+)
+
+cc_test(
+    name = "simulator_robot_driveunit_test",
+    srcs = ["simulator_robot_driveunit_test.cpp"],
+    deps = [
+        ":simulator_robot_driveunit",
+        "@gtest//:gtest_main",
+    ],
+)
+
 cc_test(
     name = "simulator_robot_test",
     srcs = ["simulator_robot_test.cpp"],
