@@ -59,3 +59,4 @@ TEST(LineTest, swapXY)
     EXPECT_DOUBLE_EQ(coeffs.b, expectedCoeffs.b);
     EXPECT_DOUBLE_EQ(coeffs.c, expectedCoeffs.c);
 }
+// SOme comemnt
