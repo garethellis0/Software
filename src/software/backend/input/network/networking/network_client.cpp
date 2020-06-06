@@ -1,10 +1,10 @@
 #include "software/backend/input/network/networking/network_client.h"
 
 #include <boost/bind.hpp>
-#include <g3log/g3log.hpp>
 #include <limits>
 
 #include "software/constants.h"
+#include "software/logger/logger.h"
 #include "software/parameter/config.hpp"
 #include "software/parameter/dynamic_parameters.h"
 
@@ -36,7 +36,7 @@ void NetworkClient::setupVisionClient(std::string vision_address, int vision_por
     // Set up our connection over udp to receive vision packets
     try
     {
-        ssl_vision_client = std::make_unique<SSLVisionClient>(
+        ssl_vision_client = std::make_unique<ProtoMulticastListener<SSL_WrapperPacket>>(
             io_service, vision_address, vision_port,
             boost::bind(&NetworkClient::filterAndPublishVisionDataWrapper, this, _1));
     }
@@ -55,7 +55,7 @@ void NetworkClient::setupGameControllerClient(std::string gamecontroller_address
     // Set up our connection over udp to receive gamecontroller packets
     try
     {
-        ssl_gamecontroller_client = std::make_unique<SSLGameControllerClient>(
+        ssl_gamecontroller_client = std::make_unique<ProtoMulticastListener<Referee>>(
             io_service, gamecontroller_address, gamecontroller_port,
             boost::bind(&NetworkClient::filterAndPublishGameControllerData, this, _1));
     }
@@ -129,7 +129,7 @@ void NetworkClient::filterAndPublishVisionData(SSL_WrapperPacket packet)
         world.updateFieldGeometry(field);
     }
 
-    if (world.field().isFieldValid())
+    if (world.field().isValid())
     {
         if (packet.has_detection())
         {
@@ -170,8 +170,9 @@ void NetworkClient::filterAndPublishVisionData(SSL_WrapperPacket packet)
 
             if (!camera_disabled)
             {
-                BallState ball_state = network_filter.getFilteredBallData({detection});
-                world.updateBallState(ball_state);
+                TimestampedBallState ball_state =
+                    network_filter.getFilteredBallData({detection});
+                world.updateBallStateWithTimestamp(ball_state);
 
                 Team friendly_team =
                     network_filter.getFilteredFriendlyTeamData({detection});
@@ -195,7 +196,10 @@ void NetworkClient::filterAndPublishGameControllerData(Referee packet)
     RefboxGameState game_state = network_filter.getRefboxGameState(packet);
     world.updateRefboxGameState(game_state);
 
-    received_world_callback(world);
+    if (world.field().isValid())
+    {
+        received_world_callback(world);
+    }
 }
 
 void NetworkClient::invertFieldSide(SSL_DetectionFrame& frame)

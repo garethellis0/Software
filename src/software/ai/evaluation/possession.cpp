@@ -52,7 +52,7 @@ namespace Evaluation
     {
         for (const Robot &robot : team.getAllRobots())
         {
-            boost::circular_buffer<RobotState> previous_states =
+            boost::circular_buffer<TimestampedRobotState> previous_states =
                 robot.getPreviousStates();
             std::vector<Timestamp> robot_history_timestamps{};
             for (int i = 0; i < previous_states.size(); i++)
@@ -65,11 +65,7 @@ namespace Evaluation
             // Check that the robot has had possession of the ball recently.
             while (i < robot_history_timestamps.size() &&
                    robot.lastUpdateTimestamp() - robot_history_timestamps[i] <=
-                       Duration::fromSeconds(Util::DynamicParameters->getAIConfig()
-                                                 ->getEvaluationConfig()
-                                                 ->getPossessionConfig()
-                                                 ->PossessionBufferTimeSeconds()
-                                                 ->value()))
+                       Duration::fromSeconds(3.5))
             {
                 std::optional<bool> robot_has_possession =
                     robotHasPossession(world.ball(), robot, robot_history_timestamps[i]);
@@ -85,7 +81,7 @@ namespace Evaluation
     {
         for (const Robot &robot : team.getAllRobots())
         {
-            boost::circular_buffer<RobotState> previous_states =
+            boost::circular_buffer<TimestampedRobotState> previous_states =
                 robot.getPreviousStates();
             std::vector<Timestamp> robot_history_timestamps{};
             for (int i = 0; i < previous_states.size(); i++)
@@ -97,11 +93,7 @@ namespace Evaluation
 
             // Check that the robot has had possession of the ball recently.
             while (robot.lastUpdateTimestamp() - robot_history_timestamps[i] <
-                   Duration::fromSeconds(Util::DynamicParameters->getAIConfig()
-                                             ->getEvaluationConfig()
-                                             ->getPossessionConfig()
-                                             ->PassBufferTimeSeconds()
-                                             ->value()))
+                   Duration::fromSeconds(1.0))
             {
                 std::optional<bool> robot_being_passed_to =
                     robotBeingPassedTo(world, robot, robot_history_timestamps[i]);

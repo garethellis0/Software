@@ -1,5 +1,12 @@
 #pragma once
 
+#include <gtest/gtest.h>
+
+#include "shared/constants.h"
+#include "software/new_geom/geom_constants.h"
+#include "software/new_geom/point.h"
+#include "software/new_geom/polygon.h"
+#include "software/new_geom/util/almost_equal.h"
 #include "software/world/ball.h"
 #include "software/world/field.h"
 #include "software/world/team.h"
@@ -88,6 +95,71 @@ namespace Test
          * LAST_ENUM_ITEM_UNUSED
          */
         static std::vector<RefboxGameState> getAllRefboxGameStates();
+
+        /**
+         * Returns a robot at the given position with zero velocity,
+         * facing zero radians, with zero rad/s of angular velocity,
+         * and an id monotonically increasing at each call of this
+         * function
+         * @param pt the point
+         * @return a robot at the point
+         */
+        static Robot createRobotAtPos(const Point &pt);
+
+        /**
+         * Checks if two polygons are within tolerance of each other
+         * Two polygons are within tolerance of each other if the corresponding points are
+         * within tolerance of each other
+         *
+         * @param poly1, poly2 Polygons to compare
+         * @param tolerance tolerance to check equality with, default is
+         * METERS_PER_MILLIMETER
+         *
+         * @return AssertionSuccess if the two polygons are within tolerance of each other
+         */
+        static ::testing::AssertionResult equalWithinTolerance(
+            const Polygon &poly1, const Polygon &poly2,
+            double tolerance = METERS_PER_MILLIMETER);
+
+        /**
+         * Checks if two circles are within tolerance of each other
+         * Two circles are within tolerance of each other if the origins are within
+         * tolerance of each other and radius is within tolerance of each other
+         *
+         * @param c1, c2 Circles to compare
+         * @param tolerance tolerance to check equality with, default is
+         * METERS_PER_MILLIMETER
+         *
+         * @return AssertionSuccess if the two circles are within tolerance of each other
+         */
+        static ::testing::AssertionResult equalWithinTolerance(
+            const Circle &c1, const Circle &c2, double tolerance = METERS_PER_MILLIMETER);
+
+        /**
+         * Checks if two points are within tolerance of each other
+         * Two points are within tolerance of each other if the respective x and y values
+         * are within tolerance of each other
+         *
+         * @param pt1, pt2 Points to compare
+         * @param tolerance tolerance to check equality with, default is
+         * METERS_PER_MILLIMETER
+         *
+         * @return AssertionSuccess if the two points are within tolerance of each other
+         */
+        static ::testing::AssertionResult equalWithinTolerance(
+            const Point &pt1, const Point &pt2, double tolerance = METERS_PER_MILLIMETER);
+
+        /**
+         * Checks if two values are within tolerance of each other
+         *
+         * @param val1, val2 values to compare
+         * @param tolerance tolerance to check equality with, default is
+         * METERS_PER_MILLIMETER
+         *
+         * @return AssertionSuccess if the two values are within tolerance of each other
+         */
+        static ::testing::AssertionResult equalWithinTolerance(
+            double val1, double val2, double tolerance = METERS_PER_MILLIMETER);
 
        private:
         /**

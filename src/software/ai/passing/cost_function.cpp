@@ -5,13 +5,13 @@
 
 #include "software/ai/passing/cost_function.h"
 
-#include <g3log/g3log.hpp>
 #include <numeric>
 
 #include "software/../shared/constants.h"
 #include "software/ai/evaluation/calc_best_shot.h"
 #include "software/ai/evaluation/pass.h"
 #include "software/geom/util.h"
+#include "software/logger/logger.h"
 #include "software/parameter/dynamic_parameters.h"
 
 using namespace Passing;
@@ -104,7 +104,7 @@ double Passing::ratePassShootScore(const Field& field, const Team& enemy_team,
                                        pass.receiverPoint(), enemy_team.getAllRobots());
 
     Angle open_angle_to_goal = Angle::zero();
-    Point shot_target        = field.enemyGoal();
+    Point shot_target        = field.enemyGoalCenter();
     if (shot_opt && shot_opt->getOpenAngle().abs() > Angle::fromDegrees(0))
     {
         open_angle_to_goal = shot_opt->getOpenAngle();
@@ -186,7 +186,7 @@ double Passing::calculateInterceptRisk(const Robot& enemy_robot, const Pass& pas
     // the reception point before the ball. We take the greater of these two risks.
 
     // If the enemy cannot intercept the pass at BOTH the closest point on the pass and
-    // the the receiver point for the pass, then it is guaranteed that it will not be
+    // the receiver point for the pass, then it is guaranteed that it will not be
     // able to intercept the pass anywhere.
 
     // Figure out how long the enemy robot and ball will take to reach the closest
@@ -335,8 +335,8 @@ double Passing::getStaticPositionQuality(const Field& field, const Point& positi
     double on_field_quality = rectangleSigmoid(reduced_size_field, position, sig_width);
 
     // Add a negative weight for positions closer to our goal
-    Vector vec_to_friendly_goal      = Vector(field.friendlyGoal().x() - position.x(),
-                                         field.friendlyGoal().y() - position.y());
+    Vector vec_to_friendly_goal = Vector(field.friendlyGoalCenter().x() - position.x(),
+                                         field.friendlyGoalCenter().y() - position.y());
     double distance_to_friendly_goal = vec_to_friendly_goal.length();
     double near_friendly_goal_quality =
         (1 -

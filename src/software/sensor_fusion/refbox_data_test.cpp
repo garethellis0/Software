@@ -2,14 +2,14 @@
 
 #include <gtest/gtest.h>
 
-TEST(RefboxData, test_get_name_of_refbox_constants)
+TEST(RefboxDataTest, test_get_name_of_refbox_gamestate)
 {
     for (int i = 0; i < static_cast<int>(RefboxGameState::REFBOX_GAME_STATE_COUNT); i++)
     {
         try
         {
             RefboxGameState state = static_cast<RefboxGameState>(i);
-            to_string(state);
+            toString(state);
         }
         catch (std::invalid_argument &)
         {
@@ -22,11 +22,4 @@ TEST(RefboxData, test_get_name_of_refbox_constants)
                           << " gamestate name for " << i << std::endl;
         }
     }
-}
-
-int main(int argc, char **argv)
-{
-    std::cout << argv[0] << std::endl;
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
 }

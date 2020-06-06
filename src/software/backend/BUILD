@@ -5,9 +5,10 @@ cc_library(
     hdrs = ["backend.h"],
     deps = [
         ":robot_status",
-        "//software/ai/primitive",
         "//software/multithreading:subject",
         "//software/multithreading:threaded_observer",
+        "//software/primitive",
+        "//software/proto:sensor_msg_cc_proto",
         "//software/world",
     ],
 )
@@ -45,30 +46,14 @@ cc_library(
 )
 
 cc_library(
-    name = "handheld_controller_backend",
-    srcs = ["handheld_controller_backend.cpp"],
-    hdrs = ["handheld_controller_backend.h"],
-    deps = [
-        ":backend",
-        "//software/backend/output/radio:radio_output",
-        "//software/time:timestamp",
-        "//software/util/design_patterns:generic_factory",
-    ],
-    # We force linking so that the static variables required for the "factory"
-    # design pattern to work are linked in
-    # https://www.bfilipek.com/2018/02/static-vars-static-lib.html
-    alwayslink = True,
-)
-
-cc_library(
     name = "simulator_backend",
     srcs = ["simulator_backend.cpp"],
     hdrs = ["simulator_backend.h"],
     deps = [
         ":backend",
-        "//software/backend/simulation:simulator",
         "//software/logger",
         "//software/multithreading:thread_safe_buffer",
+        "//software/simulation:simulator",
         "//software/util/design_patterns:generic_factory",
         "//software/world",
     ],
@@ -80,8 +65,21 @@ cc_library(
 
 cc_library(
     name = "robot_status",
+    srcs = ["robot_status.cpp"],
     hdrs = ["robot_status.h"],
-    deps = [],
+    deps = [
+        "//shared/proto:tbots_cc_proto",
+        "//software/logger",
+    ],
+)
+
+cc_test(
+    name = "robot_status_test",
+    srcs = ["robot_status_test.cpp"],
+    deps = [
+        ":robot_status",
+        "@gtest//:gtest_main",
+    ],
 )
 
 cc_library(
@@ -91,7 +89,6 @@ cc_library(
     ],
     deps = [
         ":grsim_backend",
-        ":handheld_controller_backend",
         ":radio_backend",
         ":simulator_backend",
     ],

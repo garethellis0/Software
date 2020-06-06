@@ -7,19 +7,19 @@
 #include "software/ai/navigator/path_planner/no_path_test_path_planner.h"
 #include "software/ai/navigator/path_planner/one_point_path_test_path_planner.h"
 #include "software/ai/navigator/path_planner/theta_star_path_planner.h"
-#include "software/ai/primitive/all_primitives.h"
+#include "software/primitive/all_primitives.h"
 #include "software/test_util/test_util.h"
 
 class NoPathNavigatorTest : public testing::Test
 {
    public:
     NoPathNavigatorTest()
-        : navigator(std::make_unique<VelocityObstaclePathManager>(
-                        std::make_unique<NoPathTestPathPlanner>(),
-                        ObstacleFactory(std::make_shared<ObstacleFactoryConfig>()),
-                        std::make_shared<VelocityObstaclePathManagerConfig>()),
-                    ObstacleFactory(std::make_shared<ObstacleFactoryConfig>()),
-                    std::make_shared<NavigatorConfig>()),
+        : obstacle_factory(ObstacleFactory(
+              Util::DynamicParameters->getAIConfig()->getObstacleFactoryConfig())),
+          navigator(std::make_unique<VelocityObstaclePathManager>(
+                        std::make_unique<NoPathTestPathPlanner>(), obstacle_factory),
+                    obstacle_factory,
+                    Util::DynamicParameters->getAIConfig()->getNavigatorConfig()),
           current_time(Timestamp::fromSeconds(123)),
           field(::Test::TestUtil::createSSLDivBField()),
           ball(Ball(Point(1, 2), Vector(-0.3, 0), current_time)),
@@ -27,6 +27,8 @@ class NoPathNavigatorTest : public testing::Test
           enemy_team(Team(Duration::fromMilliseconds(1000)))
     {
     }
+
+    ObstacleFactory obstacle_factory;
 
     // The navigator under test
     Navigator navigator;
@@ -42,14 +44,16 @@ class ThetaStarNavigatorTest : public testing::Test
 {
    public:
     ThetaStarNavigatorTest()
-        : navigator(std::make_unique<VelocityObstaclePathManager>(
-                        std::make_unique<ThetaStarPathPlanner>(),
-                        ObstacleFactory(std::make_shared<ObstacleFactoryConfig>()),
-                        std::make_shared<VelocityObstaclePathManagerConfig>()),
-                    ObstacleFactory(std::make_shared<ObstacleFactoryConfig>()),
-                    std::make_shared<NavigatorConfig>())
+        : obstacle_factory(ObstacleFactory(
+              Util::DynamicParameters->getAIConfig()->getObstacleFactoryConfig())),
+          navigator(std::make_unique<VelocityObstaclePathManager>(
+                        std::make_unique<ThetaStarPathPlanner>(), obstacle_factory),
+                    obstacle_factory,
+                    Util::DynamicParameters->getAIConfig()->getNavigatorConfig())
     {
     }
+
+    ObstacleFactory obstacle_factory;
 
     Navigator navigator;
 };
@@ -223,8 +227,6 @@ TEST_F(ThetaStarNavigatorTest, convert_multiple_intents_to_primitives)
     intents.emplace_back(std::make_unique<StopIntent>(0, false, 1));
     intents.emplace_back(std::make_unique<PivotIntent>(0, Point(1, 0.4), Angle::half(),
                                                        Angle::fromRadians(2.2), true, 1));
-    //    intents.emplace_back(
-    //        std::make_unique<MoveIntent>(0, Point(), Angle::quarter(), 0, 1));
 
     auto primitive_ptrs = navigator.getAssignedPrimitives(world, intents);
 
@@ -273,12 +275,14 @@ TEST(NavigatorTest, move_intent_with_one_point_path_test_path_planner)
     // Construct the world with arguments
     World world = World(field, ball, friendly_team, enemy_team);
 
-    Navigator navigator(std::make_unique<VelocityObstaclePathManager>(
-                            std::make_unique<OnePointPathTestPathPlanner>(),
-                            ObstacleFactory(std::make_shared<ObstacleFactoryConfig>()),
-                            std::make_shared<VelocityObstaclePathManagerConfig>()),
-                        ObstacleFactory(std::make_shared<ObstacleFactoryConfig>()),
-                        std::make_shared<NavigatorConfig>());
+    Navigator navigator(
+        std::make_unique<VelocityObstaclePathManager>(
+            std::make_unique<OnePointPathTestPathPlanner>(),
+            ObstacleFactory(
+                Util::DynamicParameters->getAIConfig()->getObstacleFactoryConfig())),
+        ObstacleFactory(
+            Util::DynamicParameters->getAIConfig()->getObstacleFactoryConfig()),
+        std::make_shared<NavigatorConfig>());
 
     std::vector<std::unique_ptr<Intent>> intents;
     intents.emplace_back(std::make_unique<MoveIntent>(

@@ -306,7 +306,7 @@ TEST_F(PassingEvaluationTest, ratePass_cross_over_enemy_net_goalie_in_net)
     world.updateFriendlyTeamState(friendly_team);
     Team enemy_team(Duration::fromSeconds(10));
     enemy_team.updateRobots({
-        Robot(0, world.field().enemyGoal() + Vector(0, 0.5), {0, 0}, Angle::zero(),
+        Robot(0, world.field().enemyGoalCenter() + Vector(0, 0.5), {0, 0}, Angle::zero(),
               AngularVelocity::zero(), Timestamp::fromSeconds(0)),
     });
     world.updateEnemyTeamState(enemy_team);
@@ -378,8 +378,8 @@ TEST_F(PassingEvaluationTest, ratePass_corner_kick_to_marked_robot_at_field_cent
     Team enemy_team(
         Duration::fromSeconds(10),
         {// Enemy goalie
-         Robot(0, world.field().enemyGoal() + Vector(-0.1, 0.5), {0, 0}, Angle::quarter(),
-               AngularVelocity::zero(), Timestamp::fromSeconds(0)),
+         Robot(0, world.field().enemyGoalCenter() + Vector(-0.1, 0.5), {0, 0},
+               Angle::quarter(), AngularVelocity::zero(), Timestamp::fromSeconds(0)),
          // Enemy marking friendly in the center
          Robot(1, {2.4, 0}, {0, 0}, Angle::half(), AngularVelocity::zero(),
                Timestamp::fromSeconds(0))});
@@ -453,10 +453,11 @@ TEST_F(PassingEvaluationTest, ratePass_pass_at_past_time)
     });
     world.updateFriendlyTeamState(friendly_team);
 
-    // We update the the ball state because that's what is used as a reference for the
+    // We update the ball state because that's what is used as a reference for the
     // current time by the evaluation function
     // TODO (Issue #423): Change this to use the `World` timestamp when `World` has one
-    world.updateBallState(BallState({0, 0}, {0, 0}, Timestamp::fromSeconds(5)));
+    world.updateBallStateWithTimestamp(
+        TimestampedBallState({0, 0}, {0, 0}, Timestamp::fromSeconds(5)));
 
     Pass pass({3, 0}, {2, 0}, avg_desired_pass_speed, Timestamp::fromSeconds(2));
 
@@ -478,12 +479,12 @@ TEST_F(PassingEvaluationTest, ratePass_pass_too_far_in_future)
     });
     world.updateFriendlyTeamState(friendly_team);
 
-    // We update the the ball state because that's what is used as a reference for the
+    // We update the ball state because that's what is used as a reference for the
     // current time by the evaluation function
     // TODO (Issue #423): Change this to use the `World` timestamp when `World` has one
-    world.updateBallState(
-        BallState({0, 0}, {0, 0},
-                  Timestamp::fromSeconds(max_time_offset_for_pass_seconds_param + 20)));
+    world.updateBallStateWithTimestamp(TimestampedBallState(
+        {0, 0}, {0, 0},
+        Timestamp::fromSeconds(max_time_offset_for_pass_seconds_param + 20)));
 
     Pass pass({3, 0}, {2, 0}, avg_desired_pass_speed, Timestamp::fromSeconds(20000000));
 
@@ -562,11 +563,11 @@ TEST_F(PassingEvaluationTest, ratePass_attempting_to_pass_and_receive_no_shot)
               Timestamp::fromSeconds(0)),
     });
     world.mutableEnemyTeam().updateRobots({
-        Robot(0, world.field().enemyGoal(), {0, 0}, Angle::zero(),
+        Robot(0, world.field().enemyGoalCenter(), {0, 0}, Angle::zero(),
               AngularVelocity::zero(), Timestamp::fromSeconds(0)),
-        Robot(1, world.field().enemyGoal() - Vector(0, 0.2), {0, 0}, Angle::zero(),
+        Robot(1, world.field().enemyGoalCenter() - Vector(0, 0.2), {0, 0}, Angle::zero(),
               AngularVelocity::zero(), Timestamp::fromSeconds(0)),
-        Robot(2, world.field().enemyGoal() + Vector(0, 0.2), {0, 0}, Angle::zero(),
+        Robot(2, world.field().enemyGoalCenter() + Vector(0, 0.2), {0, 0}, Angle::zero(),
               AngularVelocity::zero(), Timestamp::fromSeconds(0)),
     });
 

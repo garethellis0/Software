@@ -1,11 +1,13 @@
 #include "software/test_util/test_util.h"
 
+#include <iostream>
+
 namespace Test
 {
     Field TestUtil::createSSLDivBField()
     {
         // Using the dimensions of a standard Division B SSL field
-        Field field = Field(9.0, 6.0, 1.0, 2.0, 1.0, 0.3, 0.5, Timestamp::fromSeconds(0));
+        Field field = Field(9.0, 6.0, 1.0, 2.0, 1.0, 0.3, 0.5);
         return field;
     }
 
@@ -68,9 +70,9 @@ namespace Test
 
     World TestUtil::setBallPosition(World world, Point ball_position, Timestamp timestamp)
     {
-        BallState ballState =
-            BallState(ball_position, world.ball().velocity(), timestamp);
-        world.updateBallState(ballState);
+        TimestampedBallState ballState =
+            TimestampedBallState(ball_position, world.ball().velocity(), timestamp);
+        world.updateBallStateWithTimestamp(ballState);
 
         return world;
     }
@@ -78,9 +80,9 @@ namespace Test
     World TestUtil::setBallVelocity(World world, Vector ball_velocity,
                                     Timestamp timestamp)
     {
-        BallState ballState =
-            BallState(world.ball().position(), ball_velocity, timestamp);
-        world.updateBallState(ballState);
+        TimestampedBallState ballState =
+            TimestampedBallState(world.ball().position(), ball_velocity, timestamp);
+        world.updateBallStateWithTimestamp(ballState);
 
         return world;
     }
@@ -94,5 +96,81 @@ namespace Test
             game_states.push_back(static_cast<RefboxGameState>(i));
         }
         return game_states;
+    }
+
+    Robot TestUtil::createRobotAtPos(const Point &pt)
+    {
+        static RobotId robot_id_counter = 0;
+        return Robot(robot_id_counter++, pt, Vector(), Angle(), AngularVelocity(),
+                     Timestamp());
+    }
+
+    ::testing::AssertionResult TestUtil::equalWithinTolerance(const Polygon &poly1,
+                                                              const Polygon &poly2,
+                                                              double tolerance)
+    {
+        auto ppts1 = poly1.getPoints();
+        auto ppts2 = poly2.getPoints();
+        if (std::equal(ppts1.begin(), ppts1.end(), ppts2.begin(),
+                       [tolerance](const Point &p1, const Point &p2) {
+                           return equalWithinTolerance(p1, p2, tolerance);
+                       }))
+        {
+            return ::testing::AssertionSuccess();
+        }
+        else
+        {
+            return ::testing::AssertionFailure()
+                   << "Polygon 1 was " << poly1 << ", polygon 2 was " << poly2;
+        }
+    }
+
+    ::testing::AssertionResult TestUtil::equalWithinTolerance(const Circle &c1,
+                                                              const Circle &c2,
+                                                              double tolerance)
+    {
+        if (equalWithinTolerance(c1.getOrigin(), c2.getOrigin(), tolerance) &&
+            equalWithinTolerance(c1.getRadius(), c2.getRadius(), tolerance))
+        {
+            return ::testing::AssertionSuccess();
+        }
+        else
+        {
+            return ::testing::AssertionFailure()
+                   << "Circle 1 was " << c1 << ", circle 2 was " << c2;
+        }
+    }
+
+    ::testing::AssertionResult TestUtil::equalWithinTolerance(const Point &pt1,
+                                                              const Point &pt2,
+                                                              double tolerance)
+    {
+        double distance = pt1.distanceFromPoint(pt2);
+        if (equalWithinTolerance(distance, 0, tolerance))
+        {
+            return ::testing::AssertionSuccess();
+        }
+        else
+        {
+            return ::testing::AssertionFailure()
+                   << "Point 1 was " << pt1 << ", point 2 was " << pt2;
+        }
+    }
+
+    ::testing::AssertionResult TestUtil::equalWithinTolerance(double val1, double val2,
+                                                              double tolerance)
+    {
+        // subtracting one fixed epsilon to account for the error in fabs and one fixed
+        // epsilon to account for the error in subtracting the two vals
+        double difference = fabs(val1 - val2) - GeomConstants::FIXED_EPSILON * 2;
+        if (difference < tolerance)
+        {
+            return ::testing::AssertionSuccess();
+        }
+        else
+        {
+            return ::testing::AssertionFailure()
+                   << "Value 1 was " << val1 << ", value 2 was " << val2;
+        }
     }
 }  // namespace Test

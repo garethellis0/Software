@@ -11,7 +11,7 @@
 // be accessed by an external observer to this class. the getFieldData must be called to
 // get any field data which will update the state with the given protobuf data
 NetworkFilter::NetworkFilter(std::shared_ptr<const RefboxConfig> refbox_config)
-    : field_state(0, 0, 0, 0, 0, 0, 0, Timestamp::fromSeconds(0)),
+    : field_state(),
       ball_state(Point(), Vector(), Timestamp::fromSeconds(0)),
       friendly_team_state(Duration::fromMilliseconds(
           Util::Constants::ROBOT_DEBOUNCE_DURATION_MILLISECONDS)),
@@ -112,13 +112,12 @@ Field NetworkFilter::createFieldFromPacketGeometry(
     double defense_width =
         (defense_width_p1 - defense_width_p2).length() * METERS_PER_MILLIMETER;
 
-    Field field =
-        Field(field_length, field_width, defense_length, defense_width, goal_width,
-              boundary_width, center_circle_radius, Timestamp::fromSeconds(0));
+    Field field = Field(field_length, field_width, defense_length, defense_width,
+                        goal_width, boundary_width, center_circle_radius);
     return field;
 }
 
-BallState NetworkFilter::getFilteredBallData(
+TimestampedBallState NetworkFilter::getFilteredBallData(
     const std::vector<SSL_DetectionFrame> &detections)
 {
     auto ball_detections = std::vector<BallDetection>();
@@ -253,7 +252,7 @@ RefboxGameState NetworkFilter::getRefboxGameState(const Referee &packet)
     return getTeamCommand(packet.command());
 }
 
-// this maps a protobuf Referee_Command enum to its ROS message equivalent
+// this maps a protobuf Referee_Command enum to its equivalent internal type
 // this map is used when we are on the blue team
 const static std::unordered_map<Referee::Command, RefboxGameState> blue_team_command_map =
     {{Referee_Command_HALT, RefboxGameState::HALT},
@@ -275,7 +274,7 @@ const static std::unordered_map<Referee::Command, RefboxGameState> blue_team_com
      {Referee_Command_BALL_PLACEMENT_BLUE, RefboxGameState::BALL_PLACEMENT_US},
      {Referee_Command_BALL_PLACEMENT_YELLOW, RefboxGameState::BALL_PLACEMENT_THEM}};
 
-// this maps a protobuf Referee_Command enum to its ROS message equivalent
+// this maps a protobuf Referee_Command enum to its equivalent internal type
 // this map is used when we are on the yellow team
 const static std::unordered_map<Referee::Command, RefboxGameState>
     yellow_team_command_map = {

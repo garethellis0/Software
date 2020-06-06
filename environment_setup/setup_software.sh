@@ -38,7 +38,7 @@ sudo apt-get update
 
 host_software_packages=(
     curl
-    cmake
+    cmake # Needed to build some of our dependencies
     gcc-7 # we use gcc 7.4.0
     protobuf-compiler
     libprotobuf-dev
@@ -46,6 +46,7 @@ host_software_packages=(
     qt5-default # The GUI library for our visualizer
     libudev-dev
     libeigen3-dev # A math / numerical library used for things like linear regression
+    python3       # Python 3
     python3-yaml # yaml for cfg generation (Dynamic Parameters)
     python-minimal # This is required for bazel, we've seen some issues where
                    # the bazel install hasn't installed it properly
@@ -76,12 +77,11 @@ echo "Installing Bazel"
 echo "================================================================"
 
 # Adapted from https://docs.bazel.build/versions/master/install-ubuntu.html#install-on-ubuntu
-sudo apt-get update
-sudo apt-get install openjdk-11-jdk -y
-echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+sudo apt install curl gnupg
 curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
-sudo apt-get update
-sudo apt-get install bazel -y
+echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+sudo apt update
+sudo apt install bazel -y
 if [ $? -ne 0 ]; then
     echo "##############################################################"
     echo "Error: Installing Bazel failed"

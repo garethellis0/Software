@@ -1,7 +1,5 @@
 #include "software/ai/hl/stp/play/corner_kick_play.h"
 
-#include <g3log/g3log.hpp>
-
 #include "shared/constants.h"
 #include "software/ai/evaluation/ball.h"
 #include "software/ai/evaluation/possession.h"
@@ -10,6 +8,7 @@
 #include "software/ai/hl/stp/tactic/passer_tactic.h"
 #include "software/ai/hl/stp/tactic/receiver_tactic.h"
 #include "software/ai/passing/pass_generator.h"
+#include "software/logger/logger.h"
 #include "software/util/design_patterns/generic_factory.h"
 
 using namespace Passing;
@@ -123,10 +122,10 @@ void CornerKickPlay::getNextTactics(TacticCoroutine::push_type &yield)
     auto bait_move_tactic_2 = std::make_shared<MoveTactic>(true);
     bait_move_tactic_1->updateControlParams(
         bait_move_tactic_1_pos,
-        (world.field().enemyGoal() - bait_move_tactic_1_pos).orientation(), 0.0);
+        (world.field().enemyGoalCenter() - bait_move_tactic_1_pos).orientation(), 0.0);
     bait_move_tactic_2->updateControlParams(
         bait_move_tactic_2_pos,
-        (world.field().enemyGoal() - bait_move_tactic_2_pos).orientation(), 0.0);
+        (world.field().enemyGoalCenter() - bait_move_tactic_2_pos).orientation(), 0.0);
 
     PassGenerator pass_generator(world, world.ball().position(),
                                  PassType::ONE_TOUCH_SHOT);

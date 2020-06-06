@@ -1,5 +1,6 @@
 #include "firmware/app/primitives/move_primitive.h"
 
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 
@@ -56,7 +57,6 @@ unsigned choose_wheel_axis(float dx, float dy, float current_angle, float final_
  * @param pb The data container that has information about major axis time
  * and will store the rotational information
  * @param avel The current rotational velocity of the bot
- * @return void
  */
 void plan_move_rotation(PhysBot* pb, float avel);
 
@@ -66,7 +66,6 @@ void plan_move_rotation(PhysBot* pb, float avel);
  *
  * @param wheel_axes A pointer to the wheel_axes array to populate
  * @param angle the current angle that the bot is facing
- * @return void
  */
 void build_wheel_axes(float (*wheel_axes)[8], float angle)
 {
@@ -120,7 +119,6 @@ unsigned choose_wheel_axis(float dx, float dy, float current_angle, float final_
  * @param pb The data container that contains information about
  * the direction the robot will move along.
  * @param angle The angle that the robot is currently facing
- * @return void
  */
 void choose_rotation_destination(unsigned optimal_wheel_axes_index, PhysBot* pb,
                                  float angle)
@@ -161,7 +159,6 @@ void move_start(const primitive_params_t* params, void* void_state_ptr,
     //                end_speed [millimeter/s]
 
     // Convert into m/s and rad/s because physics is in m and s
-    printf("Move start called.\n");
     state->destination[0] = (float)(params->params[0]) / 1000.0f;
     state->destination[1] = (float)(params->params[1]) / 1000.0f;
     state->destination[2] = (float)(params->params[2]) / 100.0f;
@@ -170,9 +167,10 @@ void move_start(const primitive_params_t* params, void* void_state_ptr,
 
     const FirmwareRobot_t* robot = app_firmware_world_getRobot(world);
 
-    float dx            = state->destination[0] - app_firmware_robot_getPositionX(robot);
-    float dy            = state->destination[1] - app_firmware_robot_getPositionY(robot);
-    float total_disp    = sqrtf(dx * dx + dy * dy);
+    float dx = state->destination[0] - app_firmware_robot_getPositionX(robot);
+    float dy = state->destination[1] - app_firmware_robot_getPositionY(robot);
+    // Add a small number to avoid division by zero
+    float total_disp    = sqrtf(dx * dx + dy * dy) + 1e-6;
     state->major_vec[0] = dx / total_disp;
     state->major_vec[1] = dy / total_disp;
     state->minor_vec[0] = state->major_vec[0];
@@ -209,7 +207,11 @@ void move_end(void* void_state_ptr, FirmwareWorld_t* world)
 
 void move_tick(void* void_state_ptr, FirmwareWorld_t* world)
 {
-    MovePrimitiveState_t* state  = (MovePrimitiveState_t*)(void_state_ptr);
+    MovePrimitiveState_t* state = (MovePrimitiveState_t*)(void_state_ptr);
+    assert(!isnan(state->major_vec[0]));
+    assert(!isnan(state->major_vec[1]));
+    assert(!isnan(state->minor_vec[0]));
+    assert(!isnan(state->minor_vec[1]));
     const FirmwareRobot_t* robot = app_firmware_world_getRobot(world);
 
     PhysBot pb =

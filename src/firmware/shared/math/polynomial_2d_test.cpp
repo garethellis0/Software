@@ -1,20 +1,19 @@
 extern "C"
 {
-#include "firmware/main/math/polynomial_2d.h"
+#include "firmware/shared/math/polynomial_2d.h"
+
+#include "firmware/shared/math/polynomial_1d.h"
 }
 
 #include <gtest/gtest.h>
-
-#include "math.h"
-#include "polynomial_1d.h"
-#include "polynomial_2d.h"
+#include <math.h>
 
 class Polynomial2dTest : public testing::Test
 {
    protected:
-    virtual void SetUp() {}
+    virtual void SetUp(void) {}
 
-    virtual void TearDown() {}
+    virtual void TearDown(void) {}
 
     static void expectRawArraysEq(float* expected, float* actual, size_t num_elements,
                                   double tolerance = 10e-10)
@@ -409,6 +408,28 @@ TEST_F(Polynomial2dTest, get_t_value_on_arc_length_above_arc_lengths_in_parametr
 
     EXPECT_FLOAT_EQ(2, shared_polynomial2d_getTValueAtArcLengthOrder1(
                            poly, 5, arc_length_parametrization));
+}
+
+
+TEST_F(Polynomial2dTest, get_total_arc_length)
+{
+    Polynomial2dOrder1_t poly = {.x = {.coefficients = {4, 0}},
+                                 .y = {.coefficients = {2, 0}}};
+
+    // Create the parmeterization to contain the desired number of segments
+    ArcLengthParametrization_t arc_length_parameterization;
+    arc_length_parameterization.num_values = 3;
+
+    float t_values[]          = {0, 1, 2};
+    float arc_length_values[] = {0, 2, 20};
+
+    arc_length_parameterization.t_values          = t_values;
+    arc_length_parameterization.arc_length_values = arc_length_values;
+
+    float total_arc_length =
+        shared_polynomial2d_getTotalArcLength(arc_length_parameterization);
+
+    EXPECT_EQ(total_arc_length, arc_length_values[2]);
 }
 
 TEST_F(Polynomial2dTest, get_t_value_on_arc_length_below_arc_lengths_in_parametrization)
