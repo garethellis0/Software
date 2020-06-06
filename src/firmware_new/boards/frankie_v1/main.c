@@ -47,22 +47,19 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
-ADC_HandleTypeDef hadc2;
 ADC_HandleTypeDef hadc3;
-DMA_HandleTypeDef hdma_adc1;
-DMA_HandleTypeDef hdma_adc2;
 DMA_HandleTypeDef hdma_adc3;
 
 CRC_HandleTypeDef hcrc;
 
+TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim4;
 
 UART_HandleTypeDef huart3;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
-osThreadId_t PrimitiveTickTaskHandle;
+osThreadId_t defaultTaskHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -76,11 +73,9 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_CRC_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_BDMA_Init(void);
-static void MX_DMA_Init(void);
-static void MX_ADC1_Init(void);
-static void MX_ADC2_Init(void);
 static void MX_ADC3_Init(void);
-void StartPrimitiveTickTask(void *argument);
+static void MX_TIM1_Init(void);
+void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -186,13 +181,16 @@ int main(void)
     MX_CRC_Init();
     MX_TIM4_Init();
     MX_BDMA_Init();
-    MX_DMA_Init();
-    MX_ADC1_Init();
-    MX_ADC2_Init();
     MX_ADC3_Init();
+    MX_TIM1_Init();
     /* USER CODE BEGIN 2 */
 
-    initIoLayer();
+    // TODO: uncomment me
+    //    initIoLayer();
+
+    // TODO: delete me
+    volatile uint16_t adc_readings[2] = {0};
+    HAL_ADC_Start_DMA(&hadc3, (uint32_t *)&adc_readings, 2);
 
     /* USER CODE END 2 */
 
@@ -215,13 +213,12 @@ int main(void)
     /* USER CODE END RTOS_QUEUES */
 
     /* Create the thread(s) */
-    /* definition and creation of PrimitiveTickTask */
-    const osThreadAttr_t PrimitiveTickTask_attributes = {
-        .name       = "PrimitiveTickTask",
+    /* definition and creation of defaultTask */
+    const osThreadAttr_t defaultTask_attributes = {
+        .name       = "defaultTask",
         .priority   = (osPriority_t)osPriorityNormal,
-        .stack_size = 2048};
-    PrimitiveTickTaskHandle =
-        osThreadNew(StartPrimitiveTickTask, NULL, &PrimitiveTickTask_attributes);
+        .stack_size = 1024};
+    defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
     /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
@@ -324,122 +321,6 @@ void SystemClock_Config(void)
 }
 
 /**
- * @brief ADC1 Initialization Function
- * @param None
- * @retval None
- */
-static void MX_ADC1_Init(void)
-{
-    /* USER CODE BEGIN ADC1_Init 0 */
-
-    /* USER CODE END ADC1_Init 0 */
-
-    ADC_MultiModeTypeDef multimode = {0};
-    ADC_ChannelConfTypeDef sConfig = {0};
-
-    /* USER CODE BEGIN ADC1_Init 1 */
-
-    /* USER CODE END ADC1_Init 1 */
-    /** Common config
-     */
-    hadc1.Instance                      = ADC1;
-    hadc1.Init.ClockPrescaler           = ADC_CLOCK_ASYNC_DIV2;
-    hadc1.Init.Resolution               = ADC_RESOLUTION_16B;
-    hadc1.Init.ScanConvMode             = ADC_SCAN_DISABLE;
-    hadc1.Init.EOCSelection             = ADC_EOC_SINGLE_CONV;
-    hadc1.Init.LowPowerAutoWait         = DISABLE;
-    hadc1.Init.ContinuousConvMode       = DISABLE;
-    hadc1.Init.NbrOfConversion          = 1;
-    hadc1.Init.DiscontinuousConvMode    = DISABLE;
-    hadc1.Init.ExternalTrigConv         = ADC_SOFTWARE_START;
-    hadc1.Init.ExternalTrigConvEdge     = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    hadc1.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DR;
-    hadc1.Init.Overrun                  = ADC_OVR_DATA_PRESERVED;
-    hadc1.Init.LeftBitShift             = ADC_LEFTBITSHIFT_NONE;
-    hadc1.Init.OversamplingMode         = DISABLE;
-    if (HAL_ADC_Init(&hadc1) != HAL_OK)
-    {
-        Error_Handler();
-    }
-    /** Configure the ADC multi-mode
-     */
-    multimode.Mode = ADC_MODE_INDEPENDENT;
-    if (HAL_ADCEx_MultiModeConfigChannel(&hadc1, &multimode) != HAL_OK)
-    {
-        Error_Handler();
-    }
-    /** Configure Regular Channel
-     */
-    sConfig.Channel      = ADC_CHANNEL_2;
-    sConfig.Rank         = ADC_REGULAR_RANK_1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
-    sConfig.SingleDiff   = ADC_SINGLE_ENDED;
-    sConfig.OffsetNumber = ADC_OFFSET_NONE;
-    sConfig.Offset       = 0;
-    if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-    {
-        Error_Handler();
-    }
-    /* USER CODE BEGIN ADC1_Init 2 */
-
-    /* USER CODE END ADC1_Init 2 */
-}
-
-/**
- * @brief ADC2 Initialization Function
- * @param None
- * @retval None
- */
-static void MX_ADC2_Init(void)
-{
-    /* USER CODE BEGIN ADC2_Init 0 */
-
-    /* USER CODE END ADC2_Init 0 */
-
-    ADC_ChannelConfTypeDef sConfig = {0};
-
-    /* USER CODE BEGIN ADC2_Init 1 */
-
-    /* USER CODE END ADC2_Init 1 */
-    /** Common config
-     */
-    hadc2.Instance                      = ADC2;
-    hadc2.Init.ClockPrescaler           = ADC_CLOCK_ASYNC_DIV2;
-    hadc2.Init.Resolution               = ADC_RESOLUTION_16B;
-    hadc2.Init.ScanConvMode             = ADC_SCAN_DISABLE;
-    hadc2.Init.EOCSelection             = ADC_EOC_SINGLE_CONV;
-    hadc2.Init.LowPowerAutoWait         = DISABLE;
-    hadc2.Init.ContinuousConvMode       = DISABLE;
-    hadc2.Init.NbrOfConversion          = 1;
-    hadc2.Init.DiscontinuousConvMode    = DISABLE;
-    hadc2.Init.ExternalTrigConv         = ADC_SOFTWARE_START;
-    hadc2.Init.ExternalTrigConvEdge     = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    hadc2.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DR;
-    hadc2.Init.Overrun                  = ADC_OVR_DATA_PRESERVED;
-    hadc2.Init.LeftBitShift             = ADC_LEFTBITSHIFT_NONE;
-    hadc2.Init.OversamplingMode         = DISABLE;
-    if (HAL_ADC_Init(&hadc2) != HAL_OK)
-    {
-        Error_Handler();
-    }
-    /** Configure Regular Channel
-     */
-    sConfig.Channel      = ADC_CHANNEL_6;
-    sConfig.Rank         = ADC_REGULAR_RANK_1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
-    sConfig.SingleDiff   = ADC_SINGLE_ENDED;
-    sConfig.OffsetNumber = ADC_OFFSET_NONE;
-    sConfig.Offset       = 0;
-    if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
-    {
-        Error_Handler();
-    }
-    /* USER CODE BEGIN ADC2_Init 2 */
-
-    /* USER CODE END ADC2_Init 2 */
-}
-
-/**
  * @brief ADC3 Initialization Function
  * @param None
  * @retval None
@@ -464,9 +345,9 @@ static void MX_ADC3_Init(void)
     hadc3.Init.EOCSelection             = ADC_EOC_SINGLE_CONV;
     hadc3.Init.LowPowerAutoWait         = DISABLE;
     hadc3.Init.ContinuousConvMode       = ENABLE;
-    hadc3.Init.NbrOfConversion          = 6;
+    hadc3.Init.NbrOfConversion          = 2;
     hadc3.Init.DiscontinuousConvMode    = DISABLE;
-    hadc3.Init.ExternalTrigConv         = ADC_EXTERNALTRIG_EXT_IT11;
+    hadc3.Init.ExternalTrigConv         = ADC_EXTERNALTRIG_T1_TRGO;
     hadc3.Init.ExternalTrigConvEdge     = ADC_EXTERNALTRIGCONVEDGE_RISING;
     hadc3.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DR;
     hadc3.Init.Overrun                  = ADC_OVR_DATA_PRESERVED;
@@ -478,9 +359,9 @@ static void MX_ADC3_Init(void)
     }
     /** Configure Regular Channel
      */
-    sConfig.Channel      = ADC_CHANNEL_0;
+    sConfig.Channel      = ADC_CHANNEL_1;
     sConfig.Rank         = ADC_REGULAR_RANK_1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+    sConfig.SamplingTime = ADC_SAMPLETIME_810CYCLES_5;
     sConfig.SingleDiff   = ADC_SINGLE_ENDED;
     sConfig.OffsetNumber = ADC_OFFSET_NONE;
     sConfig.Offset       = 0;
@@ -490,40 +371,10 @@ static void MX_ADC3_Init(void)
     }
     /** Configure Regular Channel
      */
-    sConfig.Channel = ADC_CHANNEL_1;
-    sConfig.Rank    = ADC_REGULAR_RANK_2;
-    if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
-    {
-        Error_Handler();
-    }
-    /** Configure Regular Channel
-     */
-    sConfig.Channel = ADC_CHANNEL_2;
-    sConfig.Rank    = ADC_REGULAR_RANK_3;
-    if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
-    {
-        Error_Handler();
-    }
-    /** Configure Regular Channel
-     */
-    sConfig.Channel = ADC_CHANNEL_3;
-    sConfig.Rank    = ADC_REGULAR_RANK_4;
-    if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
-    {
-        Error_Handler();
-    }
-    /** Configure Regular Channel
-     */
-    sConfig.Channel = ADC_CHANNEL_7;
-    sConfig.Rank    = ADC_REGULAR_RANK_5;
-    if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
-    {
-        Error_Handler();
-    }
-    /** Configure Regular Channel
-     */
-    sConfig.Channel = ADC_CHANNEL_VREFINT;
-    sConfig.Rank    = ADC_REGULAR_RANK_6;
+    sConfig.Rank                   = ADC_REGULAR_RANK_2;
+    sConfig.OffsetNumber           = ADC_OFFSET_1;
+    sConfig.OffsetRightShift       = DISABLE;
+    sConfig.OffsetSignedSaturation = DISABLE;
     if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
     {
         Error_Handler();
@@ -560,6 +411,83 @@ static void MX_CRC_Init(void)
     /* USER CODE BEGIN CRC_Init 2 */
 
     /* USER CODE END CRC_Init 2 */
+}
+
+/**
+ * @brief TIM1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_TIM1_Init(void)
+{
+    /* USER CODE BEGIN TIM1_Init 0 */
+
+    /* USER CODE END TIM1_Init 0 */
+
+    TIM_ClockConfigTypeDef sClockSourceConfig           = {0};
+    TIM_MasterConfigTypeDef sMasterConfig               = {0};
+    TIM_OC_InitTypeDef sConfigOC                        = {0};
+    TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
+
+    /* USER CODE BEGIN TIM1_Init 1 */
+
+    /* USER CODE END TIM1_Init 1 */
+    htim1.Instance               = TIM1;
+    htim1.Init.Prescaler         = 9600 - 1;
+    htim1.Init.CounterMode       = TIM_COUNTERMODE_UP;
+    htim1.Init.Period            = 1000 - 1;
+    htim1.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+    htim1.Init.RepetitionCounter = 0;
+    htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+    if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    if (HAL_TIM_OC_Init(&htim1) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    sMasterConfig.MasterOutputTrigger  = TIM_TRGO_UPDATE;
+    sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_UPDATE;
+    sMasterConfig.MasterSlaveMode      = TIM_MASTERSLAVEMODE_DISABLE;
+    if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    sConfigOC.OCMode       = TIM_OCMODE_TIMING;
+    sConfigOC.Pulse        = 0;
+    sConfigOC.OCPolarity   = TIM_OCPOLARITY_HIGH;
+    sConfigOC.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
+    sConfigOC.OCFastMode   = TIM_OCFAST_DISABLE;
+    sConfigOC.OCIdleState  = TIM_OCIDLESTATE_RESET;
+    sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+    if (HAL_TIM_OC_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    sBreakDeadTimeConfig.OffStateRunMode  = TIM_OSSR_DISABLE;
+    sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+    sBreakDeadTimeConfig.LockLevel        = TIM_LOCKLEVEL_OFF;
+    sBreakDeadTimeConfig.DeadTime         = 0;
+    sBreakDeadTimeConfig.BreakState       = TIM_BREAK_DISABLE;
+    sBreakDeadTimeConfig.BreakPolarity    = TIM_BREAKPOLARITY_HIGH;
+    sBreakDeadTimeConfig.BreakFilter      = 0;
+    sBreakDeadTimeConfig.Break2State      = TIM_BREAK2_DISABLE;
+    sBreakDeadTimeConfig.Break2Polarity   = TIM_BREAK2POLARITY_HIGH;
+    sBreakDeadTimeConfig.Break2Filter     = 0;
+    sBreakDeadTimeConfig.AutomaticOutput  = TIM_AUTOMATICOUTPUT_DISABLE;
+    if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /* USER CODE BEGIN TIM1_Init 2 */
+
+    /* USER CODE END TIM1_Init 2 */
 }
 
 /**
@@ -716,23 +644,6 @@ static void MX_BDMA_Init(void)
 }
 
 /**
- * Enable DMA controller clock
- */
-static void MX_DMA_Init(void)
-{
-    /* DMA controller clock enable */
-    __HAL_RCC_DMA1_CLK_ENABLE();
-
-    /* DMA interrupt init */
-    /* DMA1_Stream0_IRQn interrupt configuration */
-    HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 5, 0);
-    HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
-    /* DMA1_Stream1_IRQn interrupt configuration */
-    HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 5, 0);
-    HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
-}
-
-/**
  * @brief GPIO Initialization Function
  * @param None
  * @retval None
@@ -747,7 +658,6 @@ static void MX_GPIO_Init(void)
     __HAL_RCC_GPIOH_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
-    __HAL_RCC_GPIOE_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
     __HAL_RCC_GPIOG_CLK_ENABLE();
 
@@ -848,12 +758,6 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : PE11 */
-    GPIO_InitStruct.Pin  = GPIO_PIN_11;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-
     /*Configure GPIO pin : USB_PowerSwitchOn_Pin */
     GPIO_InitStruct.Pin   = USB_PowerSwitchOn_Pin;
     GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
@@ -879,14 +783,14 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_StartPrimitiveTickTask */
+/* USER CODE BEGIN Header_StartDefaultTask */
 /**
- * @brief  Function implementing the PrimitiveTickTask thread.
+ * @brief  Function implementing the defaultTask thread.
  * @param  argument: Not used
  * @retval None
  */
-/* USER CODE END Header_StartPrimitiveTickTask */
-void StartPrimitiveTickTask(void *argument)
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void *argument)
 {
     /* init code for LWIP */
     MX_LWIP_Init();

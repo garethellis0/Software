@@ -61,4 +61,4 @@ cc_library(
     deps = [
         ":adc",
     ],
-    )
+)

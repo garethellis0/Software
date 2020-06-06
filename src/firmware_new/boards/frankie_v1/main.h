@@ -77,12 +77,16 @@ extern "C"
 #define wheel_motor_front_right_brake_GPIO_Port GPIOF
 #define wheel_motor_front_right_esf_Pin GPIO_PIN_6
 #define wheel_motor_front_right_esf_GPIO_Port GPIOF
+#define wheel_encoder_front_left_leading_clockwise_Pin GPIO_PIN_9
+#define wheel_encoder_front_left_leading_clockwise_GPIO_Port GPIOF
 #define MCO_Pin GPIO_PIN_0
 #define MCO_GPIO_Port GPIOH
 #define wheel_motor_back_right_coast_Pin GPIO_PIN_0
 #define wheel_motor_back_right_coast_GPIO_Port GPIOC
 #define RMII_MDC_Pin GPIO_PIN_1
 #define RMII_MDC_GPIO_Port GPIOC
+#define wheel_encoder_front_left_trailing_clockwise_Pin GPIO_PIN_3
+#define wheel_encoder_front_left_trailing_clockwise_GPIO_Port GPIOC
 #define wheel_motor_back_right_brake_Pin GPIO_PIN_0
 #define wheel_motor_back_right_brake_GPIO_Port GPIOA
 #define RMII_MDIO_Pin GPIO_PIN_2
