@@ -24,37 +24,36 @@
 #define __MAIN_H
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx_hal.h"
 
-    /* Private includes ----------------------------------------------------------*/
-    /* USER CODE BEGIN Includes */
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
 
-    /* USER CODE END Includes */
+/* USER CODE END Includes */
 
-    /* Exported types ------------------------------------------------------------*/
-    /* USER CODE BEGIN ET */
+/* Exported types ------------------------------------------------------------*/
+/* USER CODE BEGIN ET */
 
-    /* USER CODE END ET */
+/* USER CODE END ET */
 
-    /* Exported constants --------------------------------------------------------*/
-    /* USER CODE BEGIN EC */
+/* Exported constants --------------------------------------------------------*/
+/* USER CODE BEGIN EC */
 
-    /* USER CODE END EC */
+/* USER CODE END EC */
 
-    /* Exported macro ------------------------------------------------------------*/
-    /* USER CODE BEGIN EM */
+/* Exported macro ------------------------------------------------------------*/
+/* USER CODE BEGIN EM */
 
-    /* USER CODE END EM */
+/* USER CODE END EM */
 
-    void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
-    /* Exported functions prototypes ---------------------------------------------*/
-    void Error_Handler(void);
+/* Exported functions prototypes ---------------------------------------------*/
+void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 
@@ -99,6 +98,8 @@ extern "C"
 #define wheel_motor_back_left_brake_GPIO_Port GPIOB
 #define wheel_motor_back_left_esf_Pin GPIO_PIN_2
 #define wheel_motor_back_left_esf_GPIO_Port GPIOB
+#define TESTING_ADC_Pin GPIO_PIN_11
+#define TESTING_ADC_GPIO_Port GPIOF
 #define wheel_motor_front_left_esf_Pin GPIO_PIN_10
 #define wheel_motor_front_left_esf_GPIO_Port GPIOB
 #define wheel_motor_back_left_reset_Pin GPIO_PIN_11
@@ -157,9 +158,9 @@ extern "C"
 #define wheel_motor_front_left_direction_GPIO_Port GPIOB
 #define wheel_motor_front_left_brake_Pin GPIO_PIN_9
 #define wheel_motor_front_left_brake_GPIO_Port GPIOB
-    /* USER CODE BEGIN Private defines */
+/* USER CODE BEGIN Private defines */
 
-    /* USER CODE END Private defines */
+/* USER CODE END Private defines */
 
 #ifdef __cplusplus
 }
