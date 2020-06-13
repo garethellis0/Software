@@ -47,6 +47,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef hdma_adc1;
 
 CRC_HandleTypeDef hcrc;
 
@@ -69,6 +70,7 @@ static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_CRC_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 void StartDefaultTask(void *argument);
 
@@ -135,6 +137,8 @@ void initIoDrivetrain(void)
 uint16_t g_ADCValue;
 int g_MeasurementNumber;
 
+static uint16_t adc_converted_data[32];
+
 /* USER CODE END 0 */
 
 /**
@@ -178,19 +182,23 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   MX_CRC_Init();
   MX_TIM4_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
-    for (;;)
-    {
-        if(HAL_ADC_Start(&hadc1) != HAL_OK){
-            Error_Handler();
-        }
-        if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
-        {
-            g_ADCValue = HAL_ADC_GetValue(&hadc1);
-            g_MeasurementNumber++;
-        }
+//    for (;;)
+//    {
+//        if(HAL_ADC_Start(&hadc1) != HAL_OK){
+//            Error_Handler();
+//        }
+//        if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
+//        {
+//            g_ADCValue = HAL_ADC_GetValue(&hadc1);
+//            g_MeasurementNumber++;
+//        }
+//    }
+    if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_converted_data, 32) != HAL_OK){
+        Error_Handler();
     }
 
   while (1) {}
@@ -336,7 +344,7 @@ static void MX_ADC1_Init(void)
   // https://community.st.com/s/question/0D50X00009XkZJrSAN/stm32h7-adc1-can-not-be-enabled
     __HAL_RCC_ADC_CONFIG(RCC_ADCCLKSOURCE_CLKP);
 
-    /* USER CODE END ADC1_Init 0 */
+  /* USER CODE END ADC1_Init 0 */
 
   ADC_MultiModeTypeDef multimode = {0};
   ADC_ChannelConfTypeDef sConfig = {0};
@@ -352,12 +360,12 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc1.Init.LowPowerAutoWait = DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.NbrOfConversion = 1;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-  hadc1.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DR;
+  hadc1.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DMA_CIRCULAR;
   hadc1.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
   hadc1.Init.LeftBitShift = ADC_LEFTBITSHIFT_NONE;
   hadc1.Init.OversamplingMode = DISABLE;
@@ -563,6 +571,22 @@ static void MX_USB_OTG_FS_PCD_Init(void)
   /* USER CODE BEGIN USB_OTG_FS_Init 2 */
 
   /* USER CODE END USB_OTG_FS_Init 2 */
+
+}
+
+/** 
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void) 
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Stream0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
 
 }
 
