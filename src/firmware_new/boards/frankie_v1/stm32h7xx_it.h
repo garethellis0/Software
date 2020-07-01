@@ -58,6 +58,8 @@ void DMA1_Stream0_IRQHandler(void);
 void ADC_IRQHandler(void);
 void ETH_IRQHandler(void);
 void ETH_WKUP_IRQHandler(void);
+void ADC3_IRQHandler(void);
+void BDMA_Channel0_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
