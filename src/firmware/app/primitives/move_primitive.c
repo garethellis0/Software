@@ -169,8 +169,8 @@ void move_start(const primitive_params_t* params, void* void_state_ptr,
     // TODO: units on variables!
 
     // Convert into m/s and rad/s because physics is in m and s
-    const float destination_x           = (float)(params->params[0]) / 1000.0f;
-    const float destination_y           = (float)(params->params[1]) / 1000.0f;
+//    const float destination_x           = (float)(params->params[0]) / 1000.0f;
+//    const float destination_y           = (float)(params->params[1]) / 1000.0f;
     const float destination_orientation = (float)(params->params[2]) / 100.0f;
     const float speed_at_dest_m_per_s   = (float)(params->params[3]) / 1000.0f;
     state->move_slow                    = params->slow;
@@ -186,17 +186,17 @@ void move_start(const primitive_params_t* params, void* void_state_ptr,
 
     // Plan a trajectory to track
     FirmwareRobotPathParameters_t path_parameters = {
-        .path = {.x = {.coefficients = {0, 0, destination_x - current_x, current_x}},
-                 .y = {.coefficients = {0, 0, destination_y - current_y, current_y}}},
+        .path = {.x = {.coefficients = {-6.0f, 18.0f, -14.0f, current_x}},
+                 .y = {.coefficients = {0, 0, 1, current_y}}},
         .orientation_profile = {.coefficients = {0, 0, current_orientation,
                                                  destination_orientation -
                                                      current_orientation}},
         .t_start             = 0,
-        .t_end               = 1,
-        .num_elements        = 100,
+        .t_end               = 2.0f,
+        .num_elements        = 1000,
         .max_allowable_linear_acceleration =
-            (float)ROBOT_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED,
-        .max_allowable_linear_speed = (float)ROBOT_MAX_SPEED_METERS_PER_SECOND,
+            (float)ROBOT_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED*2.0f,
+        .max_allowable_linear_speed = (float)ROBOT_MAX_SPEED_METERS_PER_SECOND*2.0f,
         .max_allowable_angular_acceleration =
             (float)ROBOT_MAX_ANG_ACCELERATION_RAD_PER_SECOND_SQUARED,
         .max_allowable_angular_speed = (float)ROBOT_MAX_ANG_SPEED_RAD_PER_SECOND,
@@ -281,6 +281,8 @@ void move_tick(void* void_state_ptr, FirmwareWorld_t* world)
     // TODO: comment here
     const float dx = dest_x - curr_x;
     const float dy = dest_y - curr_y;
+
+    printf("%f %f\n", dx, dy);
 
     // Add a small number to avoid division by zero
     float total_disp   = sqrtf(dx * dx + dy * dy) + 1e-6f;

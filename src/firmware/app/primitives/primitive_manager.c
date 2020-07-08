@@ -151,6 +151,14 @@ void app_primitive_manager_startNewPrimitive(PrimitiveManager_t *manager,
 
     app_primitive_manager_lockPrimitiveMutex(manager);
 
+    static bool been_here = false;
+    if (been_here){
+        app_primitive_manager_unlockPrimitiveMutex(manager);
+        return;
+    } else if (primitive_index == 1){
+        been_here =true;
+    }
+
     if (!primitive_params_are_equal(manager->previous_primitive_params, params) ||
         manager->current_primitive_index != primitive_index ||
         app_primitive_manager_primitiveIsDirect(primitive_index))

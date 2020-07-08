@@ -17,8 +17,8 @@ TEST_F(ExamplePlayTest, test_example_play)
     enableVisualizer();
     setBallState(BallState(Point(-0.8, 0), Vector(0, 0)));
     addFriendlyRobots(TestUtil::createStationaryRobotStatesWithId(
-        {Point(4, 0), Point(0.5, 0), Point(-3, 1), Point(-1, -3), Point(2, 0),
-         Point(3.5, 3)}));
+        {Point(4, 0), /*Point(0.5, 0), Point(-3, 1), Point(-1, -3), Point(2, 0),
+         Point(3.5, 3)*/}));
     // Set the goalie ID to that of a non-existent robot so that all robots
     // take on non-goalie roles
     setFriendlyGoalie(99);
@@ -51,5 +51,5 @@ TEST_F(ExamplePlayTest, test_example_play)
     std::vector<ValidationFunction> non_terminating_validation_functions = {};
 
     runTest(terminating_validation_functions, non_terminating_validation_functions,
-            Duration::fromSeconds(20));
+            Duration::fromSeconds(8));
 }
