@@ -51,8 +51,10 @@ struct AutoChipOrKick
  * PHYSICAL_LIMIT maximum speed allowed by the physical limits of the robot
  * STOP_COMMAND maximum speed allowed when responding to a stop command
  * TIPTOE maximum speed allowed that does not bump the ball to kick speed
+ * DRIBBLE_SLOW the maximum speed we can dribble the ball with without losing it, even
+ *              at sub-optimal angles (like straight sideways)
  */
-MAKE_ENUM(MaxAllowedSpeedMode, PHYSICAL_LIMIT, STOP_COMMAND, TIPTOE);
+MAKE_ENUM(MaxAllowedSpeedMode, PHYSICAL_LIMIT, STOP_COMMAND, TIPTOE, DRIBBLE_SLOW);
 
 /**
  * Create a Move Primitive Message

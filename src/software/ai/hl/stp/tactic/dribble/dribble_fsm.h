@@ -61,7 +61,7 @@ struct DribbleFSM
     // moving the ball).
     // TODO: more succinct name for this?
     static constexpr Angle MAX_BALL_ROBOT_TO_ROBOT_VEL_ANGLE_FOR_FAST_MOVE =
-        Angle::fromDegrees(25);
+        Angle::fromDegrees(90);
 
     /**
      * Converts the ball position to the robot's position given the direction that the
@@ -298,6 +298,7 @@ struct DribbleFSM
                     AutoChipOrKick{AutoChipOrKickMode::AUTOKICK, DRIBBLE_KICK_SPEED};
             }
 
+            // TODO: this should probably be in a function
             // We limit speed while the ball is not in-line with the robots direction
             // of velocity. This helps limit lateral forces on the ball, which can
             // cause it to fall out of the dribbler
@@ -309,7 +310,7 @@ struct DribbleFSM
             if (robot_ball_angle.minDiff(robot_travel_direction) >
                 MAX_BALL_ROBOT_TO_ROBOT_VEL_ANGLE_FOR_FAST_MOVE)
             {
-                max_allowed_speed_mode = MaxAllowedSpeedMode::TIPTOE;
+                max_allowed_speed_mode = MaxAllowedSpeedMode::DRIBBLE_SLOW;
             }
 
             event.common.set_intent(std::make_unique<MoveIntent>(

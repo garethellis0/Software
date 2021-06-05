@@ -86,8 +86,12 @@ double convertMaxAllowedSpeedModeToMaxAllowedSpeed(
             return STOP_COMMAND_ROBOT_MAX_SPEED_METERS_PER_SECOND;
         case MaxAllowedSpeedMode::TIPTOE:
             return 0.5;
-        default:
-            LOG(WARNING) << "MaxAllowedSpeedMode is invalid" << std::endl;
-            return 0.0;
+        case MaxAllowedSpeedMode::DRIBBLE_SLOW:
+            return ROBOT_MAX_SPEED_METERS_PER_SECOND / 2.0;
     }
+    // We should never get here because our compiler flags enforce that all
+    // enumeration values are uniquely handled
+    assert(false);
+    LOG(WARNING) << "Somehow made it past switch, should never get here." << std::endl;
+    return 0.0;
 }
