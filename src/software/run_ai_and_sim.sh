@@ -26,13 +26,10 @@ fi
 wget -nc https://github.com/RoboCup-SSL/ssl-game-controller/releases/download/v2.4.0/ssl-game-controller_v2.4.0_linux_amd64 -O /tmp/ssl-game-controller_v2.4.0_linux_amd64
 chmod +x /tmp/ssl-game-controller_v2.4.0_linux_amd64
 
-# FUTURE TODO: Write a sh_test for this that runs in headless mode to sanity check none of the commands return with an error code
 tmux new-session \; \
   set -g mouse on \; \
   send-keys "bazel run //software:full_system -- --backend=SimulatorBackend --interface=$1" C-m \; \
   split-window -h \; \
-  send-keys "bazel run //software:full_system -- --backend=SimulatorBackend --interface=$1" C-m \; \
-  split-window -v \; \
   send-keys "/tmp/ssl-game-controller_v2.4.0_linux_amd64&" C-m \; \
   send-keys "xdg-open http://localhost:8081" C-m \; \
   send-keys "fg" C-m \; \

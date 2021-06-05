@@ -115,4 +115,7 @@ class ReceiverTactic : public Tactic
 
     // The enemy team
     Team enemy_team;
+
+    // Where the robot will be to receive the ball
+    Point receive_point;
 };
