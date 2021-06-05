@@ -12,7 +12,6 @@ std::string TbotsGtestMain::logging_dir = "";
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);
-    feenableexcept(FE_INVALID | FE_OVERFLOW);
 
     // load command line arguments
     auto args           = std::make_shared<TbotsGtestMainCommandLineArgs>();
