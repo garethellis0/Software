@@ -15,7 +15,8 @@ ReceiverTactic::ReceiverTactic(const Field& field, const Team& friendly_team,
       pass(pass),
       ball(ball),
       friendly_team(friendly_team),
-      enemy_team(enemy_team)
+      enemy_team(enemy_team),
+      receive_point(pass.receiverPoint())
 {
 }
 
@@ -37,7 +38,7 @@ double ReceiverTactic::calculateRobotCost(const Robot& robot, const World& world
     // We normalize with the total field length so that robots that are within the field
     // have a cost less than 1
     double cost =
-        (robot.position() - pass.receiverPoint()).length() / world.field().totalXLength();
+        (robot.position() - this->receive_point).length() / world.field().totalXLength();
     return std::clamp<double>(cost, 0, 1);
 }
 
@@ -72,6 +73,7 @@ void ReceiverTactic::calculateNextAction(ActionCoroutine::push_type& yield)
         // rotate to the correct orientation
         move_action->updateControlParams(*robot_, pass.receiverPoint(), desired_angle, 0,
                                          DribblerMode::OFF, BallCollisionType::ALLOW);
+        this->receive_point = pass.receiverPoint();
         yield(move_action);
     }
 
@@ -104,6 +106,7 @@ void ReceiverTactic::calculateNextAction(ActionCoroutine::push_type& yield)
                 *robot_, ideal_position, ideal_orientation, 0, DribblerMode::OFF,
                 BallCollisionType::ALLOW,
                 {AutoChipOrKickMode::AUTOKICK, BALL_MAX_SPEED_METERS_PER_SECOND - 1});
+            this->receive_point = ideal_position;
             yield(move_action);
 
             // Calculations to check for termination conditions
@@ -131,6 +134,7 @@ void ReceiverTactic::calculateNextAction(ActionCoroutine::push_type& yield)
                 (ball.position() - robot_->position()).orientation();
 
             // Move into position with the dribbler on
+            this->receive_point = ball_receive_pos;
             move_action->updateControlParams(
                 *robot_, ball_receive_pos, ball_receive_orientation, 0,
                 DribblerMode::MAX_FORCE, BallCollisionType::ALLOW);
