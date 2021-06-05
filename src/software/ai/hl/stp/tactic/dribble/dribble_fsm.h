@@ -53,7 +53,15 @@ struct DribbleFSM
     static constexpr double ROBOT_DRIBBLING_DONE_SPEED = 0.2;  // m/s
     // The distance from the final destination at which we'll start trying to face the
     // final orientation, rather then towards the ball
-    static constexpr double FACE_FINAL_ORIENTATION_DIST_THRESHOLD = 0.5; // m
+    static constexpr double FACE_FINAL_ORIENTATION_DIST_THRESHOLD = 0.5;  // m
+    // The velocity above which we consider the robot to be "moving"
+    static constexpr double MIN_MOVING_SPEED = 0.1;  // m/s
+    // The angle between the robot's velocity and the vector from robot to ball, above
+    // which we will move slowly (to prevent spinning while moving fast laterally and
+    // moving the ball).
+    // TODO: more succinct name for this?
+    static constexpr Angle MAX_BALL_ROBOT_TO_ROBOT_VEL_ANGLE_FOR_FAST_MOVE =
+        Angle::fromDegrees(25);
 
     /**
      * Converts the ball position to the robot's position given the direction that the
@@ -157,8 +165,8 @@ struct DribbleFSM
     /**
      * Calculates the next dribble destination and orientation
      *
-     * The orientation will be towards the ball unless the robot is close to the final
-     * destination, in which case it will be the final orientation.
+     * The orientation will be in robots direction of travel unless the robot is close to
+     * the final destination, in which case it will be the final orientation.
      *
      * @param ball The ball
      * @param robot The robot
@@ -176,10 +184,16 @@ struct DribbleFSM
             getDribbleBallDestination(ball.position(), dribble_destination_opt);
 
         // TODO: refactor this into a function
-        Angle target_orientation = (dribble_destination - robot.position()).orientation();
-        if ((dribble_destination - robot.position()).length() < FACE_FINAL_ORIENTATION_DIST_THRESHOLD) {
+        Angle target_orientation = robot.orientation();
+        if (robot.velocity().length() > MIN_MOVING_SPEED)
+        {
+            target_orientation = robot.velocity().orientation();
+        }
+        if ((dribble_destination - robot.position()).length() <
+            FACE_FINAL_ORIENTATION_DIST_THRESHOLD)
+        {
             target_orientation = getFinalDribbleOrientation(
-                    ball.position(), robot.position(), final_dribble_orientation_opt);
+                ball.position(), robot.position(), final_dribble_orientation_opt);
         }
 
         // Default destination and orientation assume ball is at the destination
@@ -261,8 +275,8 @@ struct DribbleFSM
         /**
          * Action to dribble the ball
          *
-         * This action will orient the robot towards the destination, dribble to the
-         * destination, and then pivot to face the expected orientation
+         * This action will orient the robot in it's direction of travel, dribble towards
+         * the destination, and then pivot to face the expected orientation
          *
          * @param event DribbleFSM::Update
          */
@@ -284,10 +298,24 @@ struct DribbleFSM
                     AutoChipOrKick{AutoChipOrKickMode::AUTOKICK, DRIBBLE_KICK_SPEED};
             }
 
+            // We limit speed while the ball is not in-line with the robots direction
+            // of velocity. This helps limit lateral forces on the ball, which can
+            // cause it to fall out of the dribbler
+            auto max_allowed_speed_mode = MaxAllowedSpeedMode::PHYSICAL_LIMIT;
+            Angle robot_ball_angle =
+                (event.common.world.ball().position() - event.common.robot.position())
+                    .orientation();
+            Angle robot_travel_direction = event.common.robot.velocity().orientation();
+            if (robot_ball_angle.minDiff(robot_travel_direction) >
+                MAX_BALL_ROBOT_TO_ROBOT_VEL_ANGLE_FOR_FAST_MOVE)
+            {
+                max_allowed_speed_mode = MaxAllowedSpeedMode::TIPTOE;
+            }
+
             event.common.set_intent(std::make_unique<MoveIntent>(
                 event.common.robot.id(), target_destination, target_orientation, 0,
                 DribblerMode::MAX_FORCE, BallCollisionType::ALLOW, auto_chip_or_kick,
-                MaxAllowedSpeedMode::PHYSICAL_LIMIT, 0.0));
+                max_allowed_speed_mode, 0.0));
         };
 
         /**

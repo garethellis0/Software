@@ -23,14 +23,15 @@ class SimulatedDribbleTacticTest : public SimulatedTacticTestFixture
     // FUTURE_TODO: Most usages of `checkPossession` can probably be replaced by
     //              this function
     void checkGetsAndRetainsDribblingPossession(std::shared_ptr<DribbleTactic> tactic,
-            std::shared_ptr<World> world_ptr,
-                                       ValidationCoroutine::push_type& yield) {
+                                                std::shared_ptr<World> world_ptr,
+                                                ValidationCoroutine::push_type& yield)
+    {
         bool got_possession_previously = false;
         Timestamp last_possession_time;
         while (!tactic->done())
         {
-            const auto& ball = world_ptr->ball();
-            const size_t robot_id = 1;
+            const auto& ball           = world_ptr->ball();
+            const size_t robot_id      = 1;
             const auto& robot_optional = world_ptr->friendlyTeam().getRobotById(robot_id);
             if (!robot_optional.has_value())
             {
@@ -39,14 +40,19 @@ class SimulatedDribbleTacticTest : public SimulatedTacticTestFixture
             bool has_possession = robot_optional->isNearDribbler(ball.position(), 0.05);
             const auto& current_time = world_ptr->getMostRecentTimestamp();
 
-            if(has_possession) {
+            if (has_possession)
+            {
                 last_possession_time = current_time;
             }
-            if(!got_possession_previously) {
+            if (!got_possession_previously)
+            {
                 got_possession_previously = has_possession;
-            } else {
+            }
+            else
+            {
                 // We got possession, make sure we retained it.
-                ASSERT_LE(current_time - last_possession_time, Duration::fromSeconds(0.5)) << "We lost possession at time " << current_time;
+                ASSERT_LE(current_time - last_possession_time, Duration::fromSeconds(0.5))
+                    << "We lost possession at time " << current_time;
             }
             yield("Tactic not done");
         }
@@ -74,6 +80,7 @@ class SimulatedDribbleTacticTest : public SimulatedTacticTestFixture
 
     void SetUp() override
     {
+        enableVisualizer();
         SimulatedTacticTestFixture::SetUp();
         setMotionConstraints({MotionConstraint::ENEMY_ROBOTS_COLLISION,
                               MotionConstraint::ENEMY_DEFENSE_AREA});
@@ -269,11 +276,10 @@ TEST_F(SimulatedDribbleTacticTest, test_dribble_dest_and_orientation_around_rect
     std::vector<ValidationFunction> terminating_validation_functions = {
         [this, dribble_destination, dribble_orientation, tactic](
             std::shared_ptr<World> world_ptr, ValidationCoroutine::push_type& yield) {
-            checkPossession(tactic, world_ptr, yield);
+            checkGetsAndRetainsDribblingPossession(tactic, world_ptr, yield);
             ballAtPoint(dribble_destination, world_ptr, yield);
             robotAtOrientation(1, world_ptr, dribble_orientation, Angle::fromDegrees(5),
                                yield);
-            checkPossession(tactic, world_ptr, yield);
         }};
 
     std::vector<ValidationFunction> non_terminating_validation_functions = {
@@ -340,11 +346,10 @@ TEST_F(SimulatedDribbleTacticTest, test_running_into_enemy_robot_knocking_ball_a
     std::vector<ValidationFunction> terminating_validation_functions = {
         [this, dribble_destination, dribble_orientation, tactic](
             std::shared_ptr<World> world_ptr, ValidationCoroutine::push_type& yield) {
-            checkPossession(tactic, world_ptr, yield);
+            checkGetsAndRetainsDribblingPossession(tactic, world_ptr, yield);
             ballAtPoint(dribble_destination, world_ptr, yield);
             robotAtOrientation(1, world_ptr, dribble_orientation, Angle::fromDegrees(5),
                                yield);
-            checkPossession(tactic, world_ptr, yield);
         }};
 
     std::vector<ValidationFunction> non_terminating_validation_functions = {
