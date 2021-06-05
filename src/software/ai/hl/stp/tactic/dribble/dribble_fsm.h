@@ -41,12 +41,9 @@ struct DribbleFSM
 
     // Threshold to determine if the ball is at the destination determined experimentally
     static constexpr double BALL_CLOSE_TO_DEST_THRESHOLD = 0.1;
-    // Threshold to determine if the robot has the expected orientation when dribbling the
-    // ball
-    static constexpr Angle FACE_DESTINATION_CLOSE_THRESHOLD = Angle::fromDegrees(5);
     // Threshold to determine if the robot has the expected orientation when completing
     // the dribble
-    static constexpr Angle FINAL_DESTINATION_CLOSE_THRESHOLD = Angle::fromDegrees(1);
+    static constexpr Angle FINAL_ORIENTATION_CLOSE_THRESHOLD = Angle::fromDegrees(1);
     // Kick speed when breaking up continuous dribbling
     static constexpr double DRIBBLE_KICK_SPEED = 0.05;
     // Maximum distance to continuously dribble the ball, slightly conservative to not
@@ -54,6 +51,9 @@ struct DribbleFSM
     static constexpr double MAX_CONTINUOUS_DRIBBLING_DISTANCE = 0.9;
     // robot speed at which the robot is done dribbling
     static constexpr double ROBOT_DRIBBLING_DONE_SPEED = 0.2;  // m/s
+    // The distance from the final destination at which we'll start trying to face the
+    // final orientation, rather then towards the ball
+    static constexpr double FACE_FINAL_ORIENTATION_DIST_THRESHOLD = 0.5; // m
 
     /**
      * Converts the ball position to the robot's position given the direction that the
@@ -157,6 +157,9 @@ struct DribbleFSM
     /**
      * Calculates the next dribble destination and orientation
      *
+     * The orientation will be towards the ball unless the robot is close to the final
+     * destination, in which case it will be the final orientation.
+     *
      * @param ball The ball
      * @param robot The robot
      * @param dribble_destination_opt The dribble destination
@@ -172,10 +175,15 @@ struct DribbleFSM
         Point dribble_destination =
             getDribbleBallDestination(ball.position(), dribble_destination_opt);
 
+        // TODO: refactor this into a function
+        Angle target_orientation = (dribble_destination - robot.position()).orientation();
+        if ((dribble_destination - robot.position()).length() < FACE_FINAL_ORIENTATION_DIST_THRESHOLD) {
+            target_orientation = getFinalDribbleOrientation(
+                    ball.position(), robot.position(), final_dribble_orientation_opt);
+        }
+
         // Default destination and orientation assume ball is at the destination
         // pivot to final face ball destination
-        Angle target_orientation = getFinalDribbleOrientation(
-            ball.position(), robot.position(), final_dribble_orientation_opt);
         Point target_destination =
             robotPositionToFaceBall(dribble_destination, target_orientation);
 
@@ -223,7 +231,7 @@ struct DribbleFSM
                                      event.common.world.ball().position(),
                                      event.common.robot.position(),
                                      event.control_params.final_dribble_orientation),
-                                 FINAL_DESTINATION_CLOSE_THRESHOLD) &&
+                                 FINAL_ORIENTATION_CLOSE_THRESHOLD) &&
                    have_possession(event) &&
                    robotStopped(event.common.robot, ROBOT_DRIBBLING_DONE_SPEED);
         };

@@ -17,6 +17,43 @@
 class SimulatedDribbleTacticTest : public SimulatedTacticTestFixture
 {
    protected:
+    // Check that the robot gets possession, and then retains effective possession until
+    // the tactic is completed. We defined effective possession here as having the
+    // ball in the dribbler, with some tolerance to allow for small dribbles.
+    // FUTURE_TODO: Most usages of `checkPossession` can probably be replaced by
+    //              this function
+    void checkGetsAndRetainsDribblingPossession(std::shared_ptr<DribbleTactic> tactic,
+            std::shared_ptr<World> world_ptr,
+                                       ValidationCoroutine::push_type& yield) {
+        bool got_possession_previously = false;
+        Timestamp last_possession_time;
+        while (!tactic->done())
+        {
+            const auto& ball = world_ptr->ball();
+            const size_t robot_id = 1;
+            const auto& robot_optional = world_ptr->friendlyTeam().getRobotById(robot_id);
+            if (!robot_optional.has_value())
+            {
+                LOG(FATAL) << "There is no robot with ID: " << robot_id;
+            }
+            bool has_possession = robot_optional->isNearDribbler(ball.position(), 0.05);
+            const auto& current_time = world_ptr->getMostRecentTimestamp();
+
+            if(has_possession) {
+                last_possession_time = current_time;
+            }
+            if(!got_possession_previously) {
+                got_possession_previously = has_possession;
+            } else {
+                // We got possession, make sure we retained it.
+                ASSERT_LE(current_time - last_possession_time, Duration::fromSeconds(0.5)) << "We lost possession at time " << current_time;
+            }
+            yield("Tactic not done");
+        }
+
+        // Make sure that we got possession at least once
+        ASSERT_TRUE(got_possession_previously);
+    }
     void checkPossession(std::shared_ptr<DribbleTactic> tactic,
                          std::shared_ptr<World> world_ptr,
                          ValidationCoroutine::push_type& yield)
@@ -57,7 +94,9 @@ TEST_F(SimulatedDribbleTacticTest, test_intercept_ball_behind_enemy_robot)
         TestUtil::createStationaryRobotStatesWithId({Point(-3, 2.5), initial_position});
 
     auto tactic = std::make_shared<DribbleTactic>();
+    // FUTURE_TODO: this should really be in `Setup`
     setTactic(tactic);
+    // FUTURE_TODO: this should really be in `Setup`
     setRobotId(1);
 
     std::vector<ValidationFunction> terminating_validation_functions = {
@@ -137,9 +176,8 @@ TEST_F(SimulatedDribbleTacticTest, test_moving_ball_dribble_dest)
     std::vector<ValidationFunction> terminating_validation_functions = {
         [this, dribble_destination, tactic](std::shared_ptr<World> world_ptr,
                                             ValidationCoroutine::push_type& yield) {
-            checkPossession(tactic, world_ptr, yield);
+            checkGetsAndRetainsDribblingPossession(tactic, world_ptr, yield);
             ballAtPoint(dribble_destination, world_ptr, yield);
-            checkPossession(tactic, world_ptr, yield);
         }};
 
     std::vector<ValidationFunction> non_terminating_validation_functions = {

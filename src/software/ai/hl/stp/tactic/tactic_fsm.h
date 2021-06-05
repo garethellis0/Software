@@ -46,8 +46,8 @@ struct TacticUpdate
 #define DEFINE_UPDATE_STRUCT_WITH_CONTROL_AND_COMMON_PARAMS                              \
     struct Update                                                                        \
     {                                                                                    \
-        Update(const ControlParams &control_params, const TacticUpdate &common)          \
-            : control_params(control_params), common(common)                             \
+        Update(ControlParams control_params, TacticUpdate common)          \
+            : control_params(std::move(control_params)), common(std::move(common))                             \
         {                                                                                \
         }                                                                                \
         ControlParams control_params;                                                    \
