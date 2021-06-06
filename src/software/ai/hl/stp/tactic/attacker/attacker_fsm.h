@@ -7,6 +7,7 @@
 #include "software/ai/hl/stp/tactic/tactic.h"
 #include "software/ai/intent/move_intent.h"
 #include "software/ai/passing/pass.h"
+#include "software/ai/evaluation/calc_best_shot.h"
 
 struct AttackerFSM
 {
@@ -87,11 +88,47 @@ struct AttackerFSM
          */
         const auto keep_away = [](auto event,
                                   back::process<DribbleFSM::Update> processEvent) {
+            // Sample shots in a rectangle around the robot and move to the best one
+            // We save the shot origin and shot
+            std::vector<std::pair<Point, Shot>> shots;
+            static constexpr double X_RESOLUTION = 20;
+            static constexpr double Y_RESOLUTION = 20;
+            for (int i = 0; i < X_RESOLUTION; i ++) {
+                for (int j = 0; j < Y_RESOLUTION; j ++) {
+                    static constexpr double MAX_X_OFFSET = 2;
+                    static constexpr double MAX_Y_OFFSET = 2.5;
+                    const double x = i * (2.0 * MAX_X_OFFSET) / X_RESOLUTION;
+                    const double y = j * (2.0 * MAX_Y_OFFSET) / Y_RESOLUTION;
+                    const Point shot_point(x,y);
+                    if(auto shot = calcBestShotOnGoal(
+                            event.common.world.field(),
+                            event.common.world.friendlyTeam(),
+                            event.common.world.enemyTeam(),
+                            shot_point,
+                            TeamType::ENEMY
+                            )) {
+                        shots.emplace_back(std::make_pair(shot_point, shot.value()));
+                    }
+                }
+            }
+            // Take the best shot
+            std::optional<std::pair<Point, Shot>> best_shot;
+            for(auto& shot : shots) {
+                if(!best_shot ||(shot.second.getOpenAngle() > best_shot->second.getOpenAngle())) {
+                    best_shot = shot;
+                }
+            }
             // TODO (#2073): Implement a more effective keep away tactic
             DribbleFSM::ControlParams control_params{
                 .dribble_destination       = std::nullopt,
                 .final_dribble_orientation = std::nullopt,
-                .allow_excessive_dribbling = true};
+                .allow_excessive_dribbling = false};
+            if(best_shot) {
+                control_params = {
+                        .dribble_destination       = best_shot->first,
+                        .final_dribble_orientation = (best_shot->second.getPointToShootAt() - best_shot->first).orientation(),
+                        .allow_excessive_dribbling = false};
+            }
             processEvent(DribbleFSM::Update(control_params, event.common));
         };
 
