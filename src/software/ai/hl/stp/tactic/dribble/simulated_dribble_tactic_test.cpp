@@ -346,10 +346,11 @@ TEST_F(SimulatedDribbleTacticTest, test_running_into_enemy_robot_knocking_ball_a
     std::vector<ValidationFunction> terminating_validation_functions = {
         [this, dribble_destination, dribble_orientation, tactic](
             std::shared_ptr<World> world_ptr, ValidationCoroutine::push_type& yield) {
-            checkGetsAndRetainsDribblingPossession(tactic, world_ptr, yield);
+            checkPossession(tactic, world_ptr, yield);
             ballAtPoint(dribble_destination, world_ptr, yield);
             robotAtOrientation(1, world_ptr, dribble_orientation, Angle::fromDegrees(5),
                                yield);
+            checkPossession(tactic, world_ptr, yield);
         }};
 
     std::vector<ValidationFunction> non_terminating_validation_functions = {

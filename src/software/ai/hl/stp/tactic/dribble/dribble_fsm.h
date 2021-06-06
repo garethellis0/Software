@@ -62,6 +62,8 @@ struct DribbleFSM
     // TODO: more succinct name for this?
     static constexpr Angle MAX_BALL_ROBOT_TO_ROBOT_VEL_ANGLE_FOR_FAST_MOVE =
         Angle::fromDegrees(90);
+    // The final speed on move intents created to get possession of the ball
+    static constexpr double GET_POSSESSION_FINAL_SPEED = 0.5; // m/s
 
     /**
      * Converts the ball position to the robot's position given the direction that the
@@ -266,7 +268,7 @@ struct DribbleFSM
                 findInterceptionPoint(event.common.robot, event.common.world.ball(),
                                       event.common.world.field());
             event.common.set_intent(std::make_unique<MoveIntent>(
-                event.common.robot.id(), intercept_position, face_ball_orientation, 0,
+                event.common.robot.id(), intercept_position, face_ball_orientation, GET_POSSESSION_FINAL_SPEED,
                 DribblerMode::MAX_FORCE, BallCollisionType::ALLOW,
                 AutoChipOrKick{AutoChipOrKickMode::OFF, 0},
                 MaxAllowedSpeedMode::PHYSICAL_LIMIT, 0.0));
