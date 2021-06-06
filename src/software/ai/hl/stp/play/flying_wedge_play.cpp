@@ -32,7 +32,27 @@ void FlyingWedgePlay::getNextTactics(TacticCoroutine::push_type &yield, const Wo
     auto wedge_defender_1 = std::make_shared<MoveTactic>(true);
     auto wedge_defender_2 = std::make_shared<MoveTactic>(true);
 
+    dribbler_tactic->updateControlParams(Point(2,0), std::nullopt);
 
+    while(true) {
+        Point ball_position = world.ball().position();
+        if (auto dribbler_robot = dribbler_tactic->getAssignedRobot()) {
+            // Position the defenders relative to the dribbler robot
+            Point dribbler_robot_position = dribbler_robot->position();
+            Vector dribbler_to_ball = ball_position - dribbler_robot_position;
+            Vector longitudinal_vector = dribbler_to_ball.normalize(WEDGE_DEFENDER_LONGITUDINAL_OFFSET);
+            Vector lateral_vector = dribbler_to_ball.perpendicular().normalize(WEDGE_DEFENDER_LATERAL_OFFSET);
+            wedge_defender_1->updateControlParams(ball_position + longitudinal_vector + lateral_vector, Angle::zero(), 0.0, MaxAllowedSpeedMode::PHYSICAL_LIMIT);
+            wedge_defender_2->updateControlParams(ball_position + longitudinal_vector - lateral_vector, Angle::zero(), 0.0, MaxAllowedSpeedMode::PHYSICAL_LIMIT);
+        } else {
+            // Position the defenders to offsets in front of the ball, facing towards
+            // the enemy end
+            wedge_defender_1->updateControlParams(ball_position + Vector(WEDGE_DEFENDER_LONGITUDINAL_OFFSET, WEDGE_DEFENDER_LATERAL_OFFSET), Angle::zero(), 0.0, MaxAllowedSpeedMode::PHYSICAL_LIMIT);
+            wedge_defender_2->updateControlParams(ball_position + Vector(WEDGE_DEFENDER_LONGITUDINAL_OFFSET, -WEDGE_DEFENDER_LATERAL_OFFSET), Angle::zero(), 0.0, MaxAllowedSpeedMode::PHYSICAL_LIMIT);
+        }
+
+        yield({{dribbler_tactic, wedge_defender_1, wedge_defender_2}});
+    }
 }
 
 // Register this play in the genericFactory
