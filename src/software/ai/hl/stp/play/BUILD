@@ -106,6 +106,22 @@ cc_library(
 )
 
 cc_library(
+    name = "flying_wedge_play",
+    srcs = ["flying_wedge_play.cpp"],
+    hdrs = ["flying_wedge_play.h"],
+    deps = [
+        ":play",
+        "//shared:constants",
+        "//shared/parameter:cpp_configs",
+        "//software/ai/hl/stp/tactic/dribble:dribble_tactic",
+        "//software/ai/hl/stp/tactic/move:move_tactic",
+        "//software/logger",
+        "//software/util/design_patterns:generic_factory",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
     name = "halt_play",
     srcs = ["halt_play.cpp"],
     hdrs = ["halt_play.h"],
@@ -321,6 +337,21 @@ cc_test(
         "//shared/test_util:tbots_gtest_main",
         "//software/ai/hl/stp/play:example_play",
         "//software/simulated_tests:simulated_play_test_fixture",
+        "//software/simulated_tests/validation:validation_function",
+        "//software/test_util",
+        "//software/time:duration",
+        "//software/world",
+    ],
+)
+
+cc_test(
+    name = "flying_wedge_play_test",
+    srcs = ["flying_wedge_play_test.cpp"],
+    deps = [
+        "//shared/test_util:tbots_gtest_main",
+        "//software/ai/hl/stp/play:flying_wedge_play",
+        "//software/simulated_tests:simulated_play_test_fixture",
+        "//software/simulated_tests/terminating_validation_functions",
         "//software/simulated_tests/validation:validation_function",
         "//software/test_util",
         "//software/time:duration",
