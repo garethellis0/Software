@@ -43,7 +43,7 @@ struct DribbleFSM
     static constexpr double BALL_CLOSE_TO_DEST_THRESHOLD = 0.1;
     // Threshold to determine if the robot has the expected orientation when completing
     // the dribble
-    static constexpr Angle FINAL_ORIENTATION_CLOSE_THRESHOLD = Angle::fromDegrees(1);
+    static constexpr Angle FINAL_ORIENTATION_CLOSE_THRESHOLD = Angle::fromDegrees(5);
     // Kick speed when breaking up continuous dribbling
     static constexpr double DRIBBLE_KICK_SPEED = 0.05;
     // Maximum distance to continuously dribble the ball, slightly conservative to not
@@ -61,7 +61,7 @@ struct DribbleFSM
     // moving the ball).
     // TODO: more succinct name for this?
     static constexpr Angle MAX_BALL_ROBOT_TO_ROBOT_VEL_ANGLE_FOR_FAST_MOVE =
-        Angle::fromDegrees(90);
+        Angle::fromDegrees(20);
     // The final speed on move intents created to get possession of the ball
     static constexpr double GET_POSSESSION_FINAL_SPEED = 0.5; // m/s
 
@@ -291,15 +291,6 @@ struct DribbleFSM
                     event.control_params.final_dribble_orientation);
             AutoChipOrKick auto_chip_or_kick = AutoChipOrKick{AutoChipOrKickMode::OFF, 0};
 
-            if (!event.control_params.allow_excessive_dribbling &&
-                !comparePoints(ball_position, *continuous_dribbling_start_point,
-                               MAX_CONTINUOUS_DRIBBLING_DISTANCE))
-            {
-                // give the ball a little kick
-                auto_chip_or_kick =
-                    AutoChipOrKick{AutoChipOrKickMode::AUTOKICK, DRIBBLE_KICK_SPEED};
-            }
-
             // TODO: this should probably be in a function
             // We limit speed while the ball is not in-line with the robots direction
             // of velocity. This helps limit lateral forces on the ball, which can
@@ -314,6 +305,18 @@ struct DribbleFSM
             {
                 max_allowed_speed_mode = MaxAllowedSpeedMode::DRIBBLE_SLOW;
             }
+
+            if (!event.control_params.allow_excessive_dribbling &&
+                !comparePoints(ball_position, *continuous_dribbling_start_point,
+                               MAX_CONTINUOUS_DRIBBLING_DISTANCE))
+            {
+                // give the ball a little kick
+                auto_chip_or_kick =
+                        AutoChipOrKick{AutoChipOrKickMode::AUTOKICK, DRIBBLE_KICK_SPEED};
+                // Move a little slower to make capture easier
+                max_allowed_speed_mode = MaxAllowedSpeedMode::DRIBBLE_SLOW;
+            }
+
 
             event.common.set_intent(std::make_unique<MoveIntent>(
                 event.common.robot.id(), target_destination, target_orientation, 0,

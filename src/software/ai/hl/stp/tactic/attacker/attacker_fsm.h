@@ -91,14 +91,14 @@ struct AttackerFSM
             // Sample shots in a rectangle around the robot and move to the best one
             // We save the shot origin and shot
             std::vector<std::pair<Point, Shot>> shots;
-            static constexpr double X_RESOLUTION = 20;
-            static constexpr double Y_RESOLUTION = 20;
+            static constexpr double X_RESOLUTION = 40;
+            static constexpr double Y_RESOLUTION = 40;
             for (int i = 0; i < X_RESOLUTION; i ++) {
                 for (int j = 0; j < Y_RESOLUTION; j ++) {
                     static constexpr double MAX_X_OFFSET = 2;
                     static constexpr double MAX_Y_OFFSET = 2.5;
-                    const double x = i * (2.0 * MAX_X_OFFSET) / X_RESOLUTION;
-                    const double y = j * (2.0 * MAX_Y_OFFSET) / Y_RESOLUTION;
+                    const double x = i * (2.0 * MAX_X_OFFSET) / X_RESOLUTION - MAX_X_OFFSET;
+                    const double y = j * (2.0 * MAX_Y_OFFSET) / Y_RESOLUTION - MAX_Y_OFFSET;
                     const Point shot_point(x,y);
                     if(auto shot = calcBestShotOnGoal(
                             event.common.world.field(),
@@ -141,6 +141,7 @@ struct AttackerFSM
          * @return if the ball should be kicked
          */
         const auto should_kick = [](auto event) {
+            return event.control_params.pass || event.control_params.shot;
             Point robot_left_side = event.common.robot.position() + Vector::createFromAngle(event.common.robot.orientation()).perpendicular().normalize(ROBOT_MAX_RADIUS_METERS);
             Point robot_right_side = event.common.robot.position() + Vector::createFromAngle(event.common.robot.orientation()).perpendicular().normalize(ROBOT_MAX_RADIUS_METERS);
             Vector stealing_zone = Vector::createFromAngle(event.common.robot.orientation()).normalize(event.control_params.attacker_tactic_config->getEnemyAboutToStealBallDistance()->value());

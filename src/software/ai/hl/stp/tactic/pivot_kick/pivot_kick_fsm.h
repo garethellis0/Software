@@ -57,8 +57,7 @@ struct PivotKickFSM
          */
         const auto kick_ball = [this](auto event) {
             event.common.set_intent(std::make_unique<MoveIntent>(
-                event.common.robot.id(), event.control_params.kick_origin,
-                event.control_params.kick_direction, 0, DribblerMode::OFF,
+                event.common.robot.id(), event.control_params.kick_origin, event.control_params.kick_direction, 0, DribblerMode::OFF,
                 BallCollisionType::ALLOW, event.control_params.auto_chip_or_kick,
                 MaxAllowedSpeedMode::PHYSICAL_LIMIT, 0.0));
         };

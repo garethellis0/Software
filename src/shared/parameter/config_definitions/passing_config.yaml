@@ -45,7 +45,7 @@
      name: min_pass_speed_m_per_s
      min: 0
      max: 5
-     value: 3.5
+     value: 5.0
      description: "The minimum pass speed (in m/s)"
  - double:
      name: max_pass_speed_m_per_s
@@ -65,5 +65,5 @@
      name: number_of_gradient_descent_steps_per_iter
      min: 0
      max: 1000
-     value: 2 # TODO (#1987) find optimal iterations after tuning, for now 2 does the trick
+     value: 10 # TODO (#1987) find optimal iterations after tuning, for now 2 does the trick
      description: "The number of steps of gradient descent to perform in each iteration"

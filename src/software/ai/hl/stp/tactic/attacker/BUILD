@@ -14,6 +14,7 @@ cc_library(
         "//software/ai/hl/stp/tactic/pivot_kick:pivot_kick_tactic",
         "//software/ai/passing:pass",
         "//software/logger",
+        "//software/math:math_functions",
         "//software/world:ball",
     ],
 )
