@@ -26,7 +26,6 @@ Simulator::Simulator(const Field& field,
           Duration::fromSeconds(1.0 / simulator_config->getSimulationRateHz()->value())),
       simulator_config(simulator_config)
 {
-    this->resetCurrentFirmwareTime();
     simulator_config->getSimulationRateHz()->registerCallbackFunction(
         [this](double hz) { this->physics_time_step = Duration::fromSeconds(1.0 / hz); });
 }
