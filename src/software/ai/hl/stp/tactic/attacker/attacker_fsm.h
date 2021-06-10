@@ -104,11 +104,16 @@ struct AttackerFSM
          * @return if the ball should be kicked
          */
         const auto should_kick = [](auto event) {
+            Point robot_left_side = event.common.robot.position() + Vector::createFromAngle(event.common.robot.orientation()).perpendicular().normalize(ROBOT_MAX_RADIUS_METERS);
+            Point robot_right_side = event.common.robot.position() + Vector::createFromAngle(event.common.robot.orientation()).perpendicular().normalize(ROBOT_MAX_RADIUS_METERS);
+            Vector stealing_zone = Vector::createFromAngle(event.common.robot.orientation()).normalize(event.control_params.attacker_tactic_config->getEnemyAboutToStealBallDistance()->value());
             // check for enemy threat
-            Circle about_to_steal_danger_zone(event.common.robot.position(),
-                                              event.control_params.attacker_tactic_config
-                                                  ->getEnemyAboutToStealBallRadius()
-                                                  ->value());
+            Polygon about_to_steal_danger_zone({
+                robot_left_side,
+                robot_left_side + stealing_zone,
+                robot_right_side + stealing_zone,
+                robot_right_side
+            });
             for (const auto &enemy : event.common.world.enemyTeam().getAllRobots())
             {
                 if (contains(about_to_steal_danger_zone, enemy.position()))
