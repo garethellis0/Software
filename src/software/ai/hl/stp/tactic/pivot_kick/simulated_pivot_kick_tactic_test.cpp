@@ -22,6 +22,7 @@ class SimulatedPivotKickTacticTest
 
 TEST_P(SimulatedPivotKickTacticTest, pivot_kick_test)
 {
+    enableVisualizer();
     Vector ball_offset_from_robot = std::get<0>(GetParam());
     Angle angle_to_kick_at        = std::get<1>(GetParam());
 
@@ -40,11 +41,12 @@ TEST_P(SimulatedPivotKickTacticTest, pivot_kick_test)
     std::vector<ValidationFunction> terminating_validation_functions = {
         [angle_to_kick_at, tactic](std::shared_ptr<World> world_ptr,
                                    ValidationCoroutine::push_type& yield) {
-            while (!tactic->done())
-            {
-                yield("Tactic did not complete!");
-            }
-            ballKicked(angle_to_kick_at, world_ptr, yield);
+//            while (!tactic->done())
+//            {
+//                yield("Tactic did not complete!");
+//            }
+//            ballKicked(angle_to_kick_at, world_ptr, yield);
+while(true){yield("");}
         }};
 
     std::vector<ValidationFunction> non_terminating_validation_functions = {};
@@ -55,25 +57,26 @@ TEST_P(SimulatedPivotKickTacticTest, pivot_kick_test)
 
 INSTANTIATE_TEST_CASE_P(BallLocations, SimulatedPivotKickTacticTest,
                         ::testing::Values(
-                            // place the ball directly to the left of the robot
-                            std::make_tuple(Vector(0, 0.5), Angle::zero()),
-                            // place the ball directly to the right of the robot
-                            std::make_tuple(Vector(0, -0.5), Angle::zero()),
-                            // place the ball directly infront of the robot
-                            std::make_tuple(Vector(0.5, 0), Angle::zero()),
+//                            // place the ball directly to the left of the robot
+//                            std::make_tuple(Vector(0, 0.5), Angle::zero()),
+//                            // place the ball directly to the right of the robot
+//                            std::make_tuple(Vector(0, -0.5), Angle::zero()),
+//                            // place the ball directly infront of the robot
+//                            std::make_tuple(Vector(0.5, 0), Angle::zero()),
+//                            // place the ball directly behind the robot
+//                            std::make_tuple(Vector(-0.5, 0), Angle::zero()),
+//                            // place the ball in the robots dribbler
+//                            std::make_tuple(Vector(ROBOT_RADIUS, 0), Angle::zero()),
+//
+//                            // Repeat the same tests but kick in the opposite direction
+//                            // place the ball directly to the left of the robot
+//                            std::make_tuple(Vector(0, 0.5), Angle::half()),
+//                            // place the ball directly to the right of the robot
+//                            std::make_tuple(Vector(0, -0.5), Angle::half()),
+//                            // place the ball directly infront of the robot
+//                            std::make_tuple(Vector(0.5, 0), Angle::half()),
                             // place the ball directly behind the robot
-                            std::make_tuple(Vector(-0.5, 0), Angle::zero()),
-                            // place the ball in the robots dribbler
-                            std::make_tuple(Vector(ROBOT_RADIUS, 0), Angle::zero()),
-
-                            // Repeat the same tests but kick in the opposite direction
-                            // place the ball directly to the left of the robot
-                            std::make_tuple(Vector(0, 0.5), Angle::half()),
-                            // place the ball directly to the right of the robot
-                            std::make_tuple(Vector(0, -0.5), Angle::half()),
-                            // place the ball directly infront of the robot
-                            std::make_tuple(Vector(0.5, 0), Angle::half()),
-                            // place the ball directly behind the robot
-                            std::make_tuple(Vector(-0.5, 0), Angle::half()),
-                            // place the ball in the robots dribbler
-                            std::make_tuple(Vector(ROBOT_RADIUS, 0), Angle::zero())));
+                            std::make_tuple(Vector(-0.5, 0), Angle::half())
+//                            // place the ball in the robots dribbler
+//                            std::make_tuple(Vector(ROBOT_RADIUS, 0), Angle::zero())
+                        ));

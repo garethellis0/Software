@@ -100,14 +100,16 @@ struct AttackerFSM
                     const double x = i * (2.0 * MAX_X_OFFSET) / X_RESOLUTION - MAX_X_OFFSET;
                     const double y = j * (2.0 * MAX_Y_OFFSET) / Y_RESOLUTION - MAX_Y_OFFSET;
                     const Point shot_point(x,y);
-                    if(auto shot = calcBestShotOnGoal(
-                            event.common.world.field(),
-                            event.common.world.friendlyTeam(),
-                            event.common.world.enemyTeam(),
-                            shot_point,
-                            TeamType::ENEMY
-                            )) {
-                        shots.emplace_back(std::make_pair(shot_point, shot.value()));
+                    if (contains(event.common.world.field().enemyHalf(), shot_point)) {
+                        if(auto shot = calcBestShotOnGoal(
+                                event.common.world.field(),
+                                event.common.world.friendlyTeam(),
+                                event.common.world.enemyTeam(),
+                                shot_point,
+                                TeamType::ENEMY
+                        )) {
+                            shots.emplace_back(std::make_pair(shot_point, shot.value()));
+                        }
                     }
                 }
             }

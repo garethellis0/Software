@@ -226,6 +226,9 @@ void SimulatedTestFixture::runTest(
             std::this_thread::sleep_for(ms_to_sleep);
             continue;
         }
+        auto ms_to_sleep = std::chrono::milliseconds(
+                static_cast<int>(ai_time_step.toMilliseconds()));
+        std::this_thread::sleep_for(3*ms_to_sleep);
 
         validation_functions_done =
             tickTest(simulation_time_step, ai_time_step, world, simulator);

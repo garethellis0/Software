@@ -295,7 +295,7 @@ struct DribbleFSM
             // We limit speed while the ball is not in-line with the robots direction
             // of velocity. This helps limit lateral forces on the ball, which can
             // cause it to fall out of the dribbler
-            auto max_allowed_speed_mode = MaxAllowedSpeedMode::PHYSICAL_LIMIT;
+            auto max_allowed_speed_mode = MaxAllowedSpeedMode::DRIBBLE_SLOW;
             Angle robot_ball_angle =
                 (event.common.world.ball().position() - event.common.robot.position())
                     .orientation();
