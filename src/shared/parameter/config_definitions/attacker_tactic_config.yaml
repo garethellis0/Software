@@ -1,11 +1,11 @@
 - double:
-    name: enemy_about_to_steal_ball_radius
+    name: enemy_about_to_steal_ball_distance
     min: 0.0
-    max: 4.0
-    value: 0.5
+    max: 1.0
+    value: 0.27
     description: >-
-        The radius of the circle around a friendly robot around which
-        we think an enemy is about to steal the ball
+        How far in front of a friendly robot an enemy robot must be to be considered a thread
+        of immediately stealing the ball
 
 - double:
     name: min_open_angle_for_shot_deg
