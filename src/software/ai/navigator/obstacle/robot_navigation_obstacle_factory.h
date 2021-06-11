@@ -52,16 +52,12 @@ class RobotNavigationObstacleFactory
      *
      * These obstacles take into account the velocity of the robot to extend the
      * created obstacle in the robot's direction of travel.
-     * Additionally, if the ball is within the obstacle representation for the robot and
-     * it's moving slow enough, we cut out part of the obstacle so we can navigate to
-     * the ball
      *
      * @param robot The robot to get a representative obstacle for
-     * @param ball_position The position of the ball
      *
      * @return An obstacle representing the given robot
      */
-    ObstaclePtr createFromRobot(const Robot &robot, const Point &ball_position) const;
+    ObstaclePtr createFromRobot(const Robot &robot) const;
 
     /**
      * Create a list of obstacles representing the given team
@@ -76,18 +72,13 @@ class RobotNavigationObstacleFactory
     std::vector<ObstaclePtr> createFromTeam(const Team &team) const;
 
     /**
-     * Create circle obstacle around robot with additional radius scaling.
-     *
-     * If the ball is within the obstacle, cuts out part of the obstacle so
-     * that it can still be navigated to
+     * Create circle obstacle around robot with additional radius scaling
      *
      * @param robot_position robot position
-     * @param ball_position ball position
      *
      * @return obstacle around the robot
      */
-    ObstaclePtr createFromRobotPosition(const Point &robot_position,
-                                        const Point &ball_position) const;
+    ObstaclePtr createFromRobotPosition(const Point &robot_position) const;
 
     /**
      * Create circle obstacle around ball
