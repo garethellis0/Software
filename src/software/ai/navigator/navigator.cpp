@@ -66,9 +66,9 @@ std::unique_ptr<TbotsProto::PrimitiveSet> Navigator::getAssignedPrimitives(
         }
         else
         {
-            LOG(WARNING)
-                << "Navigator's path manager could not find a path for RobotId = "
-                << robot_id;
+//            LOG(WARNING)
+//                << "Navigator's path manager could not find a path for RobotId = "
+//                << robot_id;
             robot_primitives_map[robot_id] = *createStopPrimitive(false);
         }
     }
