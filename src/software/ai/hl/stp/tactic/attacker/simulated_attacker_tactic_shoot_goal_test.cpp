@@ -94,13 +94,13 @@ INSTANTIATE_TEST_CASE_P(
 
 // TODO: put this in another file
 class DribbleToOpenSpaceAndShootTest
-        : public SimulatedTacticTestFixture,
-                // Params: initial ball state, initial robot position, enemy team, expected
-                // chip/kick direction
-          public ::testing::WithParamInterface<
-                  std::tuple<BallState, Point, std::vector<RobotStateWithId>, Angle>>
+    : public SimulatedTacticTestFixture,
+      // Params: initial ball state, initial robot position, enemy team, expected
+      // chip/kick direction
+      public ::testing::WithParamInterface<
+          std::tuple<BallState, Point, std::vector<RobotStateWithId>, Angle>>
 {
-protected:
+   protected:
     Field field = Field::createSSLDivisionBField();
 };
 
@@ -113,7 +113,7 @@ TEST_P(DribbleToOpenSpaceAndShootTest, attacker_test_dribble_and_shoot)
     auto expected_kick_direction = std::get<3>(GetParam());
 
     auto friendly_robots =
-            TestUtil::createStationaryRobotStatesWithId({initial_robot_point});
+        TestUtil::createStationaryRobotStatesWithId({initial_robot_point});
     auto attacker_tactic_config = std::make_shared<AttackerTacticConfig>();
     attacker_tactic_config->getMutableEnemyAboutToStealBallRadius()->setValue(0.25);
     auto tactic = std::make_shared<AttackerTactic>(attacker_tactic_config);
@@ -125,14 +125,14 @@ TEST_P(DribbleToOpenSpaceAndShootTest, attacker_test_dribble_and_shoot)
                           MotionConstraint::FRIENDLY_DEFENSE_AREA});
 
     std::vector<ValidationFunction> terminating_validation_functions = {
-            [tactic, expected_kick_direction](std::shared_ptr<World> world_ptr,
-                                              ValidationCoroutine::push_type& yield) {
-                while (!tactic->done())
-                {
-                    yield("Tactic not done");
-                }
-                ballKicked(expected_kick_direction, world_ptr, yield);
-            }};
+        [tactic, expected_kick_direction](std::shared_ptr<World> world_ptr,
+                                          ValidationCoroutine::push_type& yield) {
+            while (!tactic->done())
+            {
+                yield("Tactic not done");
+            }
+            ballKicked(expected_kick_direction, world_ptr, yield);
+        }};
     std::vector<ValidationFunction> non_terminating_validation_functions = {};
 
     runTest(field, ball_state, friendly_robots, enemy_robots,
@@ -141,35 +141,37 @@ TEST_P(DribbleToOpenSpaceAndShootTest, attacker_test_dribble_and_shoot)
 }
 
 INSTANTIATE_TEST_CASE_P(
-        DribbleAndShootEnvironment, DribbleToOpenSpaceAndShootTest,
-        ::testing::Values(
-                // enemy goal blocked by enemy robots with enemy threat right
-                std::make_tuple(BallState(Point(2, 1), Vector()), Point(1, 1),
-                                TestUtil::createStationaryRobotStatesWithId(
-                                        {Point(2.4, 1), Point(3, 0.4), Point(3, 0.8), Point(3.1, 0.6),
-                                         Point(3.1, 1), Point(4.2, 1.2)}),
-                                Angle::fromDegrees(210)),
-                // enemy goal blocked by enemy robots with enemy threat left
-                std::make_tuple(BallState(Point(2, 1), Vector()), Point(1, 1),
-                                TestUtil::createStationaryRobotStatesWithId(
-                                        {Point(1.6, 1), Point(3, 0.4), Point(3, 0.8), Point(3.1, 0.6),
-                                         Point(3.1, 1), Point(4.2, 1.2)}),
-                                Angle::fromDegrees(210)),
-//                // small opening in enemy formation
-//                std::make_tuple(BallState(Point(2, 1), Vector()), Point(1, 1),
-//                                TestUtil::createStationaryRobotStatesWithId(
-//                                        {Point(1, 0), Point(3, 0.2), Point(3, 0.8), Point(3.1, 0),
-//                                         Point(3.1, 1), Point(4.2, 1.2)}),
-//                                Angle::fromDegrees(-30)),
-//                // extreme angle shot
-//                std::make_tuple(BallState(Point(4, -2), Vector()), Point(1, 1),
-//                                TestUtil::createStationaryRobotStatesWithId(
-//                                        {Point(1, 0), Point(3, 1.2), Point(3, 0.8), Point(3.1, 0.6),
-//                                         Point(3.1, 1), Point(4.2, 0.5)}),
-//                                Angle::fromDegrees(80)),
-                // enemy trying to steal
-                std::make_tuple(BallState(Point(2.5, -1), Vector()), Point(1, 1),
-                                TestUtil::createStationaryRobotStatesWithId(
-                                        {Point(2.5, -1.4), Point(3, 0.4), Point(3, 0.8),
-                                         Point(3.1, 0.6), Point(3.1, 1), Point(4.2, 1.2)}),
-                                Angle::fromDegrees(30))));
+    DribbleAndShootEnvironment, DribbleToOpenSpaceAndShootTest,
+    ::testing::Values(
+        // enemy goal blocked by enemy robots with enemy threat right
+        std::make_tuple(BallState(Point(2, 1), Vector()), Point(1, 1),
+                        TestUtil::createStationaryRobotStatesWithId(
+                            {Point(2.4, 1), Point(3, 0.4), Point(3, 0.8), Point(3.1, 0.6),
+                             Point(3.1, 1), Point(4.2, 1.2)}),
+                        Angle::fromDegrees(210)),
+        // enemy goal blocked by enemy robots with enemy threat left
+        std::make_tuple(BallState(Point(2, 1), Vector()), Point(1, 1),
+                        TestUtil::createStationaryRobotStatesWithId(
+                            {Point(1.6, 1), Point(3, 0.4), Point(3, 0.8), Point(3.1, 0.6),
+                             Point(3.1, 1), Point(4.2, 1.2)}),
+                        Angle::fromDegrees(210)),
+        //                // small opening in enemy formation
+        //                std::make_tuple(BallState(Point(2, 1), Vector()), Point(1, 1),
+        //                                TestUtil::createStationaryRobotStatesWithId(
+        //                                        {Point(1, 0), Point(3, 0.2), Point(3,
+        //                                        0.8), Point(3.1, 0),
+        //                                         Point(3.1, 1), Point(4.2, 1.2)}),
+        //                                Angle::fromDegrees(-30)),
+        //                // extreme angle shot
+        //                std::make_tuple(BallState(Point(4, -2), Vector()), Point(1, 1),
+        //                                TestUtil::createStationaryRobotStatesWithId(
+        //                                        {Point(1, 0), Point(3, 1.2), Point(3,
+        //                                        0.8), Point(3.1, 0.6),
+        //                                         Point(3.1, 1), Point(4.2, 0.5)}),
+        //                                Angle::fromDegrees(80)),
+        // enemy trying to steal
+        std::make_tuple(BallState(Point(2.5, -1), Vector()), Point(1, 1),
+                        TestUtil::createStationaryRobotStatesWithId(
+                            {Point(2.5, -1.4), Point(3, 0.4), Point(3, 0.8),
+                             Point(3.1, 0.6), Point(3.1, 1), Point(4.2, 1.2)}),
+                        Angle::fromDegrees(30))));

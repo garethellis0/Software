@@ -55,7 +55,8 @@ TEST_P(SimulatedAttackerTacticPassingTest, attacker_test_passing)
             {
                 yield("Attacker tactic kicked ball but is not done");
             }
-            while(true) {
+            while (true)
+            {
                 yield("");
             }
         }};
@@ -136,26 +137,26 @@ INSTANTIATE_TEST_CASE_P(
                         BallState(Point(0.0, 0.0), Vector(1, 0)))));
 
 // TODO: put this in another file
-class DebuggingJamIssueRenameMe
-        : public SimulatedTacticTestFixture
+class DebuggingJamIssueRenameMe : public SimulatedTacticTestFixture
 {
-protected:
+   protected:
     Field field = Field::createSSLDivisionBField();
 };
 
 TEST_F(DebuggingJamIssueRenameMe, rename_me)
 {
     enableVisualizer();
-    Pass pass(Point(0,0), Point(-3,3), 5);
+    Pass pass(Point(0, 0), Point(-3, 3), 5);
     RobotStateWithId robot_state{
-            1, RobotState(Point(0.15, 0), Vector(0, 0),
-                          Angle::fromDegrees(180), Angle::fromDegrees(0))};
+        1, RobotState(Point(0.15, 0), Vector(0, 0), Angle::fromDegrees(180),
+                      Angle::fromDegrees(0))};
     BallState ball_state(Point(0.0, 0.0), Vector(0, 0));
 
     auto friendly_robots = TestUtil::createStationaryRobotStatesWithId({});
     friendly_robots.emplace_back(robot_state);
 
-    auto enemy_robots = TestUtil::createStationaryRobotStatesWithId({Point(-0.15,0.05), Point(0, -0.3)});
+    auto enemy_robots =
+        TestUtil::createStationaryRobotStatesWithId({Point(-0.15, 0.05), Point(0, -0.3)});
 
     auto attacker_tactic_config = std::make_shared<AttackerTacticConfig>();
     // force passing for this test by setting min acceptable shot angle very high
@@ -166,28 +167,30 @@ TEST_F(DebuggingJamIssueRenameMe, rename_me)
     setRobotId(1);
 
     std::vector<ValidationFunction> terminating_validation_functions = {
-            [pass, tactic](std::shared_ptr<World> world_ptr,
-                           ValidationCoroutine::push_type& yield) {
-                // We check if the robot reaches the desired orientation, at the
-                // desired position before checking if the ball has been kicked.
-                //
-                // The tactic should "done" after kicking the ball.
-                robotAtOrientation(1, world_ptr, pass.passerOrientation(),
-                                   Angle::fromDegrees(5), yield);
-                robotAtPosition(1, world_ptr, pass.passerPoint(), 0.1, yield);
-                ballKicked(pass.passerOrientation(), world_ptr, yield);
+        [pass, tactic](std::shared_ptr<World> world_ptr,
+                       ValidationCoroutine::push_type& yield) {
+            // We check if the robot reaches the desired orientation, at the
+            // desired position before checking if the ball has been kicked.
+            //
+            // The tactic should "done" after kicking the ball.
+            robotAtOrientation(1, world_ptr, pass.passerOrientation(),
+                               Angle::fromDegrees(5), yield);
+            robotAtPosition(1, world_ptr, pass.passerPoint(), 0.1, yield);
+            ballKicked(pass.passerOrientation(), world_ptr, yield);
 
-                while (!tactic->done())
-                {
-                    yield("Attacker tactic kicked ball but is not done");
-                }
-                while(true) {
-                    yield("");
-                }
-            }};
+            while (!tactic->done())
+            {
+                yield("Attacker tactic kicked ball but is not done");
+            }
+            while (true)
+            {
+                yield("");
+            }
+        }};
 
     std::vector<ValidationFunction> non_terminating_validation_functions = {};
 
-    runTest(field, ball_state, friendly_robots, enemy_robots, terminating_validation_functions,
-            non_terminating_validation_functions, Duration::fromSeconds(3));
+    runTest(field, ball_state, friendly_robots, enemy_robots,
+            terminating_validation_functions, non_terminating_validation_functions,
+            Duration::fromSeconds(3));
 }

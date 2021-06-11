@@ -1,6 +1,29 @@
 package(default_visibility = ["//software/ai/navigator:__subpackages__"])
 
 cc_library(
+    name = "circle_with_slice_removed",
+    srcs = ["circle_with_slice_removed.cpp"],
+    hdrs = ["circle_with_slice_removed.h"],
+    deps = [
+        ":obstacle",
+        "//software/geom:circle",
+        "//software/geom:point",
+        "//software/geom:triangle",
+    ],
+)
+
+cc_test(
+    name = "circle_with_slice_removed_test",
+    srcs = ["circle_with_slice_removed_test.cpp"],
+    deps = [
+        ":circle_with_slice_removed",
+        "//shared/test_util:tbots_gtest_main",
+        "//software/test_util",
+        "//software/world",
+    ],
+)
+
+cc_library(
     name = "obstacle",
     hdrs = [
         "obstacle.h",

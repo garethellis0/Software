@@ -63,7 +63,7 @@ struct DribbleFSM
     static constexpr Angle MAX_BALL_ROBOT_TO_ROBOT_VEL_ANGLE_FOR_FAST_MOVE =
         Angle::fromDegrees(20);
     // The final speed on move intents created to get possession of the ball
-    static constexpr double GET_POSSESSION_FINAL_SPEED = 0.5; // m/s
+    static constexpr double GET_POSSESSION_FINAL_SPEED = 0.5;  // m/s
 
     /**
      * Converts the ball position to the robot's position given the direction that the
@@ -78,9 +78,8 @@ struct DribbleFSM
     static Point robotPositionToFaceBall(const Point &ball_position,
                                          const Angle &face_ball_angle)
     {
-        return ball_position -
-               Vector::createFromAngle(face_ball_angle)
-                   .normalize(DIST_TO_FRONT_OF_ROBOT_METERS);
+        return ball_position - Vector::createFromAngle(face_ball_angle)
+                                   .normalize(DIST_TO_FRONT_OF_ROBOT_METERS);
     }
 
     /**
@@ -268,9 +267,9 @@ struct DribbleFSM
                 findInterceptionPoint(event.common.robot, event.common.world.ball(),
                                       event.common.world.field());
             event.common.set_intent(std::make_unique<MoveIntent>(
-                event.common.robot.id(), intercept_position, face_ball_orientation, GET_POSSESSION_FINAL_SPEED,
-                DribblerMode::MAX_FORCE, BallCollisionType::ALLOW,
-                AutoChipOrKick{AutoChipOrKickMode::OFF, 0},
+                event.common.robot.id(), intercept_position, face_ball_orientation,
+                GET_POSSESSION_FINAL_SPEED, DribblerMode::MAX_FORCE,
+                BallCollisionType::ALLOW, AutoChipOrKick{AutoChipOrKickMode::OFF, 0},
                 MaxAllowedSpeedMode::PHYSICAL_LIMIT, 0.0));
         };
 
@@ -312,7 +311,7 @@ struct DribbleFSM
             {
                 // give the ball a little kick
                 auto_chip_or_kick =
-                        AutoChipOrKick{AutoChipOrKickMode::AUTOKICK, DRIBBLE_KICK_SPEED};
+                    AutoChipOrKick{AutoChipOrKickMode::AUTOKICK, DRIBBLE_KICK_SPEED};
                 // Move a little slower to make capture easier
                 max_allowed_speed_mode = MaxAllowedSpeedMode::DRIBBLE_SLOW;
             }

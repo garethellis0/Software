@@ -157,7 +157,7 @@ ObstaclePtr RobotNavigationObstacleFactory::createFromBallPosition(
 }
 
 ObstaclePtr RobotNavigationObstacleFactory::createFromRobotPosition(
-    const Point &robot_position) const
+    const Point &robot_position, const Point &ball_position) const
 {
     return createFromShape(Circle(robot_position, ROBOT_MAX_RADIUS_METERS));
 }

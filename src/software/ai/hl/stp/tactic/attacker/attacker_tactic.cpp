@@ -4,8 +4,8 @@
 #include "software/ai/evaluation/calc_best_shot.h"
 #include "software/ai/hl/stp/action/stop_action.h"
 #include "software/logger/logger.h"
-#include "software/world/ball.h"
 #include "software/math/math_functions.h"
+#include "software/world/ball.h"
 
 AttackerTactic::AttackerTactic(
     std::shared_ptr<const AttackerTacticConfig> attacker_tactic_config)
@@ -70,12 +70,14 @@ double AttackerTactic::calculateRobotCost(const Robot& robot, const World& world
         // field have a cost less than 1
         cost = (robot.position() -
                 DribbleFSM::findInterceptionPoint(robot, world.ball(), world.field()))
-                       .length() /
+                   .length() /
                world.field().totalXLength();
         // If there is already a robot assigned, we strongly prefer to keep that robot
         // if it's roughly near the ball
-        if (robot_ && robot_->id() == robot.id()) {
-            const double dist_to_ball = (robot.position() - world.ball().position()).length();
+        if (robot_ && robot_->id() == robot.id())
+        {
+            const double dist_to_ball =
+                (robot.position() - world.ball().position()).length();
             // Cost is 0 at the ball, stays at zero near the ball, falls
             // away quickly far away from ball
             const double dist_to_ball_cost = sigmoid(dist_to_ball, 1.25, 0.5);

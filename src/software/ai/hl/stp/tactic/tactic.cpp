@@ -128,7 +128,7 @@ std::unique_ptr<Intent> Tactic::get(const Robot &robot, const World &world)
     else
     {
         LOG(DEBUG) << "No intent set for this tactic: " << objectTypeName(*this)
-                     << std::endl;
+                   << std::endl;
         return std::make_unique<StopIntent>(robot.id(), false);
     }
 }

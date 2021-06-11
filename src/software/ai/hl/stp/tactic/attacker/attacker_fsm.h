@@ -1,13 +1,13 @@
 #pragma once
 
 #include "shared/parameter/cpp_dynamic_parameters.h"
+#include "software/ai/evaluation/calc_best_shot.h"
 #include "software/ai/evaluation/shot.h"
 #include "software/ai/hl/stp/tactic/chip/chip_fsm.h"
 #include "software/ai/hl/stp/tactic/pivot_kick/pivot_kick_fsm.h"
 #include "software/ai/hl/stp/tactic/tactic.h"
 #include "software/ai/intent/move_intent.h"
 #include "software/ai/passing/pass.h"
-#include "software/ai/evaluation/calc_best_shot.h"
 
 struct AttackerFSM
 {
@@ -93,21 +93,25 @@ struct AttackerFSM
             std::vector<std::pair<Point, Shot>> shots;
             static constexpr double X_RESOLUTION = 40;
             static constexpr double Y_RESOLUTION = 40;
-            for (int i = 0; i < X_RESOLUTION; i ++) {
-                for (int j = 0; j < Y_RESOLUTION; j ++) {
+            for (int i = 0; i < X_RESOLUTION; i++)
+            {
+                for (int j = 0; j < Y_RESOLUTION; j++)
+                {
                     static constexpr double MAX_X_OFFSET = 2;
                     static constexpr double MAX_Y_OFFSET = 2.5;
-                    const double x = i * (2.0 * MAX_X_OFFSET) / X_RESOLUTION - MAX_X_OFFSET;
-                    const double y = j * (2.0 * MAX_Y_OFFSET) / Y_RESOLUTION - MAX_Y_OFFSET;
-                    const Point shot_point(x,y);
-                    if (contains(event.common.world.field().enemyHalf(), shot_point)) {
-                        if(auto shot = calcBestShotOnGoal(
-                                event.common.world.field(),
-                                event.common.world.friendlyTeam(),
-                                event.common.world.enemyTeam(),
-                                shot_point,
-                                TeamType::ENEMY
-                        )) {
+                    const double x =
+                        i * (2.0 * MAX_X_OFFSET) / X_RESOLUTION - MAX_X_OFFSET;
+                    const double y =
+                        j * (2.0 * MAX_Y_OFFSET) / Y_RESOLUTION - MAX_Y_OFFSET;
+                    const Point shot_point(x, y);
+                    if (contains(event.common.world.field().enemyHalf(), shot_point))
+                    {
+                        if (auto shot =
+                                calcBestShotOnGoal(event.common.world.field(),
+                                                   event.common.world.friendlyTeam(),
+                                                   event.common.world.enemyTeam(),
+                                                   shot_point, TeamType::ENEMY))
+                        {
                             shots.emplace_back(std::make_pair(shot_point, shot.value()));
                         }
                     }
@@ -115,8 +119,11 @@ struct AttackerFSM
             }
             // Take the best shot
             std::optional<std::pair<Point, Shot>> best_shot;
-            for(auto& shot : shots) {
-                if(!best_shot ||(shot.second.getOpenAngle() > best_shot->second.getOpenAngle())) {
+            for (auto& shot : shots)
+            {
+                if (!best_shot ||
+                    (shot.second.getOpenAngle() > best_shot->second.getOpenAngle()))
+                {
                     best_shot = shot;
                 }
             }
@@ -125,11 +132,14 @@ struct AttackerFSM
                 .dribble_destination       = std::nullopt,
                 .final_dribble_orientation = std::nullopt,
                 .allow_excessive_dribbling = false};
-            if(best_shot) {
+            if (best_shot)
+            {
                 control_params = {
-                        .dribble_destination       = best_shot->first,
-                        .final_dribble_orientation = (best_shot->second.getPointToShootAt() - best_shot->first).orientation(),
-                        .allow_excessive_dribbling = false};
+                    .dribble_destination = best_shot->first,
+                    .final_dribble_orientation =
+                        (best_shot->second.getPointToShootAt() - best_shot->first)
+                            .orientation(),
+                    .allow_excessive_dribbling = false};
             }
             processEvent(DribbleFSM::Update(control_params, event.common));
         };
@@ -144,17 +154,26 @@ struct AttackerFSM
          */
         const auto should_kick = [](auto event) {
             return event.control_params.pass || event.control_params.shot;
-            Point robot_left_side = event.common.robot.position() + Vector::createFromAngle(event.common.robot.orientation()).perpendicular().normalize(ROBOT_MAX_RADIUS_METERS);
-            Point robot_right_side = event.common.robot.position() + Vector::createFromAngle(event.common.robot.orientation()).perpendicular().normalize(ROBOT_MAX_RADIUS_METERS);
-            Vector stealing_zone = Vector::createFromAngle(event.common.robot.orientation()).normalize(event.control_params.attacker_tactic_config->getEnemyAboutToStealBallDistance()->value());
+            Point robot_left_side =
+                event.common.robot.position() +
+                Vector::createFromAngle(event.common.robot.orientation())
+                    .perpendicular()
+                    .normalize(ROBOT_MAX_RADIUS_METERS);
+            Point robot_right_side =
+                event.common.robot.position() +
+                Vector::createFromAngle(event.common.robot.orientation())
+                    .perpendicular()
+                    .normalize(ROBOT_MAX_RADIUS_METERS);
+            Vector stealing_zone =
+                Vector::createFromAngle(event.common.robot.orientation())
+                    .normalize(event.control_params.attacker_tactic_config
+                                   ->getEnemyAboutToStealBallDistance()
+                                   ->value());
             // check for enemy threat
-            Polygon about_to_steal_danger_zone({
-                robot_left_side,
-                robot_left_side + stealing_zone,
-                robot_right_side + stealing_zone,
-                robot_right_side
-            });
-            for (const auto &enemy : event.common.world.enemyTeam().getAllRobots())
+            Polygon about_to_steal_danger_zone(
+                {robot_left_side, robot_left_side + stealing_zone,
+                 robot_right_side + stealing_zone, robot_right_side});
+            for (const auto& enemy : event.common.world.enemyTeam().getAllRobots())
             {
                 if (contains(about_to_steal_danger_zone, enemy.position()))
                 {
