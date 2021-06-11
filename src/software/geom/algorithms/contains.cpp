@@ -60,6 +60,12 @@ bool contains(const Polygon& container, const Point& contained)
     return point_is_contained;
 }
 
+bool contains(const Triangle& container, const Segment& contained)
+{
+    return ::contains(container, contained.getStart()) &&
+           ::contains(container, contained.getEnd());
+}
+
 bool contains(const Ray& container, const Point& contained)
 {
     Point point_in_ray_direction = container.getStart() + container.toUnitVector();
