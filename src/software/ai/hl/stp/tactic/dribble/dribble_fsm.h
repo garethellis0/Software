@@ -318,9 +318,9 @@ struct DribbleFSM
 
 
             event.common.set_intent(std::make_unique<MoveIntent>(
-                event.common.robot.id(), target_destination, target_orientation, 0,
+                event.common.robot.id(), target_destination, target_orientation, 0.0,
                 DribblerMode::MAX_FORCE, BallCollisionType::ALLOW, auto_chip_or_kick,
-                max_allowed_speed_mode, 0.0));
+                max_allowed_speed_mode, 0.0/*(target_orientation - event.common.robot.orientation()).toRadians() * 100 / M_PI + 20*/));
         };
 
         /**

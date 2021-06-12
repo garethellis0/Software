@@ -164,15 +164,15 @@ PassWithRating ShootOrPassPlay::attemptToShootWhileLookingForAPass(
 
     // Wait for a good pass by starting out only looking for "perfect" passes (with a
     // score of 1) and decreasing this threshold over time
-    double min_pass_score_threshold        = 1.0;
+//    double min_pass_score_threshold        = 1.0;
     Timestamp pass_optimization_start_time = world.getMostRecentTimestamp();
     // This boolean indicates if we're ready to perform a pass
-    bool ready_to_pass = false;
+//    bool ready_to_pass = false;
 
-    double abs_min_pass_score =
-        play_config->getShootOrPassPlayConfig()->getAbsMinPassScore()->value();
-    double pass_score_ramp_down_duration =
-        play_config->getShootOrPassPlayConfig()->getPassScoreRampDownDuration()->value();
+//    double abs_min_pass_score =
+//        play_config->getShootOrPassPlayConfig()->getAbsMinPassScore()->value();
+//    double pass_score_ramp_down_duration =
+//        play_config->getShootOrPassPlayConfig()->getPassScoreRampDownDuration()->value();
     do
     {
         LOG(DEBUG) << "Best pass so far is: " << best_pass_and_score_so_far.pass;
@@ -202,18 +202,19 @@ PassWithRating ShootOrPassPlay::attemptToShootWhileLookingForAPass(
 
         // We're ready to pass if we have a robot assigned in the PassGenerator as the
         // passer and the PassGenerator has found a pass above our current threshold
-        ready_to_pass = best_pass_and_score_so_far.rating > min_pass_score_threshold;
+//        ready_to_pass = best_pass_and_score_so_far.rating > min_pass_score_threshold;
+//        ready_to_pass = best_pass_and_score_so_far.rating > 0.01;
 
         // If we've assigned a robot as the passer in the PassGenerator, we lower
         // our threshold based on how long the PassGenerator as been running since
         // we set it
         Duration time_since_commit_stage_start =
             world.getMostRecentTimestamp() - pass_optimization_start_time;
-        min_pass_score_threshold =
-            1 - std::min(time_since_commit_stage_start.toSeconds() /
-                             pass_score_ramp_down_duration,
-                         1.0 - abs_min_pass_score);
-    } while (!ready_to_pass);
+//        min_pass_score_threshold =
+//            1 - std::min(time_since_commit_stage_start.toSeconds() /
+//                             pass_score_ramp_down_duration,
+//                         1.0 - abs_min_pass_score);
+    } while (false/* !ready_to_pass*/);
     return best_pass_and_score_so_far;
 }
 
