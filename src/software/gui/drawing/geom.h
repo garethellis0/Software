@@ -53,3 +53,4 @@ void drawCircle(QGraphicsScene* scene, const Circle& circle, const QPen& pen,
  * @param pen The QPen to draw the Segment
  */
 void drawSegment(QGraphicsScene* scene, const Segment& segment, const QPen& pen);
+

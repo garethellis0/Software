@@ -10,6 +10,7 @@
 #include "software/geom/rectangle.h"
 #include "software/test_util/test_util.h"
 #include "software/world/robot.h"
+#include "software/ai/navigator/obstacle/circle_with_slice_removed.h"
 
 class RobotNavigationObstacleFactoryTest : public testing::Test
 {
@@ -27,6 +28,9 @@ class RobotNavigationObstacleFactoryTest : public testing::Test
     Timestamp current_time;
     std::shared_ptr<RobotNavigationObstacleConfig> robot_navigation_obstacle_config;
     RobotNavigationObstacleFactory robot_navigation_obstacle_factory;
+
+    // A ball far away from the origin
+    const Ball far_away_ball = Ball(Point(99,99), Vector(0,0), Timestamp::fromSeconds(0));
 };
 
 class RobotNavigationObstacleFactoryMotionConstraintTest : public testing::Test
@@ -119,13 +123,13 @@ TEST_F(RobotNavigationObstacleFactoryTest, create_ball_obstacle)
     }
 }
 
-TEST_F(RobotNavigationObstacleFactoryTest, create_robot_obstacle)
+TEST_F(RobotNavigationObstacleFactoryTest, create_robot_obstacle_ball_not_close)
 {
     Point origin(2.5, 4);
     Rectangle rectangle(Point(1, 3), Point(5, 8));
     Circle expected(origin, 0.207);
     ObstaclePtr obstacle =
-        robot_navigation_obstacle_factory.createFromRobotPosition(origin);
+        robot_navigation_obstacle_factory.createFromRobotPosition(origin, Point(99,99));
 
     try
     {
@@ -138,6 +142,29 @@ TEST_F(RobotNavigationObstacleFactoryTest, create_robot_obstacle)
     }
 }
 
+TEST_F(RobotNavigationObstacleFactoryTest, create_robot_obstacle_ball_close)
+{
+    Point origin(2.5, 4);
+    Rectangle rectangle(Point(1, 3), Point(5, 8));
+    Point ball_position(2.6, 3.8);
+    const Vector ball_to_origin = origin - ball_position;
+    const Point expected_slice_tip = ball_position + ball_to_origin.normalize(BALL_MAX_RADIUS_METERS);
+    CircleWithSliceRemoved expected(origin, 0.207, expected_slice_tip, Angle::half());
+    ObstaclePtr obstacle =
+            robot_navigation_obstacle_factory.createFromRobotPosition(origin, ball_position);
+
+    try
+    {
+        auto circle_with_slice_removed = dynamic_cast<CircleWithSliceRemoved&>(*obstacle);
+        EXPECT_EQ(expected, circle_with_slice_removed);
+    }
+    catch (std::bad_cast&)
+    {
+        ADD_FAILURE()
+                << "CircleWithSliceRemoved was not created for a robot with ball near it";
+    }
+}
+
 TEST_F(RobotNavigationObstacleFactoryTest, stationary_robot_obstacle)
 {
     Point origin(2.3, 3);
@@ -146,7 +173,7 @@ TEST_F(RobotNavigationObstacleFactoryTest, stationary_robot_obstacle)
     AngularVelocity angular_velocity(AngularVelocity::fromRadians(-0.6));
     Circle expected(origin, 0.207);
     Robot robot = Robot(3, origin, velocity, orientation, angular_velocity, current_time);
-    ObstaclePtr obstacle = robot_navigation_obstacle_factory.createFromRobot(robot);
+    ObstaclePtr obstacle = robot_navigation_obstacle_factory.createFromRobot(robot, far_away_ball);
 
     try
     {
@@ -168,7 +195,7 @@ TEST_F(RobotNavigationObstacleFactoryTest, slow_moving_robot_obstacle)
     AngularVelocity angular_velocity(AngularVelocity::fromRadians(-0.6));
     Circle expected(origin, 0.207);
     Robot robot = Robot(3, origin, velocity, orientation, angular_velocity, current_time);
-    ObstaclePtr obstacle = robot_navigation_obstacle_factory.createFromRobot(robot);
+    ObstaclePtr obstacle = robot_navigation_obstacle_factory.createFromRobot(robot, far_away_ball);
 
     try
     {
@@ -191,7 +218,7 @@ TEST_F(RobotNavigationObstacleFactoryTest, fast_moving_robot_obstacle)
     Polygon expected({Point(-2.161, 5.231), Point(-2.331, 5.062), Point(-2.269, 4.831),
                       Point(-2.038, 4.769), Point(-1.671, 4.867), Point(-1.795, 5.329)});
     Robot robot = Robot(3, origin, velocity, orientation, angular_velocity, current_time);
-    ObstaclePtr obstacle = robot_navigation_obstacle_factory.createFromRobot(robot);
+    ObstaclePtr obstacle = robot_navigation_obstacle_factory.createFromRobot(robot, far_away_ball);
 
     try
     {
@@ -214,7 +241,7 @@ TEST_F(RobotNavigationObstacleFactoryTest, another_fast_moving_robot_obstacle)
     Polygon expected({Point(0.966, -0.247), Point(1.124, -0.427), Point(1.358, -0.379),
                       Point(1.434, -0.153), Point(1.357, 0.230), Point(0.889, 0.135)});
     Robot robot = Robot(4, origin, velocity, orientation, angular_velocity, current_time);
-    ObstaclePtr obstacle = robot_navigation_obstacle_factory.createFromRobot(robot);
+    ObstaclePtr obstacle = robot_navigation_obstacle_factory.createFromRobot(robot, far_away_ball);
 
     try
     {
@@ -225,6 +252,31 @@ TEST_F(RobotNavigationObstacleFactoryTest, another_fast_moving_robot_obstacle)
     catch (std::bad_cast&)
     {
         ADD_FAILURE() << "Polygon Obstacle was not created for a fast moving robot";
+    }
+}
+
+TEST_F(RobotNavigationObstacleFactoryTest, slow_robot_obstacle_with_ball_close_by)
+{
+    Point origin(-2.1, 5);
+    Vector velocity(0.0007, 0.004);
+    Angle orientation(Angle::fromRadians(2.2));
+    AngularVelocity angular_velocity(AngularVelocity::fromRadians(-0.6));
+    const auto ball = Ball(Point (-2.3, 4.9),Vector(0,0),Timestamp::fromSeconds(0));
+    const Vector ball_to_origin = origin - ball.position();
+    const Point expected_slice_tip = ball.position() + ball_to_origin.normalize(BALL_MAX_RADIUS_METERS);
+    CircleWithSliceRemoved expected(origin, 0.207, expected_slice_tip, Angle::half());
+    Robot robot = Robot(3, origin, velocity, orientation, angular_velocity, current_time);
+    ObstaclePtr obstacle = robot_navigation_obstacle_factory.createFromRobot(robot, ball);
+
+    try
+    {
+        auto circle_with_slice_removed = dynamic_cast<CircleWithSliceRemoved&>(*obstacle);
+        EXPECT_EQ(expected, circle_with_slice_removed);
+    }
+    catch (std::bad_cast&)
+    {
+        ADD_FAILURE()
+                << "CircleWithSliceRemoved was not created for a slow moving robot with ball near it";
     }
 }
 

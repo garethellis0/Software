@@ -4,6 +4,8 @@ cc_library(
     name = "circle_with_slice_removed",
     srcs = ["circle_with_slice_removed.cpp"],
     hdrs = ["circle_with_slice_removed.h"],
+    # We expose this so that it can visualized
+    visibility = ["//software/gui/drawing:__subpackages__"],
     deps = [
         ":obstacle",
         "//software/geom:circle",
@@ -29,6 +31,7 @@ cc_library(
         "obstacle.h",
         "obstacle.tpp",
     ],
+    # TODO: this comment is no longer true
     # We expose obstacle so that it can visualized
     visibility = ["//visibility:public"],
     deps = [
@@ -45,6 +48,7 @@ cc_library(
     srcs = ["robot_navigation_obstacle_factory.cpp"],
     hdrs = ["robot_navigation_obstacle_factory.h"],
     deps = [
+        ":circle_with_slice_removed",
         ":obstacle",
         "//shared/parameter:cpp_configs",
         "//software/ai/motion_constraint",

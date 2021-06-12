@@ -88,6 +88,7 @@ class GeomObstacle : public Obstacle
 };
 
 
+// TODO: saying this pointer supports inheritance is a little redundant
 /**
  * We use a pointer to Obstacle to support inheritance
  * Note: this is a convenience typedef

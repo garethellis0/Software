@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include "software/ai/navigator/obstacle/obstacle.h"
 #include "software/geom/point.h"
 #include "software/geom/triangle.h"
@@ -13,6 +15,7 @@
  * (https://en.wikipedia.org/wiki/Circular_segment). This is important to understand,
  * as the code and tests use this terminology.
  */
+ // TODO: should this class name have the `Obstacle` suffix
 class CircleWithSliceRemoved : public Obstacle
 {
    public:
@@ -34,18 +37,47 @@ class CircleWithSliceRemoved : public Obstacle
     CircleWithSliceRemoved(Point center, double radius, Point slice_tip,
                            Angle slice_angle);
 
+    // TODO: jdoc
+    // TODO: test this
+    CircleWithSliceRemoved(Circle circle, Point slice_tip,
+                           Angle slice_angle);
+
     bool contains(const Point& p) const override;
     double distance(const Point& p) const override;
     bool intersects(const Segment& segment) const override;
     std::string toString(void) const override;
     void accept(ObstacleVisitor& visitor) const override;
 
+    friend bool operator==(const CircleWithSliceRemoved& lhs, const CircleWithSliceRemoved& rhs);
+
+    // TODO: jdoc
+    // TODO: test
+    Point origin() const;
+
+    // TODO: jdoc
+    // TODO: test
+    double radius() const;
+
+    // TODO: jdoc
+    // TODO: test
+    Angle orientation() const;
+
+    // TODO: jdoc
+    // TODO: test
+    Point sliceTip() const;
+
+    // TODO: jdoc
+    // TODO: test
+    // TODO: need to provide some guarantees about ordering for these points
+    //       (probably better to split into two funcions instead)
+    std::pair<Point,Point> sliceCircleIntersectionPoints() const;
+
    private:
     /**
      * Get the smallest possible triangle that fully contains the slice
      * @return The smallest possible triangle that fully contains the slice
      */
-    Triangle triangleContainingSlice() const;
+    std::optional<Triangle> triangleContainingSlice() const;
 
     // TODO: jdoc
     Angle sliceDirection() const;
@@ -64,3 +96,8 @@ class CircleWithSliceRemoved : public Obstacle
     Point slice_tip;
     Angle slice_angle;
 };
+
+// TODO: test thi
+
+bool operator==(const CircleWithSliceRemoved& lhs, const CircleWithSliceRemoved& rhs)
+;

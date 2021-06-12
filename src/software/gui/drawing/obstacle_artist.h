@@ -3,6 +3,7 @@
 #include <QtWidgets/QGraphicsScene>
 
 #include "software/ai/navigator/obstacle/obstacle.h"
+#include "software/ai/navigator/obstacle/circle_with_slice_removed.h"
 #include "software/ai/navigator/obstacle/obstacle_visitor.h"
 #include "software/gui/drawing/colors.h"
 #include "software/gui/drawing/draw_functions.h"
@@ -37,6 +38,7 @@ class ObstacleArtist : public ObstacleVisitor
      */
     void visit(const GeomObstacle<Circle>& geom_obstacle) override;
     void visit(const GeomObstacle<Polygon>& geom_obstacle) override;
+    void visit(const CircleWithSliceRemoved& circle_with_slice_removed) override;
 
    private:
     QGraphicsScene* scene_;

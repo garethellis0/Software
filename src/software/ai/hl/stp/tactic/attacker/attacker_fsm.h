@@ -132,15 +132,15 @@ struct AttackerFSM
                 .dribble_destination       = std::nullopt,
                 .final_dribble_orientation = std::nullopt,
                 .allow_excessive_dribbling = false};
-            if (best_shot)
-            {
-                control_params = {
-                    .dribble_destination = best_shot->first,
-                    .final_dribble_orientation =
-                        (best_shot->second.getPointToShootAt() - best_shot->first)
-                            .orientation(),
-                    .allow_excessive_dribbling = false};
-            }
+//            if (best_shot)
+//            {
+//                control_params = {
+//                    .dribble_destination = best_shot->first,
+//                    .final_dribble_orientation =
+//                        (best_shot->second.getPointToShootAt() - best_shot->first)
+//                            .orientation(),
+//                    .allow_excessive_dribbling = false};
+//            }
             processEvent(DribbleFSM::Update(control_params, event.common));
         };
 

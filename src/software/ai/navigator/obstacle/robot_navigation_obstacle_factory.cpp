@@ -1,4 +1,5 @@
 #include "software/ai/navigator/obstacle/robot_navigation_obstacle_factory.h"
+#include "software/ai/navigator/obstacle/circle_with_slice_removed.h"
 
 RobotNavigationObstacleFactory::RobotNavigationObstacleFactory(
     std::shared_ptr<const RobotNavigationObstacleConfig> config)
@@ -22,7 +23,7 @@ std::vector<ObstaclePtr> RobotNavigationObstacleFactory::createFromMotionConstra
         case MotionConstraint::ENEMY_ROBOTS_COLLISION:
         {
             std::vector<ObstaclePtr> enemy_robot_obstacles =
-                createFromTeam(world.enemyTeam());
+                createFromTeam(world.enemyTeam(), world.ball());
             obstacles.insert(obstacles.end(), enemy_robot_obstacles.begin(),
                              enemy_robot_obstacles.end());
         }
@@ -80,7 +81,7 @@ std::vector<ObstaclePtr> RobotNavigationObstacleFactory::createFromMotionConstra
     return obstacles;
 }
 
-ObstaclePtr RobotNavigationObstacleFactory::createFromRobot(const Robot &robot) const
+ObstaclePtr RobotNavigationObstacleFactory::createFromRobot(const Robot &robot, const std::optional<Ball>& ball) const
 {
     // radius of a hexagonal approximation of a robot
     double robot_hexagon_radius =
@@ -135,17 +136,21 @@ ObstaclePtr RobotNavigationObstacleFactory::createFromRobot(const Robot &robot) 
     }
     else
     {
-        return createFromRobotPosition(robot.position());
+        if(ball) {
+            return createFromRobotPosition(robot.position(), ball->position());
+        } else {
+            return createFromRobotPosition(robot.position());
+        }
     }
 }
 
 std::vector<ObstaclePtr> RobotNavigationObstacleFactory::createFromTeam(
-    const Team &team) const
+    const Team &team, const Ball& ball) const
 {
     std::vector<ObstaclePtr> obstacles;
     for (const auto &robot : team.getAllRobots())
     {
-        obstacles.push_back(createFromRobot(robot));
+        obstacles.push_back(createFromRobot(robot, ball));
     }
     return obstacles;
 }
@@ -157,8 +162,23 @@ ObstaclePtr RobotNavigationObstacleFactory::createFromBallPosition(
 }
 
 ObstaclePtr RobotNavigationObstacleFactory::createFromRobotPosition(
-    const Point &robot_position) const
+    const Point &robot_position, const Point& ball_position) const
 {
+    auto circle_around_robot = createFromShape(Circle(robot_position, ROBOT_MAX_RADIUS_METERS));
+    const Vector ball_to_robot = robot_position - ball_position;
+    const Point slice_tip = ball_position + ball_to_robot.normalize(BALL_MAX_RADIUS_METERS);
+    if (circle_around_robot->contains(slice_tip)) {
+        // TODO: we should leverage existing functions that inflate here instead of
+        //       directly using the inflation factor
+        return std::make_shared<CircleWithSliceRemoved>(robot_position, ROBOT_MAX_RADIUS_METERS + robot_radius_expansion_amount, slice_tip, Angle::half());
+    }
+    return circle_around_robot;
+}
+
+ObstaclePtr RobotNavigationObstacleFactory::createFromRobotPosition(
+        const Point &robot_position) const
+{
+    // TODO: call this override from the other one?
     return createFromShape(Circle(robot_position, ROBOT_MAX_RADIUS_METERS));
 }
 

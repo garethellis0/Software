@@ -4,11 +4,13 @@
 #include "software/geom/circle.h"
 #include "software/geom/polygon.h"
 
+// TODO: make this comment more generic
 // We forward-declare GeomObstacle because if we include them we induce a
 // circular dependency between the Individual library for each obstacle and this
 // visitor.
 template <typename GEOM_TYPE>
 class GeomObstacle;
+class CircleWithSliceRemoved;
 
 /**
  * This class provides an interface for all Obstacle Visitors. The Visitor design pattern
@@ -30,4 +32,5 @@ class ObstacleVisitor
      */
     virtual void visit(const GeomObstacle<Circle> &geom_obstacle)  = 0;
     virtual void visit(const GeomObstacle<Polygon> &geom_obstacle) = 0;
+    virtual void visit(const CircleWithSliceRemoved &circle_with_slice_removed) = 0;
 };

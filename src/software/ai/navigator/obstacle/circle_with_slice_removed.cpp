@@ -7,7 +7,13 @@
 
 CircleWithSliceRemoved::CircleWithSliceRemoved(Point center, double radius,
                                                Point slice_tip, Angle slice_angle)
-    : circle(Circle(center, radius)), slice_tip(slice_tip), slice_angle(slice_angle)
+    : CircleWithSliceRemoved(Circle(center, radius), slice_tip, slice_angle)
+{
+}
+
+CircleWithSliceRemoved::CircleWithSliceRemoved(Circle circle, Point slice_tip,
+        Angle slice_angle)
+        : circle(circle), slice_tip(slice_tip), slice_angle(slice_angle)
 {
     if (!::contains(circle, slice_tip))
     {
@@ -33,7 +39,11 @@ CircleWithSliceRemoved::CircleWithSliceRemoved(Point center, double radius,
 bool CircleWithSliceRemoved::contains(const Point& p) const
 {
     bool within_circle         = ::contains(circle, p);
-    bool within_slice_triangle = ::contains(triangleContainingSlice(), p);
+    bool within_slice_triangle = false;
+    auto optional_triangle_containing_slice = triangleContainingSlice();
+    if(optional_triangle_containing_slice) {
+        within_slice_triangle = ::contains(optional_triangle_containing_slice.value(), p);
+    }
 
     return within_circle && !within_slice_triangle;
 }
@@ -47,9 +57,6 @@ double CircleWithSliceRemoved::distance(const Point& p) const
     if (pointInSliceFov(p))
     {
         // Construct segments for the "sides" of the slice
-        Ray cw_slice_segment_ray(slice_tip, sliceDirection() - slice_angle / 2.0);
-        Ray ccw_slice_segment_ray(slice_tip, sliceDirection() + slice_angle / 2.0);
-
         const double origin_to_slice_tip = (slice_tip - circle.origin()).length();
         const double theta = (Angle::half() - slice_angle / 2.0).toRadians();
         double segment_length =
@@ -80,7 +87,6 @@ bool CircleWithSliceRemoved::intersects(const Segment& segment) const
     // If the segment intersects the circle and does not lie entirely in the
     // slice, it's intersecting
     const bool intersects_with_circle        = ::intersects(circle, segment);
-    const Triangle slice_containing_triangle = triangleContainingSlice();
     const bool both_points_in_slice_fov =
         pointInSliceFov(segment.getStart()) && pointInSliceFov(segment.getEnd());
 
@@ -92,10 +98,45 @@ std::string CircleWithSliceRemoved::toString(void) const
 }
 void CircleWithSliceRemoved::accept(ObstacleVisitor& visitor) const
 {
-    // TODO
+    visitor.visit(*this);
 }
 
-Triangle CircleWithSliceRemoved::triangleContainingSlice() const
+Point CircleWithSliceRemoved::origin() const {
+    return circle.origin();
+}
+
+double CircleWithSliceRemoved::radius() const {
+    return circle.radius();
+}
+
+Angle CircleWithSliceRemoved::orientation() const {
+    return (slice_tip - origin()).orientation();
+}
+
+Point CircleWithSliceRemoved::sliceTip() const {
+    return slice_tip;
+}
+
+std::pair<Point,Point> CircleWithSliceRemoved::sliceCircleIntersectionPoints() const {
+    // TODO: we can probably just re-use this in `distance`, instead of nasty copy-paste
+
+    const double origin_to_slice_tip = (slice_tip - circle.origin()).length();
+    const double theta = (Angle::half() - slice_angle / 2.0).toRadians();
+    double segment_length =
+            std::sqrt(
+                    std::pow(origin_to_slice_tip, 2.0) * std::pow(std::cos(theta), 2.0) -
+                    std::pow(origin_to_slice_tip, 2.0) + std::pow(circle.radius(), 2.0)) +
+            origin_to_slice_tip * std::cos(theta);
+    return
+    {
+            slice_tip + Vector::createFromAngle(sliceDirection() - slice_angle / 2.0)
+                    .normalize(segment_length),
+            slice_tip + Vector::createFromAngle(sliceDirection() + slice_angle / 2.0)
+                    .normalize(segment_length),
+    };
+}
+
+std::optional<Triangle> CircleWithSliceRemoved::triangleContainingSlice() const
 {
     // TODO: ascii diagram
 
@@ -117,10 +158,9 @@ Triangle CircleWithSliceRemoved::triangleContainingSlice() const
     std::optional<Point> ccw_point_optional =
         ::intersection(triangle_ccw_ray, base_ray_ccw);
 
-    // If we managed to get parallel rays, circle size is zero
     if (!cw_point_optional || !ccw_point_optional)
     {
-        return Triangle(Point(0, 0), Point(0, 0), Point(0, 0));
+        return std::nullopt;
     }
 
     return Triangle(slice_tip, cw_point_optional.value(), ccw_point_optional.value());
@@ -149,4 +189,8 @@ bool CircleWithSliceRemoved::pointInSliceFov(const Point& p) const
 
     return (slice_tip_to_point.minDiff(slice_cw_angle) < slice_angle) &&
            (slice_tip_to_point.minDiff(slice_ccw_angle) < slice_angle);
+}
+
+bool operator==(const CircleWithSliceRemoved& lhs, const CircleWithSliceRemoved& rhs) {
+    return (lhs.circle == rhs.circle) && (lhs.slice_tip == rhs.slice_tip) && (lhs.slice_angle == rhs.slice_angle);
 }

@@ -110,6 +110,7 @@ cc_library(
         ":draw_functions",
         ":geom",
         "//software/ai/navigator/obstacle",
+        "//software/ai/navigator/obstacle:circle_with_slice_removed",
         "//software/ai/navigator/obstacle:obstacle_visitor",
         "//software/gui:geometry_conversion",
         "@qt//:qt_widgets",

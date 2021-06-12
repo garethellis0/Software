@@ -52,24 +52,43 @@ class RobotNavigationObstacleFactory
      *
      * These obstacles take into account the velocity of the robot to extend the
      * created obstacle in the robot's direction of travel.
+     * If the robot is moving slowly, the obstacle is also shaped around the ball so that
+     * we aren't prevented from getting the ball just because it's near an enemy.
      *
      * @param robot The robot to get a representative obstacle for
+     * @param ball A ball that could be near the robot.
      *
-     * @return An obstacle representing the given robot
+     * @return An obstacle representing the given robot, shaped to still allow access
+     *         to the ball.
      */
-    ObstaclePtr createFromRobot(const Robot &robot) const;
+    ObstaclePtr createFromRobot(const Robot &robot, const std::optional<Ball>& ball) const;
 
     /**
      * Create a list of obstacles representing the given team
      *
      * These obstacles take into account the velocity of the robot to extend the
      * created obstacle in the robot's direction of travel.
+     * The obstacles are also shaped to allow access to the ball.
      *
      * @param team The team to get representative obstacles for
+     * @param ball A ball that robot obstacles should be shaped to allow access to (if
+     *             they're moving slow)
      *
      * @return A list of obstacles representing the given team
      */
-    std::vector<ObstaclePtr> createFromTeam(const Team &team) const;
+    std::vector<ObstaclePtr> createFromTeam(const Team &team, const Ball& ball) const;
+
+    /**
+     * Create circle obstacle around robot with additional radius scaling
+     *
+     * @param robot_position robot position
+     * @param ball_position If this is within the robot obstacle, we remove a slice so
+     *                      that we aren't prevented from navigating to the ball.
+     *
+     * @return obstacle around the robot
+     */
+     // TODO: just combine the overrides and have the ball be optional
+    ObstaclePtr createFromRobotPosition(const Point &robot_position, const Point& ball_position) const;
 
     /**
      * Create circle obstacle around robot with additional radius scaling

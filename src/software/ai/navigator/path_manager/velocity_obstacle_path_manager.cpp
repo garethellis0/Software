@@ -50,7 +50,7 @@ const std::map<RobotId, std::optional<Path>> VelocityObstaclePathManager::getMan
                                   Angle::zero(), AngularVelocity::zero(),
                                   Timestamp::fromSeconds(0));
             current_velocity_obstacles.emplace_back(
-                robot_navigation_obstacle_factory.createFromRobot(mock_path_robot));
+                robot_navigation_obstacle_factory.createFromRobot(mock_path_robot, std::nullopt));
         }
     }
 
